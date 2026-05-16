@@ -159,7 +159,7 @@ export function AssistenteSiact() {
           </div>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-slate-900">Assistente SIACT</h1>
-            <p className="text-xs text-slate-500 font-medium">Especialista MROSC (Lei 13.019/14)</p>
+            <p className="text-xs text-slate-500 font-medium">Sistema Inteligente de Análise e Controle de Transferências da União · Lei 13.019/14</p>
           </div>
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
             modo === 'simples' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'

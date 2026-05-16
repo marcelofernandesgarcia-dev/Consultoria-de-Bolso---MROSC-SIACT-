@@ -51,14 +51,15 @@ export function GeradorParecer() {
   const copiarParecer = () => {
     if (!result) return;
     const texto = [
-      'PARECER TÉCNICO — SIACT-MROSC',
-      '='.repeat(50),
+      'PARECER TÉCNICO — SIACT',
+      'Sistema Inteligente de Análise e Controle de Transferências da União',
+      '='.repeat(60),
       `\nCONCLUSÃO:\n${result.conclusao}`,
       `\nFUNDAMENTAÇÃO JURÍDICA:\n${result.fundamentacao}`,
       `\nBASE LEGAL:\n${result.baseLegal.map(b => `• ${b}`).join('\n')}`,
       result.ressalvas.length ? `\nRESSSALVAS:\n${result.ressalvas.map(r => `• ${r}`).join('\n')}` : '',
       `\nORIENTAÇÃO FINAL:\n${result.orientacao}`,
-      '\n—\nGerado por SIACT-MROSC. Este documento é consultivo e não substitui orientação jurídica formal.',
+      '\n—\nGerado por SIACT — Sistema Inteligente de Análise e Controle de Transferências da União. Este documento é consultivo e não substitui orientação jurídica formal. Parte do conteúdo gerado com auxílio de IA.',
     ].filter(Boolean).join('\n');
     navigator.clipboard.writeText(texto).then(() => {
       setCopiado(true);

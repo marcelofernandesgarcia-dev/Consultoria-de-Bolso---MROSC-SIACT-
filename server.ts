@@ -5,26 +5,16 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import Database from "better-sqlite3";
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { PDFParse } from "pdf-parse";
 
-// Initialize Database
-const db = new Database('siact_mrosc.db');
-db.exec(`
-  CREATE TABLE IF NOT EXISTS analysis_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type TEXT,
-    document_name TEXT,
-    status TEXT,
-    summary TEXT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    details JSON
-  );
-  CREATE INDEX IF NOT EXISTS idx_analysis_date ON analysis_history(date);
-  CREATE INDEX IF NOT EXISTS idx_analysis_type ON analysis_history(type);
-  CREATE INDEX IF NOT EXISTS idx_analysis_status ON analysis_history(status);
-`);
+// Initialize Supabase
+const supabase = createSupabaseClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } }
+);
 
 // Initialize Gemini
 const getGeminiModel = () => {
@@ -90,28 +80,24 @@ async function startServer() {
   });
 
   // --- DASHBOARD API ---
-  app.get("/api/dashboard", (req, res) => {
+  app.get("/api/dashboard", async (req, res) => {
     try {
-      const stats = db.prepare(`
-        SELECT 
-          COUNT(*) as total,
-          SUM(CASE WHEN status = 'CONFORME' THEN 1 ELSE 0 END) as approved,
-          SUM(CASE WHEN status = 'RESSALVA' THEN 1 ELSE 0 END) as warning,
-          SUM(CASE WHEN status = 'NAO_CONFORME' THEN 1 ELSE 0 END) as rejected
-        FROM analysis_history
-      `).get() as any;
+      const [
+        { count: total },
+        { count: approved },
+        { count: warning },
+        { count: rejected },
+        { data: recent }
+      ] = await Promise.all([
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }),
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'CONFORME'),
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'RESSALVA'),
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'NAO_CONFORME'),
+        supabase.from('analysis_history').select('id, document_name, status, date, type').order('date', { ascending: false }).limit(5),
+      ]);
 
-      const recent = db.prepare(`
-        SELECT id, document_name, status, date, type 
-        FROM analysis_history 
-        ORDER BY date DESC 
-        LIMIT 5
-      `).all();
-
-      // Calculate monthly growth (mocked for now, or real if we had enough data)
       const growth = { total: 12, approved: 12, warning: 12, rejected: 12 };
-
-      res.json({ stats: { ...stats, growth }, recent });
+      res.json({ stats: { total, approved, warning, rejected, growth }, recent: recent ?? [] });
     } catch (error: any) {
       console.error("Dashboard error:", error);
       res.status(500).json({ error: error.message });
@@ -137,7 +123,7 @@ async function startServer() {
 
       let systemInstruction = `
       # PERSONA E AUTORIDADE TÉCNICA
-      - Você é o SIACT-MROSC, o Sistema Inteligente de Apoio à Análise e Controle de Transferências.
+      - Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
       - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
       - Sua missão é garantir a eficácia e eficiência nas parcerias, sob o rigor da Lei nº 13.019/2014 e do Decreto nº 11.948/2024.
 
@@ -538,18 +524,14 @@ async function startServer() {
         parsedData.status = parsedData.status_final;
       }
 
-      // Persist to Database
-      const insert = db.prepare(`
-        INSERT INTO analysis_history (type, document_name, status, summary, details)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-      insert.run(
-        type, 
-        documentName, 
-        parsedData.status_final || 'RESSALVA', 
-        parsedData.summary || 'Sem resumo', 
-        JSON.stringify(parsedData)
-      );
+      // Persist to Supabase
+      await supabase.from('analysis_history').insert({
+        type,
+        document_name: documentName,
+        status: parsedData.status_final || 'RESSALVA',
+        summary: parsedData.summary || 'Sem resumo',
+        details: parsedData,
+      });
       
       res.json(parsedData);
 
@@ -566,7 +548,7 @@ async function startServer() {
       
       const systemInstruction = `
       # PERSONA E AUTORIDADE TÉCNICA
-      - Você é o SIACT-MROSC, o Sistema Inteligente de Apoio à Análise e Controle de Transferências.
+      - Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
       - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
 
       Sua tarefa é analisar a página de editais da Plataforma OSC (https://plataformaosc.org.br/editais/) e extrair todos os editais de chamamento público (MROSC - Lei 13.019/2014) ATIVOS e ABERTOS.
@@ -635,7 +617,7 @@ async function startServer() {
       
       const systemInstruction = `
 # PERSONA E AUTORIDADE TÉCNICA
-- Você é o SIACT-MROSC, o Sistema Inteligente de Apoio à Análise e Controle de Transferências.
+- Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
 - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
 - Sua missão é garantir a eficácia e eficiência nas parcerias, sob o rigor da Lei nº 13.019/2014 e do Decreto nº 11.948/2024.
 
@@ -744,9 +726,10 @@ ESTRUTURA JSON ESPERADA:
   });
 
   // --- HEALTH CHECK ---
-  app.get("/api/health", (_req, res) => {
+  app.get("/api/health", async (_req, res) => {
     try {
-      db.prepare('SELECT 1').get();
+      const { error } = await supabase.from('analysis_history').select('id').limit(1);
+      if (error) throw error;
       res.json({ status: 'ok', timestamp: new Date().toISOString() });
     } catch (err: any) {
       res.status(503).json({ status: 'down', error: err.message });
@@ -767,7 +750,8 @@ ESTRUTURA JSON ESPERADA:
 
       const defaultSystemInstruction = `
 # IDENTIDADE DO SISTEMA
-Nome: SIACT-MROSC
+Nome: SIACT — Sistema Inteligente de Análise e Controle de Transferências da União
+Plataforma: MROSC Consultoria de Bolso
 Versão: 1.0
 Papel: Atue como um Coordenador de Transferências Voluntárias e Auditor Especialista no Marco Regulatório das Organizações da Sociedade Civil (MROSC).
 Objetivo: Realizar análise automatizada, rigorosa e imparcial de documentos de parcerias entre a Administração Pública Federal e OSCs, garantindo 100% de conformidade legal.
@@ -797,7 +781,8 @@ Ao processar qualquer entrada, você DEVE obedecer estritamente às seguintes re
 # FORMATO DE SAÍDA OBRIGATÓRIO (MARKDOWN ESTRUTURADO)
 Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando analisar um documento:
 
-### 📋 PARECER TÉCNICO SIACT-MROSC
+### 📋 PARECER TÉCNICO — SIACT
+### Sistema Inteligente de Análise e Controle de Transferências da União
 **Documento Analisado:** [Tipo do Documento]
 **Data da Análise:** [Data Atual]
 

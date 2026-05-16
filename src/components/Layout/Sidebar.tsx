@@ -3,8 +3,9 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
-  Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale,
+  Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 type SectionColor = 'indigo' | 'violet' | 'amber' | 'slate';
 
@@ -58,6 +59,16 @@ const COLORS: Record<SectionColor, { dot: string; label: string; activeIcon: str
 };
 
 export function Sidebar() {
+  const { user, signOut } = useAuth();
+
+  const initials = user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : 'GP';
+
+  const displayName = user?.user_metadata?.full_name
+    ?? user?.email?.split('@')[0]
+    ?? 'Usuário';
+
   return (
     <aside className="w-64 h-screen fixed left-0 top-0 z-30 flex flex-col" style={{ background: 'linear-gradient(180deg, #0D1117 0%, #0B0F1A 100%)' }}>
 
@@ -71,7 +82,7 @@ export function Sidebar() {
         </div>
         <div>
           <p className="text-[13.5px] font-extrabold text-white tracking-tight leading-none">SIACT-MROSC</p>
-          <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Consultoria de Bolso</p>
+          <p className="text-[9px] text-slate-500 mt-0.5 font-medium leading-tight">Sistema Inteligente de Análise e<br />Controle de Transferências da União</p>
         </div>
       </div>
 
@@ -121,15 +132,21 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="p-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-colors cursor-default">
+        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg">
           <div className="w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}>
-            <span className="text-[10px] font-bold text-white">GP</span>
+            <span className="text-[10px] font-bold text-white">{initials}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate">Gestor Público</p>
-            <p className="text-[9px] text-slate-600 mt-0.5">Lei 13.019/2014</p>
+            <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate">{displayName}</p>
+            <p className="text-[9px] text-slate-600 mt-0.5 truncate">{user?.email ?? ''}</p>
           </div>
-          <span className="text-[9px] font-bold text-slate-700 border border-slate-800 rounded-md px-1.5 py-0.5 shrink-0">v3</span>
+          <button
+            onClick={signOut}
+            title="Sair"
+            className="text-slate-600 hover:text-red-400 transition-colors shrink-0 p-1 rounded-lg hover:bg-white/[0.04]"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </aside>
