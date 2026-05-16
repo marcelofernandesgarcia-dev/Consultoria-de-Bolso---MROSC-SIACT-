@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
   Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, LogOut,
+  PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -22,11 +23,11 @@ function loadCapacitacaoPct(): number {
 /* ─── Tipos ───────────────────────────────────────────────────── */
 type SectionColor = 'indigo' | 'violet' | 'amber' | 'slate';
 interface NavItem { id: string; label: string; icon: React.ElementType; path: string; }
-interface NavGroup {
-  group: string;
-  color: SectionColor;
-  groupIcon: React.ElementType;
-  items: NavItem[];
+interface NavGroup { group: string; color: SectionColor; groupIcon: React.ElementType; items: NavItem[]; }
+
+export interface SidebarProps {
+  isPinned: boolean;
+  onTogglePin: () => void;
 }
 
 /* ─── Dados de navegação ──────────────────────────────────────── */
@@ -34,30 +35,30 @@ const NAVIGATION: NavGroup[] = [
   {
     group: 'Principal', color: 'indigo', groupIcon: LayoutDashboard,
     items: [
-      { id: 'dashboard', label: 'Dashboard',        icon: LayoutDashboard, path: '/' },
-      { id: 'inicio',    label: 'Por onde começar', icon: Compass,         path: '/inicio' },
-      { id: 'assistente',label: 'Assistente SIACT', icon: MessageSquare,   path: '/assistente' },
+      { id: 'dashboard',  label: 'Dashboard',        icon: LayoutDashboard, path: '/' },
+      { id: 'inicio',     label: 'Por onde começar', icon: Compass,         path: '/inicio' },
+      { id: 'assistente', label: 'Assistente SIACT', icon: MessageSquare,   path: '/assistente' },
     ],
   },
   {
     group: 'Ferramentas OSC', color: 'violet', groupIcon: Sparkles,
     items: [
-      { id: 'simulador',  label: 'Simulador de Elegibilidade', icon: Sparkles,    path: '/simulador' },
-      { id: 'checklist',  label: 'Checklist de Documentos',   icon: FileCheck,   path: '/checklist' },
-      { id: 'calendario', label: 'Calendário de Prazos',      icon: CalendarDays,path: '/calendario' },
-      { id: 'faq',        label: 'Perguntas Frequentes',      icon: BookOpen,    path: '/faq' },
-      { id: 'capacitacao',label: 'Capacitação',               icon: GraduationCap,path: '/capacitacao' },
+      { id: 'simulador',   label: 'Simulador de Elegibilidade', icon: Sparkles,     path: '/simulador' },
+      { id: 'checklist',   label: 'Checklist de Documentos',   icon: FileCheck,    path: '/checklist' },
+      { id: 'calendario',  label: 'Calendário de Prazos',      icon: CalendarDays, path: '/calendario' },
+      { id: 'faq',         label: 'Perguntas Frequentes',      icon: BookOpen,     path: '/faq' },
+      { id: 'capacitacao', label: 'Capacitação',               icon: GraduationCap,path: '/capacitacao' },
     ],
   },
   {
     group: 'Auditoria e Gestão', color: 'amber', groupIcon: Gavel,
     items: [
-      { id: 'integracao',  label: 'Mapa OSC',         icon: Search,      path: '/integracao' },
-      { id: 'governanca',  label: 'Governança',        icon: ShieldCheck, path: '/governanca' },
-      { id: 'normas',      label: 'Radar Normativo',   icon: Gavel,       path: '/normas' },
-      { id: 'planejamento',label: 'Cotação Prévia',    icon: ClipboardList,path: '/planejamento' },
-      { id: 'monitoramento',label:'Nexo Causal',       icon: Activity,    path: '/monitoramento' },
-      { id: 'parecer',     label: 'Parecer Técnico',   icon: Scale,       path: '/parecer' },
+      { id: 'integracao',   label: 'Mapa OSC',        icon: Search,       path: '/integracao' },
+      { id: 'governanca',   label: 'Governança',       icon: ShieldCheck,  path: '/governanca' },
+      { id: 'normas',       label: 'Radar Normativo',  icon: Gavel,        path: '/normas' },
+      { id: 'planejamento', label: 'Cotação Prévia',   icon: ClipboardList,path: '/planejamento' },
+      { id: 'monitoramento',label: 'Nexo Causal',      icon: Activity,     path: '/monitoramento' },
+      { id: 'parecer',      label: 'Parecer Técnico',  icon: Scale,        path: '/parecer' },
     ],
   },
   {
@@ -69,44 +70,23 @@ const NAVIGATION: NavGroup[] = [
   },
 ];
 
-/* ─── Paleta de cores por grupo ──────────────────────────────── */
+/* ─── Paleta ──────────────────────────────────────────────────── */
 const COLORS: Record<SectionColor, {
   rail: string; railActive: string;
   flyoutLabel: string; flyoutBorder: string;
   activeIcon: string; activeBg: string; activeDot: string;
 }> = {
-  indigo: {
-    rail: 'text-slate-600 hover:text-indigo-300 hover:bg-indigo-500/10',
-    railActive: 'text-indigo-300 bg-indigo-500/20',
-    flyoutLabel: 'text-indigo-400/80',
-    flyoutBorder: 'rgba(99,102,241,0.18)',
-    activeIcon: 'text-indigo-300', activeBg: 'bg-indigo-500/[0.18]', activeDot: 'bg-indigo-400',
-  },
-  violet: {
-    rail: 'text-slate-600 hover:text-violet-300 hover:bg-violet-500/10',
-    railActive: 'text-violet-300 bg-violet-500/20',
-    flyoutLabel: 'text-violet-400/80',
-    flyoutBorder: 'rgba(139,92,246,0.18)',
-    activeIcon: 'text-violet-300', activeBg: 'bg-violet-500/[0.18]', activeDot: 'bg-violet-400',
-  },
-  amber: {
-    rail: 'text-slate-600 hover:text-amber-300 hover:bg-amber-500/10',
-    railActive: 'text-amber-300 bg-amber-500/20',
-    flyoutLabel: 'text-amber-400/80',
-    flyoutBorder: 'rgba(245,158,11,0.18)',
-    activeIcon: 'text-amber-300', activeBg: 'bg-amber-500/[0.18]', activeDot: 'bg-amber-400',
-  },
-  slate: {
-    rail: 'text-slate-600 hover:text-slate-300 hover:bg-slate-500/10',
-    railActive: 'text-slate-300 bg-slate-500/20',
-    flyoutLabel: 'text-slate-400/70',
-    flyoutBorder: 'rgba(148,163,184,0.12)',
-    activeIcon: 'text-slate-300', activeBg: 'bg-slate-500/[0.18]', activeDot: 'bg-slate-400',
-  },
+  indigo: { rail:'text-slate-600 hover:text-indigo-300 hover:bg-indigo-500/10', railActive:'text-indigo-300 bg-indigo-500/20', flyoutLabel:'text-indigo-400/80', flyoutBorder:'rgba(99,102,241,0.18)', activeIcon:'text-indigo-300', activeBg:'bg-indigo-500/[0.18]', activeDot:'bg-indigo-400' },
+  violet: { rail:'text-slate-600 hover:text-violet-300 hover:bg-violet-500/10', railActive:'text-violet-300 bg-violet-500/20', flyoutLabel:'text-violet-400/80', flyoutBorder:'rgba(139,92,246,0.18)', activeIcon:'text-violet-300', activeBg:'bg-violet-500/[0.18]', activeDot:'bg-violet-400' },
+  amber:  { rail:'text-slate-600 hover:text-amber-300 hover:bg-amber-500/10',   railActive:'text-amber-300 bg-amber-500/20',   flyoutLabel:'text-amber-400/80',  flyoutBorder:'rgba(245,158,11,0.18)',  activeIcon:'text-amber-300',  activeBg:'bg-amber-500/[0.18]',  activeDot:'bg-amber-400' },
+  slate:  { rail:'text-slate-600 hover:text-slate-300 hover:bg-slate-500/10',   railActive:'text-slate-300 bg-slate-500/20',   flyoutLabel:'text-slate-400/70',  flyoutBorder:'rgba(148,163,184,0.12)', activeIcon:'text-slate-300',  activeBg:'bg-slate-500/[0.18]',  activeDot:'bg-slate-400' },
 };
 
+export const RAIL_W  = 68;
+export const FLYOUT_W = 210;
+
 /* ─── Componente ──────────────────────────────────────────────── */
-export function Sidebar() {
+export function Sidebar({ isPinned, onTogglePin }: SidebarProps) {
   const location = useLocation();
   const { user, signOut } = useAuth();
 
@@ -118,13 +98,11 @@ export function Sidebar() {
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'GP';
   const displayName = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Usuário';
 
-  /* Auto-pin: detecta qual grupo corresponde à rota atual */
+  /* Auto-pin do grupo pela rota */
   useEffect(() => {
     for (const group of NAVIGATION) {
       const match = group.items.some(item =>
-        item.path === '/'
-          ? location.pathname === '/'
-          : location.pathname.startsWith(item.path)
+        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
       );
       if (match) { setPinnedGroup(group.group); return; }
     }
@@ -138,7 +116,7 @@ export function Sidebar() {
     return () => { window.removeEventListener('storage', sync); clearInterval(t); };
   }, []);
 
-  /* Handlers de hover com debounce para evitar flickering */
+  /* Hover com debounce */
   const onEnterIcon = (group: string) => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);
     setHoveredGroup(group);
@@ -155,34 +133,27 @@ export function Sidebar() {
 
   return (
     <>
-      {/* ══ RAIL DE ÍCONES (68px) ════════════════════════════════ */}
+      {/* ══ RAIL ════════════════════════════════════════════════ */}
       <aside
-        className="w-[68px] h-screen fixed left-0 top-0 z-30 flex flex-col"
+        className="h-screen fixed left-0 top-0 z-30 flex flex-col"
         style={{
+          width: RAIL_W,
           background: 'linear-gradient(180deg, #0D1117 0%, #0B0F1A 100%)',
           borderRight: '1px solid rgba(255,255,255,0.05)',
         }}
       >
         {/* Logo */}
-        <div
-          className="h-[56px] flex items-center justify-center shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-        >
+        <div className="flex items-center justify-center shrink-0" style={{ height: 56, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="relative">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/60"
-              style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #4338CA 100%)' }}
-            >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/60"
+                 style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #4338CA 100%)' }}>
               <ShieldCheck className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
             </div>
-            <div
-              className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2"
-              style={{ borderColor: '#0D1117' }}
-            />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2" style={{ borderColor: '#0D1117' }} />
           </div>
         </div>
 
-        {/* Botões dos grupos */}
+        {/* Ícones dos grupos */}
         <nav className="flex-1 flex flex-col items-center gap-1 py-3 px-2">
           {NAVIGATION.map((group) => {
             const c = COLORS[group.color];
@@ -195,9 +166,7 @@ export function Sidebar() {
                 onMouseEnter={() => onEnterIcon(group.group)}
                 onMouseLeave={onLeave}
                 onClick={() => setPinnedGroup(group.group)}
-                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-150 ${
-                  isActive ? c.railActive : c.rail
-                }`}
+                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-150 ${isActive ? c.railActive : c.rail}`}
               >
                 <GroupIcon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.2 : 1.7} />
               </button>
@@ -206,10 +175,7 @@ export function Sidebar() {
         </nav>
 
         {/* Avatar + logout */}
-        <div
-          className="p-2 shrink-0 flex flex-col items-center gap-1.5"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-        >
+        <div className="p-2 shrink-0 flex flex-col items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <div
             className="w-9 h-9 rounded-[9px] flex items-center justify-center shadow-sm cursor-default"
             style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
@@ -227,29 +193,41 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* ══ FLYOUT (210px) — aparece à direita do rail ═══════════ */}
+      {/* ══ FLYOUT ══════════════════════════════════════════════ */}
       {flyoutData && (
         <div
           className="fixed top-0 h-screen z-20 flex flex-col"
           style={{
-            left: 68,
-            width: 210,
+            left: RAIL_W,
+            width: FLYOUT_W,
             background: 'linear-gradient(180deg, #0E1320 0%, #0B0F1A 100%)',
             borderRight: `1px solid ${COLORS[flyoutData.color].flyoutBorder}`,
-            boxShadow: '6px 0 24px rgba(0,0,0,0.35)',
+            boxShadow: isPinned ? 'none' : '6px 0 24px rgba(0,0,0,0.4)',
             animation: 'flyout-in 140ms ease-out',
           }}
           onMouseEnter={onEnterFlyout}
-          onMouseLeave={onLeave}
+          onMouseLeave={isPinned ? undefined : onLeave}
         >
-          {/* Cabeçalho do grupo */}
+          {/* Cabeçalho: nome do grupo + botão retrair */}
           <div
-            className="h-[56px] px-4 flex items-center shrink-0"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+            className="flex items-center justify-between px-4 shrink-0"
+            style={{ height: 56, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
             <p className={`text-[9.5px] font-extrabold uppercase tracking-[0.18em] ${COLORS[flyoutData.color].flyoutLabel}`}>
               {flyoutData.group}
             </p>
+
+            {/* Botão retrair / fixar */}
+            <button
+              onClick={onTogglePin}
+              title={isPinned ? 'Recolher painel' : 'Fixar painel'}
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-all text-slate-600 hover:text-slate-300 hover:bg-white/[0.06]"
+            >
+              {isPinned
+                ? <PanelLeftClose className="w-3.5 h-3.5" />
+                : <PanelLeftOpen  className="w-3.5 h-3.5" />
+              }
+            </button>
           </div>
 
           {/* Links */}
@@ -287,16 +265,10 @@ export function Sidebar() {
                         )}
                       </div>
                       {item.id === 'capacitacao' && capacPct > 0 && (
-                        <div
-                          className="mt-1.5 ml-[22px] h-[3px] rounded-full overflow-hidden"
-                          style={{ background: 'rgba(255,255,255,0.07)' }}
-                        >
+                        <div className="mt-1.5 ml-[22px] h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
                           <div
                             className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${capacPct}%`,
-                              background: isActive ? 'rgba(255,255,255,0.45)' : '#6366F1',
-                            }}
+                            style={{ width: `${capacPct}%`, background: isActive ? 'rgba(255,255,255,0.45)' : '#6366F1' }}
                           />
                         </div>
                       )}
@@ -307,11 +279,8 @@ export function Sidebar() {
             })}
           </nav>
 
-          {/* Rodapé discreto */}
-          <div
-            className="px-4 py-3 shrink-0"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-          >
+          {/* Rodapé */}
+          <div className="px-4 py-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <p className="text-[8.5px] text-slate-700 leading-snug font-medium">
               SIACT · Sistema Inteligente de<br />Análise e Controle de<br />Transferências da União
             </p>
@@ -319,10 +288,9 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Keyframe para entrada do flyout */}
       <style>{`
         @keyframes flyout-in {
-          from { opacity: 0; transform: translateX(-8px); }
+          from { opacity: 0; transform: translateX(-6px); }
           to   { opacity: 1; transform: translateX(0); }
         }
       `}</style>
