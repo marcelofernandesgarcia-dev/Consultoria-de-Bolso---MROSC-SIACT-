@@ -4,6 +4,7 @@ import {
   ShieldCheck, Search, Activity, GraduationCap, Bell, X, ArrowRight,
   FileCheck, CalendarDays, MessageSquare, Sparkles, BookOpen,
   CheckCircle2, XCircle, AlertTriangle, Gavel, ClipboardList,
+  ExternalLink, RefreshCw, Loader2, Megaphone,
 } from 'lucide-react';
 import { OSCProfile } from '../types';
 
@@ -29,6 +30,21 @@ function loadDismissed(): Set<string> {
 
 interface DashboardStats { total: number; approved: number; warning: number; rejected: number; }
 interface RecentAnalysis { id: number; type: string; document_name: string; status: string; date: string; }
+interface Edital { id: number; title: string; ministry: string; deadline: string; value: string; link: string; description: string; }
+
+const EDITAIS_CACHE_KEY = 'siact_editais_cache';
+const EDITAIS_TTL_MS = 30 * 60 * 1000; // 30 minutos
+
+function loadEditaisCache(): { data: Edital[]; ts: number } | null {
+  try {
+    const raw = sessionStorage.getItem(EDITAIS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveEditaisCache(data: Edital[]) {
+  try { sessionStorage.setItem(EDITAIS_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch {}
+}
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -36,6 +52,9 @@ export function Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({ total: 0, approved: 0, warning: 0, rejected: 0 });
   const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed);
+  const [editais, setEditais] = useState<Edital[]>([]);
+  const [editaisLoading, setEditaisLoading] = useState(false);
+  const [editaisErro, setEditaisErro] = useState(false);
 
   const dismiss = (id: string) => {
     setDismissed(prev => {
@@ -46,6 +65,30 @@ export function Dashboard() {
   };
 
   const avisosVisiveis = AVISOS.filter(a => !dismissed.has(a.id));
+
+  const fetchEditais = async (force = false) => {
+    if (!force) {
+      const cached = loadEditaisCache();
+      if (cached && Date.now() - cached.ts < EDITAIS_TTL_MS) {
+        setEditais(cached.data);
+        return;
+      }
+    }
+    setEditaisLoading(true);
+    setEditaisErro(false);
+    try {
+      const res = await fetch('/api/mrosc/opportunities');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const lista: Edital[] = Array.isArray(data.opportunities) ? data.opportunities : [];
+      setEditais(lista);
+      saveEditaisCache(lista);
+    } catch {
+      setEditaisErro(true);
+    } finally {
+      setEditaisLoading(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -63,6 +106,8 @@ export function Dashboard() {
         if (data.recent) setRecentAnalyses(data.recent);
       })
       .catch(() => {});
+
+    fetchEditais();
   }, []);
 
   const STAT_CARDS = [
@@ -263,6 +308,102 @@ export function Dashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── RADAR DE EDITAIS ─────────────────────────────────── */}
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ background: 'linear-gradient(to right, #F0FDF4, #F0FDFA)', borderBottom: '1px solid #E2F5EC' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #059669, #0D9488)' }}>
+              <Megaphone className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">Editais Abertos — Plataforma OSC</h2>
+              <p className="text-[10.5px] text-slate-500">Chamamentos públicos ativos (MROSC · atualizado via IA)</p>
+            </div>
+          </div>
+          <button
+            onClick={() => fetchEditais(true)}
+            disabled={editaisLoading}
+            className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors disabled:opacity-40"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${editaisLoading ? 'animate-spin' : ''}`} />
+            {editaisLoading ? 'Buscando...' : 'Atualizar'}
+          </button>
+        </div>
+
+        {/* States */}
+        {editaisLoading && (
+          <div className="p-8 flex flex-col items-center gap-3 text-center">
+            <Loader2 className="w-7 h-7 text-emerald-500 animate-spin" />
+            <p className="text-sm font-medium text-slate-600">Buscando editais em tempo real na Plataforma OSC...</p>
+            <p className="text-xs text-slate-400">Pode levar até 10 segundos</p>
+          </div>
+        )}
+
+        {!editaisLoading && editaisErro && (
+          <div className="p-8 flex flex-col items-center gap-3 text-center">
+            <AlertTriangle className="w-7 h-7 text-amber-400" />
+            <p className="text-sm font-medium text-slate-600">Não foi possível carregar os editais agora</p>
+            <button onClick={() => fetchEditais(true)} className="text-xs font-bold text-emerald-600 hover:underline">Tentar novamente</button>
+          </div>
+        )}
+
+        {!editaisLoading && !editaisErro && editais.length === 0 && (
+          <div className="p-8 flex flex-col items-center gap-2 text-center">
+            <Megaphone className="w-7 h-7 text-slate-300" />
+            <p className="text-sm text-slate-400">Nenhum edital encontrado no momento</p>
+          </div>
+        )}
+
+        {!editaisLoading && editais.length > 0 && (
+          <div className="divide-y divide-slate-50">
+            {editais.map((edital, idx) => (
+              <div key={edital.id ?? idx} className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50/60 transition-colors">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 text-xs font-black text-emerald-700" style={{ background: 'linear-gradient(135deg, #D1FAE5, #A7F3D0)' }}>
+                  {idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-slate-900 leading-snug">{edital.title}</p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                    {edital.ministry && (
+                      <span className="text-[11px] text-slate-500">{edital.ministry}</span>
+                    )}
+                    {edital.value && edital.value !== 'N/A' && (
+                      <span className="text-[11px] font-semibold text-emerald-700">{edital.value}</span>
+                    )}
+                    {edital.deadline && (
+                      <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        Prazo: {edital.deadline}
+                      </span>
+                    )}
+                  </div>
+                  {edital.description && (
+                    <p className="text-[11.5px] text-slate-400 mt-1 leading-relaxed line-clamp-2">{edital.description}</p>
+                  )}
+                </div>
+                {edital.link && edital.link !== 'N/A' && (
+                  <a
+                    href={edital.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700 shrink-0 px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors border border-emerald-200"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    Ver edital <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!editaisLoading && editais.length > 0 && (
+          <div className="px-5 py-3 text-[10.5px] text-slate-400 border-t border-slate-50">
+            Parte do conteúdo gerado com o auxílio de IA · Fonte: plataformaosc.org.br
+          </div>
+        )}
       </div>
     </div>
   );
