@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
   Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, LogOut,
-  PanelLeftClose, PanelLeftOpen,
+  ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -174,6 +174,24 @@ export function Sidebar({ isPinned, onTogglePin }: SidebarProps) {
           })}
         </nav>
 
+        {/* Botão retrair/expandir — sempre visível no rail */}
+        <div className="flex justify-center px-2 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <button
+            onClick={onTogglePin}
+            title={isPinned ? 'Recolher menu (←)' : 'Expandir menu (→)'}
+            className={`w-11 h-9 rounded-xl flex items-center justify-center transition-all duration-150 ${
+              isPinned
+                ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+            }`}
+          >
+            {isPinned
+              ? <ChevronsLeft  className="w-4 h-4" />
+              : <ChevronsRight className="w-4 h-4" />
+            }
+          </button>
+        </div>
+
         {/* Avatar + logout */}
         <div className="p-2 shrink-0 flex flex-col items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <div
@@ -208,26 +226,14 @@ export function Sidebar({ isPinned, onTogglePin }: SidebarProps) {
           onMouseEnter={onEnterFlyout}
           onMouseLeave={isPinned ? undefined : onLeave}
         >
-          {/* Cabeçalho: nome do grupo + botão retrair */}
+          {/* Cabeçalho do flyout */}
           <div
-            className="flex items-center justify-between px-4 shrink-0"
+            className="flex items-center px-4 shrink-0"
             style={{ height: 56, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
             <p className={`text-[9.5px] font-extrabold uppercase tracking-[0.18em] ${COLORS[flyoutData.color].flyoutLabel}`}>
               {flyoutData.group}
             </p>
-
-            {/* Botão retrair / fixar */}
-            <button
-              onClick={onTogglePin}
-              title={isPinned ? 'Recolher painel' : 'Fixar painel'}
-              className="w-7 h-7 rounded-lg flex items-center justify-center transition-all text-slate-600 hover:text-slate-300 hover:bg-white/[0.06]"
-            >
-              {isPinned
-                ? <PanelLeftClose className="w-3.5 h-3.5" />
-                : <PanelLeftOpen  className="w-3.5 h-3.5" />
-              }
-            </button>
           </div>
 
           {/* Links */}
