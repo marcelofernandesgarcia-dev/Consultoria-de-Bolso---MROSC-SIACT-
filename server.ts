@@ -1,4 +1,8 @@
+import 'dotenv/config';
 import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import Database from "better-sqlite3";
@@ -12,11 +16,14 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     type TEXT,
     document_name TEXT,
-    status TEXT, -- 'CONFORME', 'RESSALVA', 'NAO_CONFORME'
+    status TEXT,
     summary TEXT,
     date DATETIME DEFAULT CURRENT_TIMESTAMP,
     details JSON
-  )
+  );
+  CREATE INDEX IF NOT EXISTS idx_analysis_date ON analysis_history(date);
+  CREATE INDEX IF NOT EXISTS idx_analysis_type ON analysis_history(type);
+  CREATE INDEX IF NOT EXISTS idx_analysis_status ON analysis_history(status);
 `);
 
 // Initialize Gemini
@@ -32,13 +39,39 @@ const getGeminiModel = () => {
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
+const VALID_ANALYSIS_TYPES = [
+  'requirements_eligibility', 'requirements_docs', 'requirements_budget',
+  'mrosc_router', 'celebration_validation', 'celebration_term',
+  'celebration_workplan', 'radar_normativo', 'cotacao_previa',
+  'auditoria_nexo_causal', 'papeis_impedimentos', 'osc_edital', 'osc_proposal'
+];
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Increase payload limit for base64 images/text
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  // Security headers
+  app.use(helmet({ contentSecurityPolicy: false }));
+
+  // CORS — permite apenas origens conhecidas
+  app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true,
+  }));
+
+  // Rate limiting — 60 req/min por IP nos endpoints de IA
+  const aiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas requisições. Aguarde um momento e tente novamente.' },
+  });
+  app.use('/api/', aiLimiter);
+
+  // Payload reduzido (era 50mb — vulnerabilidade de DoS)
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // --- PDF PARSING API ---
   app.post("/api/parse-pdf", upload.single("file"), async (req, res) => {
@@ -87,7 +120,18 @@ async function startServer() {
   // --- MROSC ANALYSIS API ---
   app.post("/api/analyze-mrosc", async (req, res) => {
     try {
-      const { type, textContent, context, documentName = "Documento Sem Nome" } = req.body;
+      const { type, textContent, documentName = "Documento Sem Nome" } = req.body;
+
+      if (!type || !VALID_ANALYSIS_TYPES.includes(type)) {
+        return res.status(400).json({ error: `Tipo de análise inválido. Valores aceitos: ${VALID_ANALYSIS_TYPES.join(', ')}` });
+      }
+      if (!textContent || typeof textContent !== 'string') {
+        return res.status(400).json({ error: 'textContent é obrigatório e deve ser uma string.' });
+      }
+      if (textContent.length > 80000) {
+        return res.status(400).json({ error: 'Documento muito extenso. Máximo 80.000 caracteres.' });
+      }
+
       const models = getGeminiModel();
 
       let systemInstruction = `
@@ -667,13 +711,29 @@ ESTRUTURA JSON ESPERADA:
     }
   });
 
+  // --- HEALTH CHECK ---
+  app.get("/api/health", (_req, res) => {
+    try {
+      db.prepare('SELECT 1').get();
+      res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    } catch (err: any) {
+      res.status(503).json({ status: 'down', error: err.message });
+    }
+  });
+
   // --- CHAT API ---
   app.post("/api/chat", async (req, res) => {
     try {
-      const { message } = req.body;
+      const { message, systemPrompt: clientSystemPrompt } = req.body;
+      if (!message || typeof message !== 'string' || message.trim().length === 0) {
+        return res.status(400).json({ error: 'Mensagem não pode estar vazia.' });
+      }
+      if (message.length > 10000) {
+        return res.status(400).json({ error: 'Mensagem muito longa. Máximo 10.000 caracteres.' });
+      }
       const models = getGeminiModel();
-      
-      const systemInstruction = `
+
+      const defaultSystemInstruction = `
 # IDENTIDADE DO SISTEMA
 Nome: SIACT-MROSC
 Versão: 1.0
@@ -753,11 +813,15 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
 - Mantenha a taxa de erro de análise abaixo de 1% atendo-se estritamente ao texto da lei.
       `;
 
+      const systemInstruction = (typeof clientSystemPrompt === 'string' && clientSystemPrompt.trim().length > 0)
+        ? clientSystemPrompt.trim().substring(0, 5000)
+        : defaultSystemInstruction;
+
       const response = await models.generateContent({
         model: "gemini-3-flash-preview",
         contents: message,
         config: {
-          systemInstruction: systemInstruction,
+          systemInstruction,
           temperature: 0.3
         }
       });
