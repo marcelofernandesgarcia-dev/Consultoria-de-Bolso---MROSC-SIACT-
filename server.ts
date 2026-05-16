@@ -43,7 +43,8 @@ const VALID_ANALYSIS_TYPES = [
   'requirements_eligibility', 'requirements_docs', 'requirements_budget',
   'mrosc_router', 'celebration_validation', 'celebration_term',
   'celebration_workplan', 'radar_normativo', 'cotacao_previa',
-  'auditoria_nexo_causal', 'papeis_impedimentos', 'osc_edital', 'osc_proposal'
+  'auditoria_nexo_causal', 'papeis_impedimentos', 'osc_edital', 'osc_proposal',
+  'gerador_parecer'
 ];
 
 async function startServer() {
@@ -464,13 +465,39 @@ async function startServer() {
         PENSAMENTO:
         1. Analise os dirigentes listados.
         2. Identifique possíveis conflitos de interesse ou nepotismo.
-        
+
         SAÍDA JSON: {
           "status_final": "aprovado" | "atencao" | "rejeitado",
           "titulo": "string",
           "conteudo": "string",
           "recomendacoes": ["recomendacao 1"],
           "baseLegal": ["Art. 39..."],
+          "fundamentacao_legal_especifica": "string"
+        }
+        `;
+      } else if (type === 'gerador_parecer') {
+        systemInstruction += `
+        TAREFA: Geração de Parecer Técnico Jurídico (MROSC).
+        PENSAMENTO:
+        1. Identifique a natureza da dúvida ou situação jurídica apresentada.
+        2. Analise com base na Lei 13.019/2014, Decreto 11.948/2024 e demais normas aplicáveis.
+        3. Formule uma conclusão objetiva, com fundamentação e citação dos dispositivos legais.
+        4. Aponte ressalvas e limitações da análise quando pertinente.
+        5. Forneça uma orientação prática final para o usuário.
+
+        REGRAS:
+        - Seja preciso e objetivo. Nunca presuma fatos não informados.
+        - Cite sempre o artigo, inciso e lei/decreto que fundamenta cada afirmação.
+        - Se a situação for inconclusiva por falta de dados, indique quais informações adicionais são necessárias.
+        - O parecer é orientativo e consultivo — inclua isso na orientação final.
+
+        SAÍDA JSON: {
+          "status_final": "CONFORME" | "RESSALVA" | "NAO_CONFORME" | "INCONCLUSIVO",
+          "conclusao": "Texto objetivo da conclusão jurídica, em 1-3 frases",
+          "fundamentacao": "Fundamentação jurídica detalhada, passo a passo",
+          "baseLegal": ["Art. X, Lei Y — descrição", "Art. Z, Decreto W — descrição"],
+          "ressalvas": ["Ressalva ou limitação 1", "Ressalva ou limitação 2"],
+          "orientacao": "Orientação prática final para o usuário — próximos passos concretos",
           "fundamentacao_legal_especifica": "string"
         }
         `;
@@ -504,6 +531,11 @@ async function startServer() {
               error: "Non-JSON response" 
             };
         }
+      }
+
+      // Normalise status field — AI returns status_final, frontend reads status
+      if (!parsedData.status && parsedData.status_final) {
+        parsedData.status = parsedData.status_final;
       }
 
       // Persist to Database

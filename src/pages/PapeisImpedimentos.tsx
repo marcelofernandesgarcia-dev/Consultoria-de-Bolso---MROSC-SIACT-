@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Loader2, FileText, UserX, AlertOctagon } from 'lucide-react';
+import { ShieldCheck, Loader2, FileText, UserX, AlertOctagon, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
 
 export function PapeisImpedimentos() {
   const [dirigentes, setDirigentes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
   const [erro, setErro] = useState('');
+
+  const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(true);
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (data.text) setDirigentes(data.text.slice(0, 80000));
+    } catch {
+      setErro('Erro ao extrair texto do PDF.');
+    } finally {
+      setPdfLoading(false);
+      e.target.value = '';
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!dirigentes) return;
@@ -65,9 +85,16 @@ export function PapeisImpedimentos() {
 
       {/* Form */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100" style={{ background: 'linear-gradient(to right, #FFFBEB, #FEF3C7)' }}>
-          <h2 className="text-sm font-bold text-slate-800">Lista de Dirigentes e Vínculos</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Informe nome, cargo e vínculos com a Administração Pública</p>
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #FFFBEB, #FEF3C7)' }}>
+          <div>
+            <h2 className="text-sm font-bold text-slate-800">Lista de Dirigentes e Vínculos</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Informe nome, cargo e vínculos, ou envie o PDF da declaração</p>
+          </div>
+          <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold cursor-pointer transition-colors ${pdfLoading ? 'text-slate-400' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200'}`}>
+            {pdfLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            {pdfLoading ? 'Extraindo...' : 'Enviar PDF'}
+            <input type="file" accept="application/pdf" className="hidden" onChange={handlePdf} disabled={pdfLoading} />
+          </label>
         </div>
         <div className="p-6">
           <textarea

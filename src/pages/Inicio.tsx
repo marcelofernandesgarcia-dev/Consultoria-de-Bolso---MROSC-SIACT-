@@ -91,16 +91,21 @@ export function Inicio() {
   const destinos: Destino[] = chave ? (DESTINOS_POR_FASE[chave] ?? []) : [];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      {/* Header */}
-      <header>
-        <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium mb-3">
-          <Sparkles className="w-4 h-4" />
-          Consultor de Bolso — Por onde começar?
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #3730A3 40%, #4F46E5 70%, #7C3AED 100%)' }}>
+        <div className="px-7 py-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <Sparkles className="w-5 h-5 text-white" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white tracking-tight">Por onde começar?</h1>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Responda 2 perguntas e o sistema indica exatamente o que você precisa
+            </p>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Guia de Início Rápido</h1>
-        <p className="text-slate-500 mt-2">Responda 2 perguntas e o sistema indica exatamente o que você precisa.</p>
-      </header>
+      </div>
 
       {/* Progress bar */}
       <div className="flex gap-2">

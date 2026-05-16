@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, Loader2, CheckCircle2, AlertTriangle, ShieldAlert, Link2 } from 'lucide-react';
+import { Activity, Loader2, CheckCircle2, AlertTriangle, ShieldAlert, Link2, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
 
@@ -7,8 +7,31 @@ export function AuditoriaNexoCausal() {
   const [despesa, setDespesa] = useState('');
   const [meta, setMeta] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState<'despesa' | 'meta' | null>(null);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
   const [erro, setErro] = useState('');
+
+  const handlePdf = async (campo: 'despesa' | 'meta', e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(campo);
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (data.text) {
+        const txt = data.text.slice(0, 40000);
+        campo === 'despesa' ? setDespesa(txt) : setMeta(txt);
+      }
+    } catch {
+      setErro('Erro ao extrair texto do PDF.');
+    } finally {
+      setPdfLoading(null);
+      e.target.value = '';
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!despesa || !meta) return;
@@ -60,9 +83,16 @@ export function AuditoriaNexoCausal() {
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-              Descrição da Despesa / Nota Fiscal
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                Descrição da Despesa / Nota Fiscal
+              </label>
+              <label className={`flex items-center gap-1 text-[10px] font-semibold cursor-pointer px-2 py-1 rounded-lg border transition-colors ${pdfLoading === 'despesa' ? 'text-slate-400 border-slate-200' : 'text-slate-500 border-slate-200 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200'}`}>
+                {pdfLoading === 'despesa' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                PDF
+                <input type="file" accept="application/pdf" className="hidden" onChange={e => handlePdf('despesa', e)} disabled={!!pdfLoading} />
+              </label>
+            </div>
             <textarea
               value={despesa}
               onChange={(e) => setDespesa(e.target.value)}
@@ -72,9 +102,16 @@ export function AuditoriaNexoCausal() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-              Meta do Plano de Trabalho
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                Meta do Plano de Trabalho
+              </label>
+              <label className={`flex items-center gap-1 text-[10px] font-semibold cursor-pointer px-2 py-1 rounded-lg border transition-colors ${pdfLoading === 'meta' ? 'text-slate-400 border-slate-200' : 'text-slate-500 border-slate-200 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200'}`}>
+                {pdfLoading === 'meta' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                PDF
+                <input type="file" accept="application/pdf" className="hidden" onChange={e => handlePdf('meta', e)} disabled={!!pdfLoading} />
+              </label>
+            </div>
             <textarea
               value={meta}
               onChange={(e) => setMeta(e.target.value)}

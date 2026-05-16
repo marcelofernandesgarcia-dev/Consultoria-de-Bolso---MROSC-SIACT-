@@ -155,17 +155,21 @@ export function SimuladorElegibilidade() {
   const reiniciar = () => { setRespostas({}); setMostrarResultado(false); };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      <header>
-        <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium mb-3">
-          <Sparkles className="w-4 h-4" />
-          Simulador de Elegibilidade
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #A855F7 100%)' }}>
+        <div className="px-7 py-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <Sparkles className="w-5 h-5 text-white" strokeWidth={2} />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-white tracking-tight">Simulador de Elegibilidade</h1>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              {PERGUNTAS.length} perguntas — descubra em segundos se sua OSC atende a Lei 13.019/2014
+            </p>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Pré-qualificação para Chamamento</h1>
-        <p className="text-slate-500 mt-2">
-          Responda {PERGUNTAS.length} perguntas e descubra em segundos se sua OSC atende os requisitos da Lei 13.019/2014.
-        </p>
-      </header>
+      </div>
 
       {/* Progresso */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">

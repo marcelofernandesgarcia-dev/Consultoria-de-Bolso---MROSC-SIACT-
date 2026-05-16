@@ -1,12 +1,32 @@
 import React, { useState } from 'react';
-import { Gavel, Loader2, CheckCircle2, FileText, ArrowRight } from 'lucide-react';
+import { Gavel, Loader2, CheckCircle2, FileText, ArrowRight, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
 
 export function RadarNormativo() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
+
+  const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(true);
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Erro ao processar PDF');
+      const data = await res.json();
+      if (data.text) setText(data.text.slice(0, 80000));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPdfLoading(false);
+      e.target.value = '';
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!text) return;
@@ -48,9 +68,16 @@ export function RadarNormativo() {
 
       {/* Form Card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100" style={{ background: 'linear-gradient(to right, #F5F3FF, #EFF6FF)' }}>
-          <h2 className="text-sm font-bold text-slate-800">Trecho para Análise</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Cole o texto do edital ou estatuto que deseja verificar</p>
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #F5F3FF, #EFF6FF)' }}>
+          <div>
+            <h2 className="text-sm font-bold text-slate-800">Trecho para Análise</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Cole o texto ou envie um PDF do edital/estatuto</p>
+          </div>
+          <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold cursor-pointer transition-colors ${pdfLoading ? 'text-slate-400' : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'}`}>
+            {pdfLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            {pdfLoading ? 'Extraindo...' : 'Enviar PDF'}
+            <input type="file" accept="application/pdf" className="hidden" onChange={handlePdf} disabled={pdfLoading} />
+          </label>
         </div>
         <div className="p-6">
           <textarea
