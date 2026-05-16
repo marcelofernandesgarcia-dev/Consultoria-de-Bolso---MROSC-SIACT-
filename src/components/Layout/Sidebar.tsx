@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
@@ -6,6 +6,17 @@ import {
   Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+
+const TRILHA_KEY = 'siact_capacitacao_progresso';
+function loadCapacitacaoPct(): number {
+  try {
+    const raw = localStorage.getItem(TRILHA_KEY);
+    if (!raw) return 0;
+    const obj: Record<number, number> = JSON.parse(raw);
+    const vals = Object.values(obj);
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+  } catch { return 0; }
+}
 
 type SectionColor = 'indigo' | 'violet' | 'amber' | 'slate';
 
@@ -60,6 +71,15 @@ const COLORS: Record<SectionColor, { dot: string; label: string; activeIcon: str
 
 export function Sidebar() {
   const { user, signOut } = useAuth();
+  const [capacPct, setCapacPct] = useState(loadCapacitacaoPct);
+
+  useEffect(() => {
+    const handler = () => setCapacPct(loadCapacitacaoPct());
+    window.addEventListener('storage', handler);
+    // Polling leve para captar mudanças na mesma aba
+    const interval = setInterval(() => setCapacPct(loadCapacitacaoPct()), 3000);
+    return () => { window.removeEventListener('storage', handler); clearInterval(interval); };
+  }, []);
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
@@ -105,7 +125,7 @@ export function Sidebar() {
                     to={item.path}
                     end={item.path === '/'}
                     className={({ isActive }) =>
-                      `flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[12.5px] font-medium transition-all duration-100 ${
+                      `flex flex-col px-3 py-[7px] rounded-lg text-[12.5px] font-medium transition-all duration-100 ${
                         isActive
                           ? `${c.activeBg} text-white`
                           : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.05]'
@@ -114,12 +134,31 @@ export function Sidebar() {
                   >
                     {({ isActive }) => (
                       <>
-                        <item.icon
-                          className={`w-[15px] h-[15px] shrink-0 transition-colors ${isActive ? c.activeIcon : 'text-slate-600'}`}
-                          strokeWidth={isActive ? 2.25 : 1.75}
-                        />
-                        <span className="truncate flex-1">{item.label}</span>
-                        {isActive && <span className={`w-1.5 h-1.5 rounded-full ${c.activeDot} shrink-0`} />}
+                        <div className="flex items-center gap-2.5">
+                          <item.icon
+                            className={`w-[15px] h-[15px] shrink-0 transition-colors ${isActive ? c.activeIcon : 'text-slate-600'}`}
+                            strokeWidth={isActive ? 2.25 : 1.75}
+                          />
+                          <span className="truncate flex-1">{item.label}</span>
+                          {item.id === 'capacitacao' && capacPct > 0 ? (
+                            <span className={`text-[9px] font-bold shrink-0 ${isActive ? 'text-white/70' : 'text-slate-500'}`}>
+                              {capacPct}%
+                            </span>
+                          ) : (
+                            isActive && <span className={`w-1.5 h-1.5 rounded-full ${c.activeDot} shrink-0`} />
+                          )}
+                        </div>
+                        {item.id === 'capacitacao' && capacPct > 0 && (
+                          <div className="mt-1.5 ml-[23px] h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${capacPct}%`,
+                                background: isActive ? 'rgba(255,255,255,0.5)' : '#6366F1',
+                              }}
+                            />
+                          </div>
+                        )}
                       </>
                     )}
                   </NavLink>

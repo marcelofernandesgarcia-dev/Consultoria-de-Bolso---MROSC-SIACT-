@@ -117,15 +117,21 @@ export function CalendarioObrigacoes() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      <header>
-        <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium mb-3">
-          <CalendarDays className="w-4 h-4" />
-          Calendário de Obrigações
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0C4A6E 0%, #0369A1 45%, #0891B2 100%)' }}>
+        <div className="px-7 py-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <CalendarDays className="w-5 h-5 text-white" strokeWidth={2} />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-white tracking-tight">Calendário de Prazos</h1>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Informe os dados da parceria e veja todos os prazos obrigatórios calculados automaticamente
+            </p>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Prazos da Parceria</h1>
-        <p className="text-slate-500 mt-2">Informe os dados da parceria e veja todos os prazos obrigatórios automaticamente calculados.</p>
-      </header>
+      </div>
 
       {/* Configurações */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
