@@ -97,12 +97,12 @@ export function Layout() {
 
       {/* Conteúdo principal — margem dinâmica com transição suave */}
       <div
-        className="flex-1 flex flex-col min-h-screen transition-all duration-200"
+        className="flex-1 flex flex-col min-h-screen transition-all duration-200 print:!ml-0"
         style={{ marginLeft: sidebarWidth }}
       >
         {/* Top bar */}
         <header
-          className="sticky top-0 z-20 shrink-0 h-12 flex items-center px-7 gap-2"
+          className="sticky top-0 z-20 shrink-0 h-12 flex items-center px-7 gap-2 print:hidden"
           style={{ background: 'rgba(242,244,248,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}
         >
           <span className="text-[11px] text-slate-400 font-medium" title="Sistema Inteligente de Análise e Controle de Transferências da União">

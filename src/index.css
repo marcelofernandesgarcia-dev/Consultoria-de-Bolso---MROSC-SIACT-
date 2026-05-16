@@ -1,2 +1,15 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@media print {
+  @page { size: A4; margin: 1.5cm; }
+
+  body { background: white !important; }
+
+  /* Remove sombras e bordas arredondadas para papel */
+  .shadow-sm, .shadow-lg, .shadow-xl { box-shadow: none !important; }
+  .rounded-2xl, .rounded-xl { border-radius: 4px !important; }
+
+  /* Garante quebra de página limpa antes de seções de resultado */
+  .space-y-4 > div + div { page-break-inside: avoid; }
+}

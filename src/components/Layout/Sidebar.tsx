@@ -132,7 +132,7 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className="h-screen fixed left-0 top-0 z-30 flex flex-col overflow-hidden"
+      className="h-screen fixed left-0 top-0 z-30 flex flex-col overflow-hidden print:hidden"
       style={{
         width: isExpanded ? SIDEBAR_W_EXPANDED : SIDEBAR_W_COLLAPSED,
         background: 'linear-gradient(180deg, #0D1117 0%, #0B0F1A 100%)',

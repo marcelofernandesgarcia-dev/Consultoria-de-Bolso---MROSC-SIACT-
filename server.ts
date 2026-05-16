@@ -107,7 +107,7 @@ async function startServer() {
   // --- MROSC ANALYSIS API ---
   app.post("/api/analyze-mrosc", async (req, res) => {
     try {
-      const { type, textContent, documentName = "Documento Sem Nome" } = req.body;
+      const { type, textContent, documentName = "Documento Sem Nome", context = {} } = req.body;
 
       if (!type || !VALID_ANALYSIS_TYPES.includes(type)) {
         return res.status(400).json({ error: `Tipo de análise inválido. Valores aceitos: ${VALID_ANALYSIS_TYPES.join(', ')}` });
@@ -417,16 +417,47 @@ async function startServer() {
         `;
       } else if (type === 'cotacao_previa') {
         systemInstruction += `
-        TAREFA: Análise de Cotação Prévia (Orçamentos).
-        PENSAMENTO:
-        1. Avalie se os valores cotados estão compatíveis com os valores de referência.
-        2. Identifique indícios de sobrepreço.
-        
-        SAÍDA JSON: {
+        TAREFA: Análise de Cotação Prévia de Preços — MROSC / Lei 13.019/2014
+
+        BASE LEGAL VINCULANTE:
+        - Art. 46, Lei 13.019/2014: compatibilidade dos preços com os praticados no mercado é obrigatória
+        - Art. 45, Lei 13.019/2014: vedações de despesa (taxas bancárias, multas, despesas pessoais, pagamentos a dirigentes)
+        - IN SEGES/ME nº 65/2021, Art. 34: sobrepreço configurado quando preço supera 25% do benchmark de mercado
+        - Decreto 11.948/2024, Art. 12: para parcerias até R$ 120.000, exige-se mínimo de 3 propostas de fornecedores distintos
+        - TCU Súmula 254: necessidade de documentar pesquisa de preços com pelo menos 3 propostas válidas
+
+        ETAPAS DE ANÁLISE OBRIGATÓRIAS:
+        1. Para CADA item, calcule a variação: ((valorUnitarioCotado - valorUnitarioReferencia) / valorUnitarioReferencia) × 100
+           - Até +10%: CONFORME (variação de mercado aceitável)
+           - +10% a +25%: RESSALVA (variação significativa — exige justificativa documental)
+           - Acima de +25%: REJEITADO (indício forte de sobrepreço — Art. 46 + IN 65/2021)
+           - Negativo: CONFORME (economia para a parceria — verifique sustentabilidade do fornecedor)
+        2. Avalie a coerência entre descrição e valor unitário (ex: notebook por R$ 300 é implausível; serviço por R$ 5.000.000 merece ressalva)
+        3. Identifique itens vedados pelo Art. 45: taxas bancárias, pagamentos de multas, despesas pessoais, condução, refeições sem previsão
+        4. Determine status_final pela regra do item mais crítico presente na cotação
+
+        REGRAS DE STATUS GLOBAL:
+        - CONFORME: todos os itens dentro de +10%, sem itens vedados
+        - RESSALVA: ao menos um item entre +10% e +25%, nenhum acima de +25%, sem itens vedados
+        - REJEITADO: qualquer item acima de +25% OU item vedado identificado OU incoerência grave de valor
+
+        SAÍDA JSON OBRIGATÓRIA (sem campos extras fora deste schema):
+        {
           "status_final": "CONFORME" | "RESSALVA" | "REJEITADO",
-          "message": "string",
-          "details": ["detalhe 1", "detalhe 2"],
-          "fundamentacao_legal_especifica": "string"
+          "message": "Resumo executivo objetivo com diagnóstico global em 2-3 frases diretas",
+          "details": [
+            "Fundamentação técnica ou recomendação prática 1",
+            "Fundamentação técnica ou recomendação prática 2"
+          ],
+          "analise_por_item": [
+            {
+              "descricao": "nome do item exatamente como enviado",
+              "variacao_pct": 12.5,
+              "status_item": "CONFORME" | "RESSALVA" | "REJEITADO",
+              "observacao": "comentário técnico específico e objetivo sobre este item"
+            }
+          ],
+          "fundamentacao_legal_especifica": "Artigos e dispositivos legais aplicáveis com breve explicação"
         }
         `;
       } else if (type === 'auditoria_nexo_causal') {
@@ -529,8 +560,10 @@ async function startServer() {
         type,
         document_name: documentName,
         status: parsedData.status_final || 'RESSALVA',
-        summary: parsedData.summary || 'Sem resumo',
+        summary: parsedData.summary || parsedData.message || 'Sem resumo',
         details: parsedData,
+        user_id: context?.user_id ?? null,
+        created_at: new Date().toISOString(),
       });
       
       res.json(parsedData);
