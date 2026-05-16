@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, X, ArrowRight } from 'lucide-react';
-import { Sidebar, RAIL_W, FLYOUT_W } from './Sidebar';
+import { Sidebar, SIDEBAR_W_EXPANDED, SIDEBAR_W_COLLAPSED } from './Sidebar';
 
 /* ─── Títulos por rota ────────────────────────────────────────── */
 const PAGE_TITLES: [string, string][] = [
@@ -50,21 +50,21 @@ export function Layout() {
   const navigate = useNavigate();
   const pageTitle = getPageTitle(pathname);
 
-  /* Sidebar pin state — persiste no localStorage */
-  const [isPinned, setIsPinned] = useState<boolean>(() =>
+  /* Sidebar expanded state — persiste no localStorage */
+  const [isExpanded, setIsExpanded] = useState<boolean>(() =>
     localStorage.getItem(SIDEBAR_PIN_KEY) !== 'false'
   );
 
-  const togglePin = () => {
-    setIsPinned(p => {
+  const toggleSidebar = () => {
+    setIsExpanded(p => {
       const next = !p;
       localStorage.setItem(SIDEBAR_PIN_KEY, String(next));
       return next;
     });
   };
 
-  /* Largura total ocupada pelo sidebar quando pinado */
-  const sidebarWidth = isPinned ? RAIL_W + FLYOUT_W : RAIL_W;
+  /* Largura total ocupada pelo sidebar */
+  const sidebarWidth = isExpanded ? SIDEBAR_W_EXPANDED : SIDEBAR_W_COLLAPSED;
 
   /* Notificações */
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed);
@@ -93,7 +93,7 @@ export function Layout() {
   return (
     <div className="flex min-h-screen" style={{ background: '#F2F4F8' }}>
 
-      <Sidebar isPinned={isPinned} onTogglePin={togglePin} />
+      <Sidebar isExpanded={isExpanded} onToggle={toggleSidebar} />
 
       {/* Conteúdo principal — margem dinâmica com transição suave */}
       <div

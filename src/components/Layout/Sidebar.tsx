@@ -3,12 +3,16 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
-  Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, LogOut,
-  ChevronsLeft, ChevronsRight,
+  Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale,
+  LogOut, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-/* ─── Progresso capacitação ──────────────────────────────────── */
+/* ─── Constantes exportadas para Layout ───────────────────────── */
+export const SIDEBAR_W_EXPANDED  = 240;
+export const SIDEBAR_W_COLLAPSED = 68;
+
+/* ─── Progresso capacitação ───────────────────────────────────── */
 const TRILHA_KEY = 'siact_capacitacao_progresso';
 function loadCapacitacaoPct(): number {
   try {
@@ -20,17 +24,17 @@ function loadCapacitacaoPct(): number {
   } catch { return 0; }
 }
 
-/* ─── Tipos ───────────────────────────────────────────────────── */
+/* ─── Tipos ────────────────────────────────────────────────────── */
 type SectionColor = 'indigo' | 'violet' | 'amber' | 'slate';
 interface NavItem { id: string; label: string; icon: React.ElementType; path: string; }
 interface NavGroup { group: string; color: SectionColor; groupIcon: React.ElementType; items: NavItem[]; }
 
 export interface SidebarProps {
-  isPinned: boolean;
-  onTogglePin: () => void;
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
-/* ─── Dados de navegação ──────────────────────────────────────── */
+/* ─── Navegação ────────────────────────────────────────────────── */
 const NAVIGATION: NavGroup[] = [
   {
     group: 'Principal', color: 'indigo', groupIcon: LayoutDashboard,
@@ -70,27 +74,25 @@ const NAVIGATION: NavGroup[] = [
   },
 ];
 
-/* ─── Paleta ──────────────────────────────────────────────────── */
-const COLORS: Record<SectionColor, {
-  rail: string; railActive: string;
-  flyoutLabel: string; flyoutBorder: string;
+/* ─── Cores por seção ─────────────────────────────────────────── */
+const C: Record<SectionColor, {
+  dot: string; groupLabel: string; groupBg: string; groupText: string;
   activeIcon: string; activeBg: string; activeDot: string;
 }> = {
-  indigo: { rail:'text-slate-600 hover:text-indigo-300 hover:bg-indigo-500/10', railActive:'text-indigo-300 bg-indigo-500/20', flyoutLabel:'text-indigo-400/80', flyoutBorder:'rgba(99,102,241,0.18)', activeIcon:'text-indigo-300', activeBg:'bg-indigo-500/[0.18]', activeDot:'bg-indigo-400' },
-  violet: { rail:'text-slate-600 hover:text-violet-300 hover:bg-violet-500/10', railActive:'text-violet-300 bg-violet-500/20', flyoutLabel:'text-violet-400/80', flyoutBorder:'rgba(139,92,246,0.18)', activeIcon:'text-violet-300', activeBg:'bg-violet-500/[0.18]', activeDot:'bg-violet-400' },
-  amber:  { rail:'text-slate-600 hover:text-amber-300 hover:bg-amber-500/10',   railActive:'text-amber-300 bg-amber-500/20',   flyoutLabel:'text-amber-400/80',  flyoutBorder:'rgba(245,158,11,0.18)',  activeIcon:'text-amber-300',  activeBg:'bg-amber-500/[0.18]',  activeDot:'bg-amber-400' },
-  slate:  { rail:'text-slate-600 hover:text-slate-300 hover:bg-slate-500/10',   railActive:'text-slate-300 bg-slate-500/20',   flyoutLabel:'text-slate-400/70',  flyoutBorder:'rgba(148,163,184,0.12)', activeIcon:'text-slate-300',  activeBg:'bg-slate-500/[0.18]',  activeDot:'bg-slate-400' },
+  indigo: { dot:'bg-indigo-500/30', groupLabel:'text-indigo-400/80', groupBg:'hover:bg-indigo-500/10', groupText:'hover:text-indigo-300', activeIcon:'text-indigo-300', activeBg:'bg-indigo-500/[0.18]', activeDot:'bg-indigo-400' },
+  violet: { dot:'bg-violet-500/30', groupLabel:'text-violet-400/80', groupBg:'hover:bg-violet-500/10', groupText:'hover:text-violet-300', activeIcon:'text-violet-300', activeBg:'bg-violet-500/[0.18]', activeDot:'bg-violet-400' },
+  amber:  { dot:'bg-amber-500/30',  groupLabel:'text-amber-400/80',  groupBg:'hover:bg-amber-500/10',  groupText:'hover:text-amber-300',  activeIcon:'text-amber-300',  activeBg:'bg-amber-500/[0.18]',  activeDot:'bg-amber-400'  },
+  slate:  { dot:'bg-slate-500/30',  groupLabel:'text-slate-400/70',  groupBg:'hover:bg-slate-500/10',  groupText:'hover:text-slate-300',  activeIcon:'text-slate-300',  activeBg:'bg-slate-500/[0.18]',  activeDot:'bg-slate-400'  },
 };
 
-export const RAIL_W  = 68;
-export const FLYOUT_W = 210;
-
 /* ─── Componente ──────────────────────────────────────────────── */
-export function Sidebar({ isPinned, onTogglePin }: SidebarProps) {
+export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const location = useLocation();
   const { user, signOut } = useAuth();
 
+  /* grupo pinado = clicado (persiste ao tirar o mouse) */
   const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
+  /* grupo hovado = temporário */
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [capacPct, setCapacPct] = useState(loadCapacitacaoPct);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -98,13 +100,13 @@ export function Sidebar({ isPinned, onTogglePin }: SidebarProps) {
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'GP';
   const displayName = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Usuário';
 
-  /* Auto-pin do grupo pela rota */
+  /* Auto-pinar grupo pela rota atual */
   useEffect(() => {
-    for (const group of NAVIGATION) {
-      const match = group.items.some(item =>
+    for (const g of NAVIGATION) {
+      const match = g.items.some(item =>
         item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
       );
-      if (match) { setPinnedGroup(group.group); return; }
+      if (match) { setPinnedGroup(g.group); return; }
     }
   }, [location.pathname]);
 
@@ -116,190 +118,203 @@ export function Sidebar({ isPinned, onTogglePin }: SidebarProps) {
     return () => { window.removeEventListener('storage', sync); clearInterval(t); };
   }, []);
 
-  /* Hover com debounce */
-  const onEnterIcon = (group: string) => {
+  /* Hover com debounce para evitar flickering ao mover entre ícone e items */
+  const onEnter = (group: string) => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);
     setHoveredGroup(group);
   };
   const onLeave = () => {
-    leaveTimer.current = setTimeout(() => setHoveredGroup(null), 130);
-  };
-  const onEnterFlyout = () => {
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    leaveTimer.current = setTimeout(() => setHoveredGroup(null), 150);
   };
 
-  const visibleGroup = hoveredGroup ?? pinnedGroup;
-  const flyoutData = NAVIGATION.find(g => g.group === visibleGroup);
+  /* Grupo visível = hover (temporário) ou pinado (permanente) */
+  const openGroup = hoveredGroup ?? pinnedGroup;
 
   return (
-    <>
-      {/* ══ RAIL ════════════════════════════════════════════════ */}
-      <aside
-        className="h-screen fixed left-0 top-0 z-30 flex flex-col"
-        style={{
-          width: RAIL_W,
-          background: 'linear-gradient(180deg, #0D1117 0%, #0B0F1A 100%)',
-          borderRight: '1px solid rgba(255,255,255,0.05)',
-        }}
+    <aside
+      className="h-screen fixed left-0 top-0 z-30 flex flex-col overflow-hidden"
+      style={{
+        width: isExpanded ? SIDEBAR_W_EXPANDED : SIDEBAR_W_COLLAPSED,
+        background: 'linear-gradient(180deg, #0D1117 0%, #0B0F1A 100%)',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        transition: 'width 220ms cubic-bezier(.4,0,.2,1)',
+      }}
+    >
+      {/* ── BRAND ─────────────────────────────────────────────── */}
+      <div
+        className="flex items-center gap-3 shrink-0 overflow-hidden"
+        style={{ height: 56, padding: '0 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-center shrink-0" style={{ height: 56, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="relative">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/60"
-                 style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #4338CA 100%)' }}>
-              <ShieldCheck className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2" style={{ borderColor: '#0D1117' }} />
+        <div className="relative shrink-0">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/60"
+            style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #4338CA 100%)' }}
+          >
+            <ShieldCheck className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
           </div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2" style={{ borderColor: '#0D1117' }} />
         </div>
+        {isExpanded && (
+          <div className="min-w-0">
+            <p className="text-[13px] font-extrabold text-white tracking-tight leading-none whitespace-nowrap">SIACT-MROSC</p>
+            <p className="text-[8.5px] text-slate-500 mt-0.5 font-medium leading-tight whitespace-nowrap">Consultoria de Bolso</p>
+          </div>
+        )}
+      </div>
 
-        {/* Ícones dos grupos */}
-        <nav className="flex-1 flex flex-col items-center gap-1 py-3 px-2">
-          {NAVIGATION.map((group) => {
-            const c = COLORS[group.color];
-            const isActive = visibleGroup === group.group;
-            const GroupIcon = group.groupIcon;
-            return (
+      {/* ── NAV ───────────────────────────────────────────────── */}
+      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 overflow-x-hidden"
+           style={{ padding: isExpanded ? '12px 8px' : '12px 10px' }}>
+        {NAVIGATION.map((group) => {
+          const c = C[group.color];
+          const isOpen = openGroup === group.group;
+          const GroupIcon = group.groupIcon;
+
+          return (
+            <div key={group.group}>
+              {/* ── Cabeçalho da seção ── */}
               <button
-                key={group.group}
-                title={group.group}
-                onMouseEnter={() => onEnterIcon(group.group)}
+                onMouseEnter={() => onEnter(group.group)}
                 onMouseLeave={onLeave}
                 onClick={() => setPinnedGroup(group.group)}
-                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-150 ${isActive ? c.railActive : c.rail}`}
+                title={!isExpanded ? group.group : undefined}
+                className={`w-full flex items-center rounded-lg transition-all duration-150 ${c.groupBg} ${c.groupText} ${
+                  isOpen ? 'text-white' : 'text-slate-600'
+                }`}
+                style={{ padding: isExpanded ? '6px 10px' : '9px', justifyContent: isExpanded ? 'flex-start' : 'center', gap: isExpanded ? 8 : 0 }}
               >
-                <GroupIcon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.2 : 1.7} />
+                <GroupIcon
+                  className={`shrink-0 transition-colors ${isOpen ? c.activeIcon : ''}`}
+                  style={{ width: 16, height: 16 }}
+                  strokeWidth={isOpen ? 2.2 : 1.7}
+                />
+                {isExpanded && (
+                  <span className={`text-[10px] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${isOpen ? c.groupLabel : 'text-slate-600'}`}>
+                    {group.group}
+                  </span>
+                )}
               </button>
-            );
-          })}
-        </nav>
 
-        {/* Botão retrair/expandir — sempre visível no rail */}
-        <div className="flex justify-center px-2 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <button
-            onClick={onTogglePin}
-            title={isPinned ? 'Recolher menu (←)' : 'Expandir menu (→)'}
-            className={`w-11 h-9 rounded-xl flex items-center justify-center transition-all duration-150 ${
-              isPinned
-                ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
-                : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
-            }`}
-          >
-            {isPinned
-              ? <ChevronsLeft  className="w-4 h-4" />
-              : <ChevronsRight className="w-4 h-4" />
-            }
-          </button>
-        </div>
-
-        {/* Avatar + logout */}
-        <div className="p-2 shrink-0 flex flex-col items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div
-            className="w-9 h-9 rounded-[9px] flex items-center justify-center shadow-sm cursor-default"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
-            title={`${displayName}\n${user?.email ?? ''}`}
-          >
-            <span className="text-[11px] font-bold text-white">{initials}</span>
-          </div>
-          <button
-            onClick={signOut}
-            title="Sair"
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.05] transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </aside>
-
-      {/* ══ FLYOUT ══════════════════════════════════════════════ */}
-      {flyoutData && (
-        <div
-          className="fixed top-0 h-screen z-20 flex flex-col"
-          style={{
-            left: RAIL_W,
-            width: FLYOUT_W,
-            background: 'linear-gradient(180deg, #0E1320 0%, #0B0F1A 100%)',
-            borderRight: `1px solid ${COLORS[flyoutData.color].flyoutBorder}`,
-            boxShadow: isPinned ? 'none' : '6px 0 24px rgba(0,0,0,0.4)',
-            animation: 'flyout-in 140ms ease-out',
-          }}
-          onMouseEnter={onEnterFlyout}
-          onMouseLeave={isPinned ? undefined : onLeave}
-        >
-          {/* Cabeçalho do flyout */}
-          <div
-            className="flex items-center px-4 shrink-0"
-            style={{ height: 56, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <p className={`text-[9.5px] font-extrabold uppercase tracking-[0.18em] ${COLORS[flyoutData.color].flyoutLabel}`}>
-              {flyoutData.group}
-            </p>
-          </div>
-
-          {/* Links */}
-          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-px">
-            {flyoutData.items.map((item) => {
-              const c = COLORS[flyoutData.color];
-              return (
-                <NavLink
-                  key={item.id}
-                  to={item.path}
-                  end={item.path === '/'}
-                  onClick={() => setPinnedGroup(flyoutData.group)}
-                  className={({ isActive }) =>
-                    `flex flex-col px-3 py-[7px] rounded-lg text-[12.5px] font-medium transition-all duration-100 ${
-                      isActive
-                        ? `${c.activeBg} text-white`
-                        : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.05]'
-                    }`
-                  }
+              {/* ── Items (accordion) — só aparece no modo expandido ── */}
+              {isExpanded && (
+                <div
+                  style={{
+                    overflow: 'hidden',
+                    maxHeight: isOpen ? `${group.items.length * 40}px` : '0px',
+                    transition: 'max-height 200ms ease',
+                  }}
+                  onMouseEnter={() => onEnter(group.group)}
+                  onMouseLeave={onLeave}
                 >
-                  {({ isActive }) => (
-                    <>
-                      <div className="flex items-center gap-2.5">
-                        <item.icon
-                          className={`w-[14px] h-[14px] shrink-0 transition-colors ${isActive ? c.activeIcon : 'text-slate-600'}`}
-                          strokeWidth={isActive ? 2.25 : 1.75}
-                        />
-                        <span className="truncate flex-1">{item.label}</span>
-                        {item.id === 'capacitacao' && capacPct > 0 ? (
-                          <span className={`text-[9px] font-bold shrink-0 ${isActive ? 'text-white/60' : 'text-slate-600'}`}>
-                            {capacPct}%
-                          </span>
-                        ) : (
-                          isActive && <span className={`w-1.5 h-1.5 rounded-full ${c.activeDot} shrink-0`} />
+                  <div className="pl-2 pb-1 space-y-px">
+                    {group.items.map((item) => (
+                      <NavLink
+                        key={item.id}
+                        to={item.path}
+                        end={item.path === '/'}
+                        onClick={() => setPinnedGroup(group.group)}
+                        className={({ isActive }) =>
+                          `flex flex-col px-3 py-[6px] rounded-lg text-[12.5px] font-medium transition-all duration-100 ${
+                            isActive
+                              ? `${c.activeBg} text-white`
+                              : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.05]'
+                          }`
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <div className="flex items-center gap-2.5">
+                              <item.icon
+                                className={`w-[14px] h-[14px] shrink-0 ${isActive ? c.activeIcon : 'text-slate-600'}`}
+                                strokeWidth={isActive ? 2.2 : 1.75}
+                              />
+                              <span className="truncate flex-1">{item.label}</span>
+                              {item.id === 'capacitacao' && capacPct > 0 ? (
+                                <span className={`text-[9px] font-bold shrink-0 ${isActive ? 'text-white/60' : 'text-slate-600'}`}>
+                                  {capacPct}%
+                                </span>
+                              ) : (
+                                isActive && <span className={`w-1.5 h-1.5 rounded-full ${c.activeDot} shrink-0`} />
+                              )}
+                            </div>
+                            {item.id === 'capacitacao' && capacPct > 0 && (
+                              <div className="mt-1 ml-[22px] h-[3px] rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{ width: `${capacPct}%`, background: isActive ? 'rgba(255,255,255,0.4)' : '#6366F1' }}
+                                />
+                              </div>
+                            )}
+                          </>
                         )}
-                      </div>
-                      {item.id === 'capacitacao' && capacPct > 0 && (
-                        <div className="mt-1.5 ml-[22px] h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${capacPct}%`, background: isActive ? 'rgba(255,255,255,0.45)' : '#6366F1' }}
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              );
-            })}
-          </nav>
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
 
-          {/* Rodapé */}
-          <div className="px-4 py-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <p className="text-[8.5px] text-slate-700 leading-snug font-medium">
-              SIACT · Sistema Inteligente de<br />Análise e Controle de<br />Transferências da União
-            </p>
-          </div>
+      {/* ── TOGGLE retrair/expandir ──────────────────────────── */}
+      <div
+        className="flex shrink-0"
+        style={{
+          padding: isExpanded ? '8px 8px' : '8px 10px',
+          justifyContent: isExpanded ? 'flex-end' : 'center',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <button
+          onClick={onToggle}
+          title={isExpanded ? 'Recolher menu' : 'Expandir menu'}
+          className={`rounded-xl flex items-center justify-center transition-all duration-150 ${
+            isExpanded
+              ? 'w-8 h-8 text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+              : 'w-11 h-9 text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+          }`}
+        >
+          {isExpanded
+            ? <ChevronsLeft  className="w-4 h-4" />
+            : <ChevronsRight className="w-4 h-4" />
+          }
+        </button>
+      </div>
+
+      {/* ── FOOTER usuário ───────────────────────────────────── */}
+      <div
+        className="shrink-0 flex items-center overflow-hidden"
+        style={{
+          padding: isExpanded ? '10px 12px' : '10px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          gap: isExpanded ? 10 : 0,
+          justifyContent: isExpanded ? 'flex-start' : 'center',
+        }}
+      >
+        <div
+          className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0"
+          style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
+          title={!isExpanded ? `${displayName}\n${user?.email ?? ''}` : undefined}
+        >
+          <span className="text-[11px] font-bold text-white">{initials}</span>
         </div>
-      )}
-
-      <style>{`
-        @keyframes flyout-in {
-          from { opacity: 0; transform: translateX(-6px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
-    </>
+        {isExpanded && (
+          <>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate">{displayName}</p>
+              <p className="text-[9px] text-slate-600 mt-0.5 truncate">{user?.email ?? ''}</p>
+            </div>
+            <button
+              onClick={signOut}
+              title="Sair"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.04] transition-colors shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </>
+        )}
+      </div>
+    </aside>
   );
 }
