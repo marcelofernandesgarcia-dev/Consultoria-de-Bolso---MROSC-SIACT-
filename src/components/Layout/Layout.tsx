@@ -78,7 +78,7 @@ export function Layout() {
   return (
     <div className="flex min-h-screen" style={{ background: '#F2F4F8' }}>
       <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 ml-[68px] flex flex-col min-h-screen">
 
         {/* Top bar */}
         <header className="sticky top-0 z-20 shrink-0 h-12 flex items-center px-7 gap-2" style={{ background: 'rgba(242,244,248,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
