@@ -4,8 +4,10 @@ import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
   Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale,
-  LogOut, ChevronsLeft, ChevronsRight,
+  LogOut, ChevronsLeft, ChevronsRight, CreditCard, UserCircle, ShieldAlert,
 } from 'lucide-react';
+
+const ADMIN_EMAILS = ['marcelofernandesgarcia@gmail.com'];
 import { useAuth } from '../../contexts/AuthContext';
 
 /* ─── Constantes exportadas para Layout ───────────────────────── */
@@ -68,6 +70,7 @@ const NAVIGATION: NavGroup[] = [
   {
     group: 'Sistema', color: 'slate', groupIcon: LayoutTemplate,
     items: [
+      { id: 'planos',      label: 'Planos',      icon: CreditCard,    path: '/planos' },
       { id: 'arquitetura', label: 'Arquitetura', icon: LayoutTemplate, path: '/arquitetura' },
       { id: 'roadmap',     label: 'Roadmap',     icon: Route,          path: '/roadmap' },
     ],
@@ -284,36 +287,57 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
       {/* ── FOOTER usuário ───────────────────────────────────── */}
       <div
-        className="shrink-0 flex items-center overflow-hidden"
-        style={{
-          padding: isExpanded ? '10px 12px' : '10px',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          gap: isExpanded ? 10 : 0,
-          justifyContent: isExpanded ? 'flex-start' : 'center',
-        }}
+        className="shrink-0 overflow-hidden"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <div
-          className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
-          title={!isExpanded ? `${displayName}\n${user?.email ?? ''}` : undefined}
-        >
-          <span className="text-[11px] font-bold text-white">{initials}</span>
-        </div>
-        {isExpanded && (
-          <>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate">{displayName}</p>
-              <p className="text-[9px] text-slate-600 mt-0.5 truncate">{user?.email ?? ''}</p>
-            </div>
-            <button
-              onClick={signOut}
-              title="Sair"
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.04] transition-colors shrink-0"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </>
+        {/* Admin link — só para admins */}
+        {isExpanded && user?.email && ADMIN_EMAILS.includes(user.email) && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-lg text-[11.5px] font-medium transition-colors ${
+                isActive ? 'bg-amber-500/10 text-amber-300' : 'text-slate-500 hover:text-amber-300 hover:bg-amber-500/10'
+              }`
+            }
+          >
+            <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+            <span>Admin</span>
+          </NavLink>
         )}
+
+        {/* Perfil do usuário */}
+        <div
+          className="flex items-center overflow-hidden"
+          style={{
+            padding: isExpanded ? '10px 12px' : '10px',
+            gap: isExpanded ? 10 : 0,
+            justifyContent: isExpanded ? 'flex-start' : 'center',
+          }}
+        >
+          <NavLink
+            to="/conta"
+            title={!isExpanded ? `${displayName} — Minha conta` : undefined}
+            className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 hover:ring-2 hover:ring-indigo-500/40 transition-all"
+            style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
+          >
+            <span className="text-[11px] font-bold text-white">{initials}</span>
+          </NavLink>
+          {isExpanded && (
+            <>
+              <NavLink to="/conta" className="flex-1 min-w-0 group">
+                <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate group-hover:text-white transition-colors">{displayName}</p>
+                <p className="text-[9px] text-slate-600 mt-0.5 truncate">{user?.email ?? ''}</p>
+              </NavLink>
+              <button
+                onClick={signOut}
+                title="Sair"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.04] transition-colors shrink-0"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </aside>
   );

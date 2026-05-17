@@ -907,6 +907,46 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
     }
   });
 
+  // ── Admin stats (acesso restrito por e-mail) ────────────────────────────────
+  const ADMIN_EMAILS = ['marcelofernandesgarcia@gmail.com'];
+
+  app.get('/api/admin/stats', async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
+
+    // Verifica se o e-mail do usuário é admin
+    const { data: userData } = await supabase.auth.admin.getUserById(userId);
+    if (!userData?.user?.email || !ADMIN_EMAILS.includes(userData.user.email)) {
+      return res.status(403).json({ error: 'Acesso negado' });
+    }
+
+    const [total, conforme, ressalva, naoConforme, last7] = await Promise.all([
+      supabase.from('analysis_history').select('id', { count: 'exact', head: true }),
+      supabase.from('analysis_history').select('id', { count: 'exact', head: true }).eq('status', 'CONFORME'),
+      supabase.from('analysis_history').select('id', { count: 'exact', head: true }).eq('status', 'RESSALVA'),
+      supabase.from('analysis_history').select('id', { count: 'exact', head: true }).eq('status', 'NAO_CONFORME'),
+      supabase.from('analysis_history').select('id', { count: 'exact', head: true })
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+    ]);
+
+    // Conta usuários distintos
+    const { data: users } = await supabase
+      .from('analysis_history')
+      .select('user_id')
+      .not('user_id', 'is', null);
+
+    const uniqueUsers = new Set((users ?? []).map((r: any) => r.user_id)).size;
+
+    res.json({
+      total_analyses: total.count ?? 0,
+      conforme: conforme.count ?? 0,
+      ressalva: ressalva.count ?? 0,
+      nao_conforme: naoConforme.count ?? 0,
+      last_7_days: last7.count ?? 0,
+      total_users: uniqueUsers,
+    });
+  });
+
   if (process.env.NODE_ENV === "production") {
     // Serve static build output
     const distPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), "dist");
