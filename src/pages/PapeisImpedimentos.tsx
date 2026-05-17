@@ -1,104 +1,148 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { ShieldCheck, Loader2, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
+import { ShieldCheck, Loader2, FileText, UserX, AlertOctagon, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
+import { SemaforoRisco } from '../components/SemaforoRisco';
 
 export function PapeisImpedimentos() {
   const [dirigentes, setDirigentes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
+  const [erro, setErro] = useState('');
+
+  const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(true);
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (data.text) setDirigentes(data.text.slice(0, 80000));
+    } catch {
+      setErro('Erro ao extrair texto do PDF.');
+    } finally {
+      setPdfLoading(false);
+      e.target.value = '';
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!dirigentes) return;
     setLoading(true);
     setResult(null);
+    setErro('');
 
     try {
       const response = await fetch('/api/analyze-mrosc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'papeis_impedimentos',
-          textContent: dirigentes
-        })
+        body: JSON.stringify({ type: 'papeis_impedimentos', textContent: dirigentes }),
       });
 
       if (!response.ok) throw new Error('Falha na análise');
-      const data = await response.json();
-      setResult(data);
+      setResult(await response.json());
     } catch (err) {
-      console.error(err);
-      alert('Erro ao analisar os dirigentes.');
+      setErro('Erro ao analisar os dirigentes. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Papéis e Impedimentos</h1>
-        <p className="text-slate-500 mt-2">Análise de dirigentes da OSC para evitar conflito de interesses (Art. 39 da Lei 13.019).</p>
-      </header>
+  const statusNormalizado = (s?: string) => {
+    if (!s) return 'ATENCAO';
+    if (s === 'aprovado') return 'CONFORME';
+    if (s === 'atencao') return 'ATENCAO';
+    return 'NAO_CONFORME';
+  };
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <label className="block text-sm font-medium text-slate-700 mb-2">Lista de Dirigentes e Vínculos</label>
-        <textarea
-          value={dirigentes}
-          onChange={(e) => setDirigentes(e.target.value)}
-          rows={6}
-          className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-          placeholder="Ex: João da Silva (Presidente) - Cônjuge da Prefeita Municipal..."
-        />
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || !dirigentes}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-medium rounded-xl transition-colors flex items-center gap-2"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-            Analisar Impedimentos
-          </button>
+  return (
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Page Hero */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #78350F 0%, #D97706 55%, #F59E0B 100%)' }}>
+        <div className="px-7 py-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <UserX className="w-5 h-5 text-white" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white tracking-tight">Papéis e Impedimentos</h1>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Análise de conflito de interesses dos dirigentes (Art. 39, Lei 13.019/2014)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Info banner */}
+      <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+        <AlertOctagon className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-sm text-amber-800 leading-relaxed">
+          <strong>Impedimentos legais:</strong> É vedada a celebração de parcerias com OSCs cujos dirigentes sejam cônjuges, companheiros ou parentes até o 2.º grau de agentes públicos (Art. 39, I, Lei 13.019/2014).
+        </p>
+      </div>
+
+      {/* Form */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #FFFBEB, #FEF3C7)' }}>
+          <div>
+            <h2 className="text-sm font-bold text-slate-800">Lista de Dirigentes e Vínculos</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Informe nome, cargo e vínculos, ou envie o PDF da declaração</p>
+          </div>
+          <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold cursor-pointer transition-colors ${pdfLoading ? 'text-slate-400' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200'}`}>
+            {pdfLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            {pdfLoading ? 'Extraindo...' : 'Enviar PDF'}
+            <input type="file" accept="application/pdf" className="hidden" onChange={handlePdf} disabled={pdfLoading} />
+          </label>
+        </div>
+        <div className="p-6">
+          <textarea
+            value={dirigentes}
+            onChange={(e) => setDirigentes(e.target.value)}
+            rows={7}
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 outline-none resize-none transition-all placeholder:text-slate-400"
+            placeholder="Ex: João da Silva (Presidente) - Cônjuge da Prefeita Municipal&#10;Maria Oliveira (Tesoureira) - Sem vínculos identificados&#10;..."
+          />
+          {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={handleAnalyze}
+              disabled={loading || !dirigentes}
+              style={{
+                background: loading || !dirigentes ? undefined : 'linear-gradient(135deg, #D97706, #F59E0B)',
+                boxShadow: loading || !dirigentes ? undefined : '0 4px 14px rgba(217,119,6,0.35)',
+              }}
+              className="px-6 py-3 disabled:bg-slate-300 text-white text-sm font-semibold rounded-xl transition-all hover:opacity-90 flex items-center gap-2"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              {loading ? 'Analisando...' : 'Analisar Impedimentos'}
+            </button>
+          </div>
         </div>
       </div>
 
       {result && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className={`p-6 rounded-2xl border flex items-start gap-4 ${
-            result.status === 'aprovado' ? 'bg-emerald-50 border-emerald-200' :
-            result.status === 'atencao' ? 'bg-amber-50 border-amber-200' :
-            'bg-red-50 border-red-200'
-          }`}>
-            {result.status === 'aprovado' ? <CheckCircle2 className="w-8 h-8 text-emerald-600 shrink-0" /> :
-             result.status === 'atencao' ? <AlertTriangle className="w-8 h-8 text-amber-600 shrink-0" /> :
-             <AlertTriangle className="w-8 h-8 text-red-600 shrink-0" />}
-            <div>
-              <h2 className={`text-xl font-bold ${
-                result.status === 'aprovado' ? 'text-emerald-900' :
-                result.status === 'atencao' ? 'text-amber-900' :
-                'text-red-900'
-              }`}>
-                {result.titulo || result.status.toUpperCase()}
-              </h2>
-              <p className={`mt-2 ${
-                result.status === 'aprovado' ? 'text-emerald-700' :
-                result.status === 'atencao' ? 'text-amber-700' :
-                'text-red-700'
-              }`}>
-                {result.conteudo || 'Análise concluída.'}
-              </p>
-            </div>
-          </div>
+        <div className="space-y-5">
+          <SemaforoRisco
+            status={statusNormalizado(result.status)}
+            mensagem={result.conteudo || 'Análise concluída.'}
+          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {Array.isArray(result.recomendacoes) && result.recomendacoes.length > 0 && (
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">Recomendações</h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #D97706, #F59E0B)' }}>
+                    <ShieldCheck className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900">Recomendações</h3>
+                </div>
                 <ul className="space-y-3">
                   {result.recomendacoes.map((rec, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0" />
-                      <span className="leading-relaxed">{rec}</span>
+                    <li key={idx} className="flex items-start gap-3 text-slate-600 bg-amber-50 p-4 rounded-xl border border-amber-100">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 shrink-0" />
+                      <span className="leading-relaxed text-sm">{rec}</span>
                     </li>
                   ))}
                 </ul>
@@ -107,13 +151,16 @@ export function PapeisImpedimentos() {
 
             {Array.isArray(result.baseLegal) && result.baseLegal.length > 0 && (
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
-                  <FileText className="w-5 h-5 text-indigo-600" /> Base Legal
-                </h3>
-                <ul className="space-y-3">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)' }}>
+                    <FileText className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900">Base Legal</h3>
+                </div>
+                <ul className="space-y-2">
                   {result.baseLegal.map((base, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-slate-600 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0" />
+                    <li key={idx} className="flex items-start gap-3 text-slate-600 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
                       <span className="text-sm leading-relaxed">{base}</span>
                     </li>
                   ))}
@@ -121,7 +168,7 @@ export function PapeisImpedimentos() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

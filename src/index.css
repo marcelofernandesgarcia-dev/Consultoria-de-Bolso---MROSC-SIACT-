@@ -1,48 +1,15 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-@theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-outfit: 'Outfit', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-}
+@media print {
+  @page { size: A4; margin: 1.5cm; }
 
-@layer base {
-  body {
-    background-color: var(--color-slate-950);
-    color: var(--color-slate-300);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  body { background: white !important; }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-outfit);
-    letter-spacing: -0.025em;
-  }
-}
+  /* Remove sombras e bordas arredondadas para papel */
+  .shadow-sm, .shadow-lg, .shadow-xl { box-shadow: none !important; }
+  .rounded-2xl, .rounded-xl { border-radius: 4px !important; }
 
-@layer utilities {
-  .glass {
-    background-color: color-mix(in srgb, white 5%, transparent);
-    border: 1px solid color-mix(in srgb, white 10%, transparent);
-    backdrop-filter: blur(24px);
-  }
-  
-  .glass-card {
-    background-color: color-mix(in srgb, var(--color-slate-900) 50%, transparent);
-    border: 1px solid color-mix(in srgb, white 5%, transparent);
-    backdrop-filter: blur(12px);
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
-  }
-
-  .glass-card:hover {
-    border-color: color-mix(in srgb, white 20%, transparent);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
-  }
-
-  .text-glow {
-    text-shadow: 0 0 20px color-mix(in srgb, var(--color-blue-400) 50%, transparent);
-  }
+  /* Garante quebra de página limpa antes de seções de resultado */
+  .space-y-4 > div + div { page-break-inside: avoid; }
 }

@@ -1,29 +1,23 @@
 import 'dotenv/config';
 import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import Database from "better-sqlite3";
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { createRequire } from "module";
-import fs from "fs";
-import path from "path";
 
 const _require = createRequire(import.meta.url);
 const pdfParse = _require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
 
-// Initialize Database
-const db = new Database('siact_mrosc.db');
-db.exec(`
-  CREATE TABLE IF NOT EXISTS analysis_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type TEXT,
-    document_name TEXT,
-    status TEXT, -- 'CONFORME', 'RESSALVA', 'NAO_CONFORME'
-    summary TEXT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    details JSON
-  )
-`);
+// Initialize Supabase
+const supabase = createSupabaseClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } }
+);
 
 // Initialize Gemini
 const getGeminiModel = () => {
@@ -38,13 +32,40 @@ const getGeminiModel = () => {
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
+const VALID_ANALYSIS_TYPES = [
+  'requirements_eligibility', 'requirements_docs', 'requirements_budget',
+  'mrosc_router', 'celebration_validation', 'celebration_term',
+  'celebration_workplan', 'radar_normativo', 'cotacao_previa',
+  'auditoria_nexo_causal', 'papeis_impedimentos', 'osc_edital', 'osc_proposal',
+  'gerador_parecer'
+];
+
 async function startServer() {
   const app = express();
-  const PORT = 3002;
+  const PORT = 3000;
 
-  // Increase payload limit for base64 images/text
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  // Security headers
+  app.use(helmet({ contentSecurityPolicy: false }));
+
+  // CORS — permite apenas origens conhecidas
+  app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true,
+  }));
+
+  // Rate limiting — 60 req/min por IP nos endpoints de IA
+  const aiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas requisições. Aguarde um momento e tente novamente.' },
+  });
+  app.use('/api/', aiLimiter);
+
+  // Payload reduzido (era 50mb — vulnerabilidade de DoS)
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // --- PDF PARSING API ---
   app.post("/api/parse-pdf", upload.single("file"), async (req, res) => {
@@ -61,28 +82,24 @@ async function startServer() {
   });
 
   // --- DASHBOARD API ---
-  app.get("/api/dashboard", (req, res) => {
+  app.get("/api/dashboard", async (req, res) => {
     try {
-      const stats = db.prepare(`
-        SELECT 
-          COUNT(*) as total,
-          SUM(CASE WHEN status = 'CONFORME' THEN 1 ELSE 0 END) as approved,
-          SUM(CASE WHEN status = 'RESSALVA' THEN 1 ELSE 0 END) as warning,
-          SUM(CASE WHEN status = 'NAO_CONFORME' THEN 1 ELSE 0 END) as rejected
-        FROM analysis_history
-      `).get() as any;
+      const [
+        { count: total },
+        { count: approved },
+        { count: warning },
+        { count: rejected },
+        { data: recent }
+      ] = await Promise.all([
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }),
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'CONFORME'),
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'RESSALVA'),
+        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'NAO_CONFORME'),
+        supabase.from('analysis_history').select('id, document_name, status, date, type').order('date', { ascending: false }).limit(5),
+      ]);
 
-      const recent = db.prepare(`
-        SELECT id, document_name, status, date, type 
-        FROM analysis_history 
-        ORDER BY date DESC 
-        LIMIT 5
-      `).all();
-
-      // Calculate monthly growth (mocked for now, or real if we had enough data)
       const growth = { total: 12, approved: 12, warning: 12, rejected: 12 };
-
-      res.json({ stats: { ...stats, growth }, recent });
+      res.json({ stats: { total, approved, warning, rejected, growth }, recent: recent ?? [] });
     } catch (error: any) {
       console.error("Dashboard error:", error);
       res.status(500).json({ error: error.message });
@@ -92,12 +109,23 @@ async function startServer() {
   // --- MROSC ANALYSIS API ---
   app.post("/api/analyze-mrosc", async (req, res) => {
     try {
-      const { type, textContent, context, documentName = "Documento Sem Nome" } = req.body;
+      const { type, textContent, documentName = "Documento Sem Nome", context = {} } = req.body;
+
+      if (!type || !VALID_ANALYSIS_TYPES.includes(type)) {
+        return res.status(400).json({ error: `Tipo de análise inválido. Valores aceitos: ${VALID_ANALYSIS_TYPES.join(', ')}` });
+      }
+      if (!textContent || typeof textContent !== 'string') {
+        return res.status(400).json({ error: 'textContent é obrigatório e deve ser uma string.' });
+      }
+      if (textContent.length > 80000) {
+        return res.status(400).json({ error: 'Documento muito extenso. Máximo 80.000 caracteres.' });
+      }
+
       const models = getGeminiModel();
 
       let systemInstruction = `
       # PERSONA E AUTORIDADE TÉCNICA
-      - Você é o SIACT-MROSC, o Sistema Inteligente de Apoio à Análise e Controle de Transferências.
+      - Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
       - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
       - Sua missão é garantir a eficácia e eficiência nas parcerias, sob o rigor da Lei nº 13.019/2014 e do Decreto nº 11.948/2024.
 
@@ -391,16 +419,47 @@ async function startServer() {
         `;
       } else if (type === 'cotacao_previa') {
         systemInstruction += `
-        TAREFA: Análise de Cotação Prévia (Orçamentos).
-        PENSAMENTO:
-        1. Avalie se os valores cotados estão compatíveis com os valores de referência.
-        2. Identifique indícios de sobrepreço.
-        
-        SAÍDA JSON: {
+        TAREFA: Análise de Cotação Prévia de Preços — MROSC / Lei 13.019/2014
+
+        BASE LEGAL VINCULANTE:
+        - Art. 46, Lei 13.019/2014: compatibilidade dos preços com os praticados no mercado é obrigatória
+        - Art. 45, Lei 13.019/2014: vedações de despesa (taxas bancárias, multas, despesas pessoais, pagamentos a dirigentes)
+        - IN SEGES/ME nº 65/2021, Art. 34: sobrepreço configurado quando preço supera 25% do benchmark de mercado
+        - Decreto 11.948/2024, Art. 12: para parcerias até R$ 120.000, exige-se mínimo de 3 propostas de fornecedores distintos
+        - TCU Súmula 254: necessidade de documentar pesquisa de preços com pelo menos 3 propostas válidas
+
+        ETAPAS DE ANÁLISE OBRIGATÓRIAS:
+        1. Para CADA item, calcule a variação: ((valorUnitarioCotado - valorUnitarioReferencia) / valorUnitarioReferencia) × 100
+           - Até +10%: CONFORME (variação de mercado aceitável)
+           - +10% a +25%: RESSALVA (variação significativa — exige justificativa documental)
+           - Acima de +25%: REJEITADO (indício forte de sobrepreço — Art. 46 + IN 65/2021)
+           - Negativo: CONFORME (economia para a parceria — verifique sustentabilidade do fornecedor)
+        2. Avalie a coerência entre descrição e valor unitário (ex: notebook por R$ 300 é implausível; serviço por R$ 5.000.000 merece ressalva)
+        3. Identifique itens vedados pelo Art. 45: taxas bancárias, pagamentos de multas, despesas pessoais, condução, refeições sem previsão
+        4. Determine status_final pela regra do item mais crítico presente na cotação
+
+        REGRAS DE STATUS GLOBAL:
+        - CONFORME: todos os itens dentro de +10%, sem itens vedados
+        - RESSALVA: ao menos um item entre +10% e +25%, nenhum acima de +25%, sem itens vedados
+        - REJEITADO: qualquer item acima de +25% OU item vedado identificado OU incoerência grave de valor
+
+        SAÍDA JSON OBRIGATÓRIA (sem campos extras fora deste schema):
+        {
           "status_final": "CONFORME" | "RESSALVA" | "REJEITADO",
-          "message": "string",
-          "details": ["detalhe 1", "detalhe 2"],
-          "fundamentacao_legal_especifica": "string"
+          "message": "Resumo executivo objetivo com diagnóstico global em 2-3 frases diretas",
+          "details": [
+            "Fundamentação técnica ou recomendação prática 1",
+            "Fundamentação técnica ou recomendação prática 2"
+          ],
+          "analise_por_item": [
+            {
+              "descricao": "nome do item exatamente como enviado",
+              "variacao_pct": 12.5,
+              "status_item": "CONFORME" | "RESSALVA" | "REJEITADO",
+              "observacao": "comentário técnico específico e objetivo sobre este item"
+            }
+          ],
+          "fundamentacao_legal_especifica": "Artigos e dispositivos legais aplicáveis com breve explicação"
         }
         `;
       } else if (type === 'auditoria_nexo_causal') {
@@ -425,13 +484,39 @@ async function startServer() {
         PENSAMENTO:
         1. Analise os dirigentes listados.
         2. Identifique possíveis conflitos de interesse ou nepotismo.
-        
+
         SAÍDA JSON: {
           "status_final": "aprovado" | "atencao" | "rejeitado",
           "titulo": "string",
           "conteudo": "string",
           "recomendacoes": ["recomendacao 1"],
           "baseLegal": ["Art. 39..."],
+          "fundamentacao_legal_especifica": "string"
+        }
+        `;
+      } else if (type === 'gerador_parecer') {
+        systemInstruction += `
+        TAREFA: Geração de Parecer Técnico Jurídico (MROSC).
+        PENSAMENTO:
+        1. Identifique a natureza da dúvida ou situação jurídica apresentada.
+        2. Analise com base na Lei 13.019/2014, Decreto 11.948/2024 e demais normas aplicáveis.
+        3. Formule uma conclusão objetiva, com fundamentação e citação dos dispositivos legais.
+        4. Aponte ressalvas e limitações da análise quando pertinente.
+        5. Forneça uma orientação prática final para o usuário.
+
+        REGRAS:
+        - Seja preciso e objetivo. Nunca presuma fatos não informados.
+        - Cite sempre o artigo, inciso e lei/decreto que fundamenta cada afirmação.
+        - Se a situação for inconclusiva por falta de dados, indique quais informações adicionais são necessárias.
+        - O parecer é orientativo e consultivo — inclua isso na orientação final.
+
+        SAÍDA JSON: {
+          "status_final": "CONFORME" | "RESSALVA" | "NAO_CONFORME" | "INCONCLUSIVO",
+          "conclusao": "Texto objetivo da conclusão jurídica, em 1-3 frases",
+          "fundamentacao": "Fundamentação jurídica detalhada, passo a passo",
+          "baseLegal": ["Art. X, Lei Y — descrição", "Art. Z, Decreto W — descrição"],
+          "ressalvas": ["Ressalva ou limitação 1", "Ressalva ou limitação 2"],
+          "orientacao": "Orientação prática final para o usuário — próximos passos concretos",
           "fundamentacao_legal_especifica": "string"
         }
         `;
@@ -467,18 +552,21 @@ async function startServer() {
         }
       }
 
-      // Persist to Database
-      const insert = db.prepare(`
-        INSERT INTO analysis_history (type, document_name, status, summary, details)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-      insert.run(
-        type, 
-        documentName, 
-        parsedData.status_final || 'RESSALVA', 
-        parsedData.summary || 'Sem resumo', 
-        JSON.stringify(parsedData)
-      );
+      // Normalise status field — AI returns status_final, frontend reads status
+      if (!parsedData.status && parsedData.status_final) {
+        parsedData.status = parsedData.status_final;
+      }
+
+      // Persist to Supabase
+      await supabase.from('analysis_history').insert({
+        type,
+        document_name: documentName,
+        status: parsedData.status_final || 'RESSALVA',
+        summary: parsedData.summary || parsedData.message || 'Sem resumo',
+        details: parsedData,
+        user_id: context?.user_id ?? null,
+        created_at: new Date().toISOString(),
+      });
       
       res.json(parsedData);
 
@@ -495,7 +583,7 @@ async function startServer() {
       
       const systemInstruction = `
       # PERSONA E AUTORIDADE TÉCNICA
-      - Você é o SIACT-MROSC, o Sistema Inteligente de Apoio à Análise e Controle de Transferências.
+      - Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
       - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
 
       Sua tarefa é analisar a página de editais da Plataforma OSC (https://plataformaosc.org.br/editais/) e extrair todos os editais de chamamento público (MROSC - Lei 13.019/2014) ATIVOS e ABERTOS.
@@ -564,7 +652,7 @@ async function startServer() {
       
       const systemInstruction = `
 # PERSONA E AUTORIDADE TÉCNICA
-- Você é o SIACT-MROSC, o Sistema Inteligente de Apoio à Análise e Controle de Transferências.
+- Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
 - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
 - Sua missão é garantir a eficácia e eficiência nas parcerias, sob o rigor da Lei nº 13.019/2014 e do Decreto nº 11.948/2024.
 
@@ -672,26 +760,120 @@ ESTRUTURA JSON ESPERADA:
     }
   });
 
+  // --- HEALTH CHECK ---
+  app.get("/api/health", async (_req, res) => {
+    try {
+      const { error } = await supabase.from('analysis_history').select('id').limit(1);
+      if (error) throw error;
+      res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    } catch (err: any) {
+      res.status(503).json({ status: 'down', error: err.message });
+    }
+  });
+
   // --- CHAT API ---
   app.post("/api/chat", async (req, res) => {
     try {
-      const { message } = req.body;
-      const models = getGeminiModel();
-      
-      let systemInstruction = '';
-      try {
-        const promptPath = path.resolve(process.cwd(), 'PROMPTS_MROSC.md');
-        systemInstruction = fs.readFileSync(promptPath, 'utf8');
-      } catch (err) {
-        console.error('Arquivo PROMPTS_MROSC.md não encontrado. Utilizando regras padroes fallback.');
-        systemInstruction = 'Você é o responsável MROSC do assistente. Por favor, analise a requisição do usuário com base no Dec 11.948/2024.';
+      const { message, systemPrompt: clientSystemPrompt } = req.body;
+      if (!message || typeof message !== 'string' || message.trim().length === 0) {
+        return res.status(400).json({ error: 'Mensagem não pode estar vazia.' });
       }
+      if (message.length > 10000) {
+        return res.status(400).json({ error: 'Mensagem muito longa. Máximo 10.000 caracteres.' });
+      }
+      const models = getGeminiModel();
+
+      const defaultSystemInstruction = `
+# IDENTIDADE DO SISTEMA
+Nome: SIACT — Sistema Inteligente de Análise e Controle de Transferências da União
+Plataforma: MROSC Consultoria de Bolso
+Versão: 1.0
+Papel: Atue como um Coordenador de Transferências Voluntárias e Auditor Especialista no Marco Regulatório das Organizações da Sociedade Civil (MROSC).
+Objetivo: Realizar análise automatizada, rigorosa e imparcial de documentos de parcerias entre a Administração Pública Federal e OSCs, garantindo 100% de conformidade legal.
+Tom: Profissional, objetivo, fundamentado juridicamente, claro e didático. Sem ambiguidades.
+
+# CONTEXTO INSTITUCIONAL E LEGAL
+Órgão: Secretaria-Geral da Presidência da República / Ministério da Gestão e Inovação em Serviços Públicos (MGI).
+Desafio: Reduzir o tempo de análise, eliminar a subjetividade e aplicar o princípio da proporcionalidade para OSCs pequenas.
+
+## Base de Conhecimento Obrigatória (Repositório de Dados):
+1. Lei 13.019/2014 (MROSC) e Lei 13.204/2015.
+2. Decreto 11.948/2024 (Foco em modernização e simplificação).
+3. Decreto 8.726/2016 (Regulamentação federal).
+4. IN TCU 98/2024 (Tomada de Contas Especial e limites de materialidade).
+5. Portaria Interministerial 197/2025 (Manual MROSC).
+6. Lei Complementar 101/2000 (LRF).
+
+# INSTRUÇÕES OPERACIONAIS E REGRAS DE GOVERNANÇA
+Ao processar qualquer entrada, você DEVE obedecer estritamente às seguintes regras:
+
+1. **Citação Obrigatória (Slow Intern Rule):** NUNCA faça afirmações genéricas. Toda exigência, aprovação ou rejeição DEVE citar o Artigo, Inciso e a Lei/Decreto específico que a fundamenta.
+2. **Restrições Positivas:** Forneça análises específicas e objetivas. Se um critério for atendido, explique o *porquê* com base nos dados do documento.
+3. **Proporcionalidade:** Aplique os requisitos simplificados do Decreto 11.948/2024 sempre que a parceria envolver OSCs de pequeno porte ou valores abaixo do limite de materialidade (R$ 120 mil, conforme IN TCU 98/2024).
+4. **Chain of Thought (CoT):** Para análises complexas (orçamentos, elegibilidade, nexo causal), inicie seu processamento interno com "THINK STEP-BY-STEP": (1) Verificar dados, (2) Analisar categorias, (3) Comparar com legislação, (4) Identificar desvios, (5) Gerar parecer.
+5. **Delimitadores:** Respeite os delimitadores enviados pelo usuário (\`### INSTRUÇÕES ###\`, \`### LEGISLAÇÃO ###\`, \`### DOCUMENTO ###\`) para isolar o contexto.
+
+# FORMATO DE SAÍDA OBRIGATÓRIO (MARKDOWN ESTRUTURADO)
+Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando analisar um documento:
+
+### 📋 PARECER TÉCNICO — SIACT
+### Sistema Inteligente de Análise e Controle de Transferências da União
+**Documento Analisado:** [Tipo do Documento]
+**Data da Análise:** [Data Atual]
+
+#### 1. Verificação de Conformidade (Passo a Passo)
+*Liste os critérios analisados de forma objetiva e mensurável.*
+- **[Critério Analisado]:** [Status: Atende / Não Atende]
+  - **Evidência no Documento:** [Trecho ou dado encontrado]
+  - **Fundamentação Legal:** [Artigo e Lei correspondente]
+
+#### 2. Identificação de Não Conformidades e Riscos
+*Se houver falhas, liste-as aqui. Se não houver, declare "Nenhuma não conformidade identificada".*
+- **Risco/Falha:** [Descrição clara da falha]
+- **Base Legal Violada:** [Artigo e Lei]
+
+#### 3. Conclusão e Veredito
+- **RESULTADO:** [ELEGÍVEL / CONFORME / NÃO CONFORME / CONFORME COM RESSALVAS]
+- **Justificativa:** [Resumo claro, rastreável e sem ambiguidades da decisão]
+
+#### 4. Recomendações (Próximos Passos)
+- [Ação corretiva para a OSC ou recomendação de aprovação para o Gestor Público]
+
+# EXEMPLOS DE APLICAÇÃO (FEW-SHOT PROMPTING)
+
+**EXEMPLO 1: Análise de Elegibilidade (APROVADA)**
+- **Critério:** Tempo de existência da OSC.
+- **Evidência:** CNPJ 12.345.678/0001-90 comprova fundação em 2019 (5 anos).
+- **Fundamentação Legal:** Art. 33, inciso I da Lei 13.019/2014 (exigência mínima de 3 anos).
+- **RESULTADO:** ELEGÍVEL.
+
+**EXEMPLO 2: Análise de Edital (APROVADA)**
+- **Critério:** Prazo de Inscrição.
+- **Evidência:** Chamamento Público nº 001/2024 estabelece 45 dias.
+- **Fundamentação Legal:** Art. 26 da Lei 13.019/2014 (mínimo de 30 dias).
+- **RESULTADO:** CONFORME.
+
+**EXEMPLO 3: Análise de Despesa (REJEITADA)**
+- **Critério:** Pagamento de taxa de administração.
+- **Evidência:** Plano de Trabalho prevê 5% para "taxa de administração".
+- **Fundamentação Legal:** Art. 45, inciso I da Lei 13.019/2014 (vedação expressa).
+- **RESULTADO:** NÃO CONFORME.
+
+# INSTRUÇÕES DE ITERAÇÃO E CONTROLE DE ERROS
+- Se o documento fornecido estiver incompleto, **NÃO presuma informações**. Retorne o status "INCONCLUSIVO" e liste exatamente quais documentos ou dados faltam, citando a exigência legal.
+- Em caso de conflito normativo, priorize a regra mais recente e específica (ex: inovações do Decreto 11.948/2024 sobre regras antigas).
+- Mantenha a taxa de erro de análise abaixo de 1% atendo-se estritamente ao texto da lei.
+      `;
+
+      const systemInstruction = (typeof clientSystemPrompt === 'string' && clientSystemPrompt.trim().length > 0)
+        ? clientSystemPrompt.trim().substring(0, 5000)
+        : defaultSystemInstruction;
 
       const response = await models.generateContent({
         model: "gemini-3-flash-preview",
         contents: message,
         config: {
-          systemInstruction: systemInstruction,
+          systemInstruction,
           temperature: 0.3
         }
       });

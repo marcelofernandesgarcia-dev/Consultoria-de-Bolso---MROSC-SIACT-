@@ -1,3 +1,5 @@
+import type { AIAnalysisResult, ItemCotacaoAnalise } from '../types';
+
 export interface AnalysisResult {
   metadados: {
     numero_processo: string;
@@ -9,11 +11,11 @@ export interface AnalysisResult {
   };
   diagnostico: {
     fase: string;
-    aptidao: "Apto" | "Inapto";
+    aptidao: 'Apto' | 'Inapto';
     resumo: string;
   };
   prescricao: {
-    status: "Regular" | "Prescrito" | "Risco";
+    status: 'Regular' | 'Prescrito' | 'Risco';
     analise_detalhada: string;
     atos_interruptivos: Array<{ data: string; descricao: string; pagina: number | string }>;
     atos_mero_seguimento: Array<{ data: string; descricao: string; pagina: number | string }>;
@@ -21,17 +23,19 @@ export interface AnalysisResult {
   conclusao_final: string;
 }
 
-export interface MROSCAnalysisResult {
-  summary: string;
+export type MROSCAnalysisResult = AIAnalysisResult & {
+  summary?: string;
   requirements?: string[];
   risks?: string[];
   recommendations?: string[];
-}
+  analise_por_item?: ItemCotacaoAnalise[];
+  status_final?: string;
+};
 
 export interface MROSCAnalysisRequest {
-  type: 
-    | 'requirements_eligibility' 
-    | 'requirements_docs' 
+  type:
+    | 'requirements_eligibility'
+    | 'requirements_docs'
     | 'requirements_budget'
     | 'mrosc_router'
     | 'osc_edital_explainer'
@@ -47,22 +51,23 @@ export interface MROSCAnalysisRequest {
     | 'cotacao_previa'
     | 'auditoria_nexo_causal'
     | 'papeis_impedimentos'
-    // Legacy types for backward compatibility if needed
+    | 'gerador_parecer'
     | 'osc_edital_analysis'
     | 'concedente_planning'
     | 'concedente_selection'
     | 'concedente_celebration';
   textContent: string;
-  context?: any;
+  context?: Record<string, unknown>;
   documentName?: string;
 }
 
-export async function analyzeProcess(textContent: string, images: { data: string; mimeType: string }[] = []): Promise<AnalysisResult> {
+export async function analyzeProcess(
+  textContent: string,
+  images: { data: string; mimeType: string }[] = [],
+): Promise<AnalysisResult> {
   const response = await fetch('/api/analyze', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ textContent, images }),
   });
 
@@ -77,9 +82,7 @@ export async function analyzeProcess(textContent: string, images: { data: string
 export async function analyzeMROSC(request: MROSCAnalysisRequest): Promise<MROSCAnalysisResult> {
   const response = await fetch('/api/analyze-mrosc', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
   });
 
