@@ -17,16 +17,16 @@ import { clsx } from 'clsx';
 import { useAuth } from '../../contexts/AuthContext';
 
 const NAVIGATION = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { id: 'integracao', label: 'Integração (Mapa OSC)', icon: Search, path: '/integracao' },
-  { id: 'governanca', label: 'Governança', icon: ShieldCheck, path: '/governanca' },
-  { id: 'normas', label: 'Normas (Radar)', icon: Gavel, path: '/normas' },
-  { id: 'planejamento', label: 'Planejamento', icon: ClipboardList, path: '/planejamento' },
-  { id: 'monitoramento', label: 'Monitoramento', icon: Activity, path: '/monitoramento' },
-  { id: 'capacitacao', label: 'Capacitação', icon: GraduationCap, path: '/capacitacao' },
-  { id: 'assistente', label: 'Assistente SIACT', icon: MessageSquare, path: '/assistente' },
-  { id: 'arquitetura', label: 'Arquitetura', icon: LayoutTemplate, path: '/arquitetura' },
-  { id: 'roadmap', label: 'Roadmap', icon: Route, path: '/roadmap' },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/app' },
+  { id: 'integracao', label: 'Integração (Mapa OSC)', icon: Search, path: '/app/integracao' },
+  { id: 'governanca', label: 'Governança', icon: ShieldCheck, path: '/app/governanca' },
+  { id: 'normas', label: 'Normas (Radar)', icon: Gavel, path: '/app/normas' },
+  { id: 'planejamento', label: 'Planejamento', icon: ClipboardList, path: '/app/planejamento' },
+  { id: 'monitoramento', label: 'Monitoramento', icon: Activity, path: '/app/monitoramento' },
+  { id: 'capacitacao', label: 'Capacitação', icon: GraduationCap, path: '/app/capacitacao' },
+  { id: 'assistente', label: 'Assistente SIACT', icon: MessageSquare, path: '/app/assistente' },
+  { id: 'arquitetura', label: 'Arquitetura', icon: LayoutTemplate, path: '/app/arquitetura' },
+  { id: 'roadmap', label: 'Roadmap', icon: Route, path: '/app/roadmap' },
 ];
 
 export function Sidebar() {
