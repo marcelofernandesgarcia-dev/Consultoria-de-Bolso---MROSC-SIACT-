@@ -22,7 +22,8 @@ export function PrivateRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) {
+  // Em desenvolvimento, libera acesso sem autenticação
+  if (!user && import.meta.env.PROD) {
     return <Navigate to="/landing" replace />;
   }
 
