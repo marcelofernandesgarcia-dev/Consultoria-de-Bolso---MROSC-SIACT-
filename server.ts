@@ -67,6 +67,17 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // --- AUTH MIDDLEWARE ---
+  // Verifica o JWT Supabase e anexa user_id verificado ao request
+  async function getAuthUser(req: express.Request): Promise<string | null> {
+    const auth = req.headers.authorization;
+    if (!auth?.startsWith('Bearer ')) return null;
+    const token = auth.slice(7);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+    return user.id;
+  }
+
   // --- PDF PARSING API ---
   app.post("/api/parse-pdf", upload.single("file"), async (req, res) => {
     try {
@@ -84,6 +95,10 @@ async function startServer() {
   // --- DASHBOARD API ---
   app.get("/api/dashboard", async (req, res) => {
     try {
+      const userId = await getAuthUser(req);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const base = (q: any) => userId ? q.eq('user_id', userId) : q;
+
       const [
         { count: total },
         { count: approved },
@@ -91,15 +106,15 @@ async function startServer() {
         { count: rejected },
         { data: recent }
       ] = await Promise.all([
-        supabase.from('analysis_history').select('*', { count: 'exact', head: true }),
-        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'CONFORME'),
-        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'RESSALVA'),
-        supabase.from('analysis_history').select('*', { count: 'exact', head: true }).eq('status', 'NAO_CONFORME'),
-        supabase.from('analysis_history').select('id, document_name, status, date, type').order('date', { ascending: false }).limit(5),
+        base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })),
+        base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })).eq('status', 'CONFORME'),
+        base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })).eq('status', 'RESSALVA'),
+        base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })).eq('status', 'NAO_CONFORME'),
+        base(supabase.from('analysis_history').select('id, document_name, status, date, type')).order('date', { ascending: false }).limit(5),
       ]);
 
-      const growth = { total: 12, approved: 12, warning: 12, rejected: 12 };
-      res.json({ stats: { total, approved, warning, rejected, growth }, recent: recent ?? [] });
+      const growth = { total: 0, approved: 0, warning: 0, rejected: 0 };
+      res.json({ stats: { total: total ?? 0, approved: approved ?? 0, warning: warning ?? 0, rejected: rejected ?? 0, growth }, recent: recent ?? [] });
     } catch (error: any) {
       console.error("Dashboard error:", error);
       res.status(500).json({ error: error.message });
@@ -557,14 +572,15 @@ async function startServer() {
         parsedData.status = parsedData.status_final;
       }
 
-      // Persist to Supabase
+      // Persist to Supabase — user_id verificado via JWT (nunca confia no cliente)
+      const userId = await getAuthUser(req);
       await supabase.from('analysis_history').insert({
         type,
         document_name: documentName,
         status: parsedData.status_final || 'RESSALVA',
         summary: parsedData.summary || parsedData.message || 'Sem resumo',
         details: parsedData,
-        user_id: context?.user_id ?? null,
+        user_id: userId,
         created_at: new Date().toISOString(),
       });
       

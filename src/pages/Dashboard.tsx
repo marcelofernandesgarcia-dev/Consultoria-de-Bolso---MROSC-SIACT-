@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Clock, Loader2, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../lib/apiFetch';
 
 interface DashboardStats {
   total: number;
@@ -69,7 +70,7 @@ export function Dashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/dashboard')
+    apiFetch('/api/dashboard')
       .then((r) => {
         if (!r.ok) throw new Error('Falha ao carregar dashboard');
         return r.json();
