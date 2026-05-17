@@ -22,6 +22,9 @@ import { FAQ } from './pages/FAQ';
 import { LessonViewer } from './pages/LessonViewer';
 import { GeradorParecer } from './pages/GeradorParecer';
 import { Landing } from './pages/Landing';
+import { Planos } from './pages/Planos';
+import { Conta } from './pages/Conta';
+import { Admin } from './pages/Admin';
 
 export default function App() {
   return (
@@ -55,6 +58,9 @@ export default function App() {
             <Route path="faq" element={<FAQ />} />
             <Route path="arquitetura" element={<Arquitetura />} />
             <Route path="roadmap" element={<Roadmap />} />
+            <Route path="planos" element={<Planos />} />
+            <Route path="conta" element={<Conta />} />
+            <Route path="admin" element={<Admin />} />
           </Route>
         </Routes>
       </BrowserRouter>
