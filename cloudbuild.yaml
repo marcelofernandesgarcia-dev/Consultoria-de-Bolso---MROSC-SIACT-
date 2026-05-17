@@ -13,7 +13,7 @@ steps:
       - push
       - "$_IMAGE"
 
-  # Deploy no Cloud Run
+  # Deploy no Cloud Run com secrets
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
@@ -29,10 +29,12 @@ steps:
       - --memory=512Mi
       - --cpu=1
       - --port=8080
+      - --set-env-vars=NODE_ENV=production,SUPABASE_URL=https://eaojggxtsuzplrjgytbt.supabase.co,VITE_SUPABASE_URL=https://eaojggxtsuzplrjgytbt.supabase.co
+      - --update-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest,SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,VITE_SUPABASE_ANON_KEY=VITE_SUPABASE_ANON_KEY:latest
 
 substitutions:
   _REGION: southamerica-east1
-  _IMAGE: southamerica-east1-docker.pkg.dev/$PROJECT_ID/siact/siact-mrosc:$SHORT_SHA
+  _IMAGE: southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$SHORT_SHA
 
 options:
   logging: CLOUD_LOGGING_ONLY
