@@ -8,6 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { createRequire } from "module";
+import path from "path";
 
 const _require = createRequire(import.meta.url);
 const pdfParse = _require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
@@ -77,6 +78,11 @@ async function startServer() {
     if (error || !user) return null;
     return user.id;
   }
+
+  // --- HEALTH CHECK ---
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok", version: "4.0.0", env: process.env.NODE_ENV ?? "development" });
+  });
 
   // --- PDF PARSING API ---
   app.post("/api/parse-pdf", upload.single("file"), async (req, res) => {
@@ -901,8 +907,16 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
     }
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV === "production") {
+    // Serve static build output
+    const distPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), "dist");
+    app.use(express.static(distPath));
+    // SPA fallback — tudo que não for /api/* retorna o index.html
+    app.get(/^(?!\/api).*/, (_req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  } else {
+    // Vite dev middleware
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -911,7 +925,7 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`✓ SIACT-MROSC rodando em http://0.0.0.0:${PORT} [${process.env.NODE_ENV ?? 'development'}]`);
   });
 }
 
