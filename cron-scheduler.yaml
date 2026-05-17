@@ -1,0 +1,40 @@
+# ── Cloud Scheduler — Sync semanal Mapa OSC / IPEA ──────────────────────────
+#
+# Executa toda segunda-feira às 08:00 BRT (11:00 UTC)
+# Faz POST no endpoint /api/sync/mapa-osc do Cloud Run
+#
+# Como criar (substitua SEU_CLOUD_RUN_URL pelo URL real do serviço):
+#
+#   gcloud scheduler jobs create http siact-mapa-osc-sync \
+#     --schedule="0 11 * * 1" \
+#     --uri="https://SEU_CLOUD_RUN_URL/api/sync/mapa-osc" \
+#     --http-method=POST \
+#     --headers="Authorization=Bearer SEU_SYNC_SECRET,Content-Type=application/json" \
+#     --time-zone="America/Sao_Paulo" \
+#     --location=southamerica-east1 \
+#     --attempt-deadline=30m \
+#     --max-retry-attempts=3 \
+#     --min-backoff=5m \
+#     --max-backoff=1h \
+#     --project=gen-lang-client-0565048097
+
+name: siact-mapa-osc-sync
+description: "Sincronização semanal da base Mapa OSC / IPEA — 330 mil OSCs"
+
+schedule: "0 11 * * 1"        # Segunda-feira 08:00 BRT (UTC-3 = 11:00 UTC)
+timeZone: America/Sao_Paulo
+
+httpTarget:
+  uri: https://SEU_CLOUD_RUN_URL/api/sync/mapa-osc
+  httpMethod: POST
+  headers:
+    Content-Type: application/json
+    Authorization: Bearer ${SYNC_SECRET}
+
+retryConfig:
+  retryCount: 3
+  minBackoffDuration: 300s     # 5 min entre tentativas
+  maxBackoffDuration: 3600s    # máximo 1h
+  maxDoublings: 3
+
+attemptDeadline: 1800s         # timeout de 30 min (download ~330 MB leva ~10-15 min)

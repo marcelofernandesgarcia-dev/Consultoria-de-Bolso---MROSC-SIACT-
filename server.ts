@@ -9,6 +9,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { createRequire } from "module";
 import path from "path";
+import { syncMapaOsc } from "./src/lib/ipea.js";
 
 const _require = createRequire(import.meta.url);
 const pdfParse = _require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
@@ -905,6 +906,105 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
       console.error("Chat error:", error);
       res.status(500).json({ error: error.message });
     }
+  });
+
+  // ── Sync Mapa OSC / IPEA ─────────────────────────────────────────────────────
+  app.post('/api/sync/mapa-osc', async (req, res) => {
+    const auth = req.headers.authorization ?? '';
+    const secret = process.env.SYNC_SECRET;
+    if (!secret || auth !== `Bearer ${secret}`) {
+      return res.status(401).json({ error: 'Não autorizado' });
+    }
+
+    // Registra início no log
+    const { data: logRow } = await supabase
+      .from('osc_sync_log')
+      .insert({ status: 'RUNNING' })
+      .select('id')
+      .single();
+
+    const logId = logRow?.id;
+    const msgs: string[] = [];
+    const log = (msg: string) => { msgs.push(msg); console.log(`[IPEA sync] ${msg}`); };
+
+    // Responde imediatamente — sync roda em background
+    res.json({ ok: true, logId, message: 'Sync iniciado em background' });
+
+    try {
+      const totais = await syncMapaOsc(log);
+      if (logId) {
+        await supabase.from('osc_sync_log').update({
+          status:      'SUCCESS',
+          finished_at: new Date().toISOString(),
+          registros:   totais.osc,
+          detalhes:    { ...totais, log: msgs },
+        }).eq('id', logId);
+      }
+      console.log('[IPEA sync] Concluído:', totais);
+    } catch (err: any) {
+      console.error('[IPEA sync] Erro:', err.message);
+      if (logId) {
+        await supabase.from('osc_sync_log').update({
+          status:      'ERROR',
+          finished_at: new Date().toISOString(),
+          detalhes:    { error: err.message, log: msgs },
+        }).eq('id', logId);
+      }
+    }
+  });
+
+  // ── Busca OSC por CNPJ ────────────────────────────────────────────────────────
+  app.get('/api/osc/:cnpj', async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
+
+    const cnpj = req.params.cnpj.replace(/\D/g, '').padStart(14, '0');
+
+    const [{ data: osc }, { data: cebas }, { data: areas }, { data: projetos }] =
+      await Promise.all([
+        supabase.from('osc_cadastro').select('*').eq('cnpj', cnpj).single(),
+        supabase.from('osc_certificacoes').select('*').eq('cnpj', cnpj),
+        supabase.from('osc_areas').select('area, subarea').eq('cnpj', cnpj),
+        supabase.from('osc_projetos').select('titulo, area, valor, inicio, termino, situacao')
+          .eq('cnpj', cnpj).limit(10),
+      ]);
+
+    if (!osc) return res.status(404).json({ error: 'OSC não encontrada na base IPEA' });
+    res.json({ osc, cebas: cebas ?? [], areas: areas ?? [], projetos: projetos ?? [] });
+  });
+
+  // ── Busca OSCs por nome/UF ────────────────────────────────────────────────────
+  app.get('/api/osc', async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
+
+    const { q, uf, situacao, limit = '20', offset = '0' } = req.query as Record<string, string>;
+    let query = supabase.from('osc_cadastro').select('cnpj, razao_social, municipio, uf, situacao, cnae_principal', { count: 'exact' });
+
+    if (q)        query = query.ilike('razao_social', `%${q}%`);
+    if (uf)       query = query.eq('uf', uf.toUpperCase());
+    if (situacao) query = query.eq('situacao', situacao.toUpperCase());
+
+    const { data, count, error } = await query
+      .range(Number(offset), Number(offset) + Number(limit) - 1)
+      .order('razao_social');
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ data: data ?? [], total: count ?? 0 });
+  });
+
+  // ── Status da última sincronização ───────────────────────────────────────────
+  app.get('/api/sync/status', async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
+
+    const { data } = await supabase
+      .from('osc_sync_log')
+      .select('*')
+      .order('started_at', { ascending: false })
+      .limit(5);
+
+    res.json(data ?? []);
   });
 
   // ── Admin stats (acesso restrito por e-mail) ────────────────────────────────

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ChevronRight, RotateCcw } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ChevronRight, RotateCcw, Search, Building2, ShieldCheck, FileText } from 'lucide-react';
+import { apiFetch } from '../lib/apiFetch';
 
 interface Pergunta {
   id: string;
@@ -140,9 +141,114 @@ const CONFIG_STATUS = {
   },
 };
 
+interface OscData {
+  osc: { cnpj: string; razao_social: string; situacao: string; data_abertura: string; municipio: string; uf: string; cnae_principal: string };
+  cebas: { tipo: string; status: string; validade: string }[];
+  areas: { area: string; subarea: string }[];
+  projetos: { titulo: string; valor: number; situacao: string }[];
+}
+
+function formatCnpj(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 14);
+  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+}
+
+function CnpjPanel({ onLoad }: { onLoad: (data: OscData) => void }) {
+  const [cnpj, setCnpj] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState('');
+  const [data, setData]     = useState<OscData | null>(null);
+
+  async function buscar(e: React.FormEvent) {
+    e.preventDefault();
+    const raw = cnpj.replace(/\D/g, '');
+    if (raw.length !== 14) { setError('CNPJ deve ter 14 dígitos'); return; }
+    setLoading(true); setError('');
+    try {
+      const res = await apiFetch(`/api/osc/${raw}`);
+      if (!res.ok) { setError('OSC não encontrada na base IPEA. Verifique o CNPJ ou prossiga manualmente.'); setLoading(false); return; }
+      const d: OscData = await res.json();
+      setData(d);
+      onLoad(d);
+    } catch { setError('Erro ao consultar base IPEA. Prossiga manualmente.'); }
+    setLoading(false);
+  }
+
+  return (
+    <div className="glass-card rounded-2xl border border-slate-700/50 p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <Search size={16} className="text-violet-400" />
+        <h2 className="text-sm font-semibold text-white">Consultar OSC na base IPEA</h2>
+        <span className="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full">330 mil+ OSCs</span>
+      </div>
+
+      <form onSubmit={buscar} className="flex gap-2">
+        <input
+          value={cnpj}
+          onChange={e => setCnpj(formatCnpj(e.target.value))}
+          placeholder="00.000.000/0000-00"
+          maxLength={18}
+          className="flex-1 bg-slate-800/60 border border-slate-700/50 text-white placeholder:text-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-violet-500/50"
+        />
+        <button type="submit" disabled={loading}
+          className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-colors disabled:opacity-50">
+          {loading ? 'Buscando...' : 'Buscar'}
+        </button>
+      </form>
+
+      {error && <p className="text-xs text-amber-400">{error}</p>}
+
+      {data && (
+        <div className="space-y-3 pt-1">
+          <div className="flex items-start gap-3 p-3 bg-slate-800/40 rounded-xl">
+            <Building2 size={15} className="text-indigo-400 mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-white font-semibold text-sm truncate">{data.osc.razao_social}</p>
+              <p className="text-xs text-slate-400">{data.osc.municipio} — {data.osc.uf} · CNAE {data.osc.cnae_principal}</p>
+            </div>
+            <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${data.osc.situacao === 'ATIVA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+              {data.osc.situacao}
+            </span>
+          </div>
+
+          {data.cebas.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {data.cebas.map(c => (
+                <span key={c.tipo} className="flex items-center gap-1 text-[10px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-1 rounded-full">
+                  <ShieldCheck size={10} /> CEBAS {c.tipo} · válido até {c.validade ?? '—'}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {data.projetos.length > 0 && (
+            <p className="text-xs text-slate-400 flex items-center gap-1">
+              <FileText size={11} /> {data.projetos.length} projeto(s) registrado(s) na base IPEA
+            </p>
+          )}
+
+          <p className="text-[10px] text-emerald-400">✓ Dados carregados da base Mapa OSC / IPEA — questionário pré-preenchido automaticamente</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SimuladorElegibilidade() {
   const [respostas, setRespostas] = useState<Record<string, Resposta>>({});
   const [mostrarResultado, setMostrarResultado] = useState(false);
+
+  const handleOscLoad = (data: OscData) => {
+    const pre: Record<string, Resposta> = {};
+    // p2: CNPJ ativo
+    pre['p2'] = data.osc.situacao === 'ATIVA' ? 'sim' : 'nao';
+    // p1: existe há 3+ anos
+    if (data.osc.data_abertura) {
+      const anos = (Date.now() - new Date(data.osc.data_abertura).getTime()) / (1000 * 60 * 60 * 24 * 365);
+      pre['p1'] = anos >= 3 ? 'sim' : 'nao';
+    }
+    setRespostas(prev => ({ ...pre, ...prev }));
+  };
 
   const responder = (id: string, valor: Resposta) => {
     setRespostas(prev => ({ ...prev, [id]: valor }));
@@ -170,6 +276,9 @@ export function SimuladorElegibilidade() {
           </div>
         </div>
       </div>
+
+      {/* Painel IPEA */}
+      <CnpjPanel onLoad={handleOscLoad} />
 
       {/* Progresso */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
