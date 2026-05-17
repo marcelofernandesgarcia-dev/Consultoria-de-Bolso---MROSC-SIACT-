@@ -1,18 +1,20 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Search, 
-  ShieldCheck, 
-  Gavel, 
-  ClipboardList, 
-  Activity, 
-  GraduationCap, 
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Search,
+  ShieldCheck,
+  Gavel,
+  ClipboardList,
+  Activity,
+  GraduationCap,
   MessageSquare,
   LayoutTemplate,
-  Route
+  Route,
+  LogOut
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NAVIGATION = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
@@ -28,6 +30,10 @@ const NAVIGATION = [
 ];
 
 export function Sidebar() {
+  const { user, signOut } = useAuth();
+  const userInitials = user?.email?.slice(0, 2).toUpperCase() ?? 'GP';
+  const userEmail = user?.email ?? '';
+
   return (
     <div className="w-64 bg-slate-900 h-screen flex flex-col border-r border-slate-800 fixed left-0 top-0">
       <div className="p-6 bg-transparent flex items-center gap-2 border-b border-white/10">
@@ -60,15 +66,22 @@ export function Sidebar() {
         ))}
       </nav>
       
-      <div className="p-6 bg-slate-950/50 border-t border-slate-800">
+      <div className="p-4 bg-slate-950/50 border-t border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
-            <span className="text-xs font-bold text-slate-300">GP</span>
+          <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
+            <span className="text-xs font-bold text-indigo-400">{userInitials}</span>
           </div>
-          <div className="flex-1">
-            <p className="text-xs font-medium text-white">Gestor Público</p>
-            <p className="text-[10px] text-slate-500">SIACT v3.0</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-white truncate">{userEmail || 'Gestor Público'}</p>
+            <p className="text-[10px] text-slate-500">SIACT v4.0</p>
           </div>
+          <button
+            onClick={signOut}
+            title="Sair"
+            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

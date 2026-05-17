@@ -4,9 +4,12 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import Database from "better-sqlite3";
 import multer from "multer";
-import pdfParse from "pdf-parse";
+import { createRequire } from "module";
 import fs from "fs";
 import path from "path";
+
+const _require = createRequire(import.meta.url);
+const pdfParse = _require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
 
 // Initialize Database
 const db = new Database('siact_mrosc.db');
