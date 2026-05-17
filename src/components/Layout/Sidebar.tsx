@@ -30,11 +30,14 @@ const NAVIGATION = [
 export function Sidebar() {
   return (
     <div className="w-64 bg-slate-900 h-screen flex flex-col border-r border-slate-800 fixed left-0 top-0">
-      <div className="p-6 flex items-center gap-3">
-        <div className="bg-indigo-600 p-2 rounded-lg">
-          <ShieldCheck className="w-6 h-6 text-white" />
+      <div className="p-6 bg-transparent flex items-center gap-2 border-b border-white/10">
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+          <span className="text-white font-bold text-xs">SIACT</span>
         </div>
-        <span className="text-xl font-bold text-white tracking-tight">SIACT-MROSC</span>
+        <div>
+          <p className="font-bold text-white text-sm leading-tight text-glow">SIACT</p>
+          <p className="text-[10px] text-slate-400 leading-tight">MROSC • AUDITOR IA</p>
+        </div>
       </div>
 
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
