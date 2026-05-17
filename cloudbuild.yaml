@@ -1,0 +1,38 @@
+steps:
+  # Build da imagem Docker
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - build
+      - -t
+      - "$_IMAGE"
+      - .
+
+  # Push para o Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - push
+      - "$_IMAGE"
+
+  # Deploy no Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - siact-mrosc
+      - --image=$_IMAGE
+      - --region=$_REGION
+      - --platform=managed
+      - --allow-unauthenticated
+      - --min-instances=0
+      - --max-instances=3
+      - --memory=512Mi
+      - --cpu=1
+      - --port=8080
+
+substitutions:
+  _REGION: southamerica-east1
+  _IMAGE: southamerica-east1-docker.pkg.dev/$PROJECT_ID/siact/siact-mrosc:$SHORT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
