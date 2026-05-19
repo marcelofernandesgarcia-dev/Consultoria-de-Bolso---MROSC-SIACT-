@@ -62,50 +62,98 @@ async function upsertBatches<T extends object>(
   return total;
 }
 
-// ── 1. Sincroniza Base Principal CSV ──────────────────────────────────────
+// ── 1. Sincroniza Base Principal CSV (modo streaming — evita OOM) ─────────
 export async function syncBasePrincipal(
   supabase: ReturnType<typeof getSupabase>,
   log: (msg: string) => void
 ): Promise<number> {
-  log('Baixando Base Principal CSV (~331 MB)...');
-  const buf = await downloadBuffer(IPEA_URLS.basePrincipal);
-  log('Download concluído. Fazendo parse do CSV...');
+  log('Baixando Base Principal CSV (~331 MB) em modo streaming...');
 
-  const text = buf.toString('utf-8');
-  const lines = text.split('\n');
-  const headers = lines[0].split(';').map(h => h.trim().replace(/^"|"$/g, ''));
+  const res = await fetch(IPEA_URLS.basePrincipal, {
+    headers: { 'User-Agent': 'SIACT-MROSC/4.0 (gov.br)' },
+  });
+  if (!res.ok) throw new Error(`Download falhou: HTTP ${res.status}`);
+  if (!res.body) throw new Error('Response body is null');
 
-  const rows: Record<string, any>[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
+  const decoder = new TextDecoder('utf-8');
+  const reader  = res.body.getReader();
+
+  let headers: string[]            = [];
+  let leftover                     = '';
+  let batch: Record<string, any>[] = [];
+  let total                        = 0;
+  let isFirstLine                  = true;
+
+  const toDate = (v: any): string | null => {
+    const s = String(v ?? '').trim();
+    if (!s) return null;
+    // YYYY-MM-DD já é aceito pelo Postgres
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    // DD/MM/YYYY → YYYY-MM-DD
+    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+    return null;
+  };
+
+  const str = (v: any): string | null => { const s = String(v ?? '').trim(); return s || null; };
+
+  const mapRow = (r: Record<string, any>) => ({
+    cnpj:              normalizeCnpj(r['cd_identificador_osc'] ?? r['cnpj'] ?? r['CNPJ'] ?? ''),
+    razao_social:      str(r['tx_razao_social_osc']    ?? r['razao_social']),
+    nome_fantasia:     str(r['tx_nome_fantasia_osc']   ?? r['nome_fantasia']),
+    natureza_juridica: str(r['cd_natureza_juridica_osc']),
+    cnae_principal:    str(r['cd_classe_ativ_economica_osc']),
+    municipio:         str(r['tx_municipio'] ?? r['municipio']),
+    uf:                str(r['sg_uf']        ?? r['uf']),
+    situacao:          r['bo_osc_ativa'] === '1' || r['bo_osc_ativa'] === 'true' ? 'ATIVA' : 'INATIVA',
+    data_abertura:     toDate(r['dt_fundacao_osc']),
+    data_encerramento: toDate(r['dt_encerramento_osc']),
+    matriz_filial:     str(r['bo_matriz']),
+    updated_at:        new Date().toISOString(),
+  });
+
+  const processLine = (line: string) => {
+    if (!line.trim()) return;
     const cols = line.split(';').map(c => c.replace(/^"|"$/g, '').trim());
-    const obj: Record<string, any> = {};
-    headers.forEach((h, idx) => { obj[h] = cols[idx] ?? null; });
-    rows.push(obj);
+    if (isFirstLine) {
+      headers = cols.map(h => h.trim());
+      isFirstLine = false;
+      return;
+    }
+    const r: Record<string, any> = {};
+    headers.forEach((h, idx) => { r[h] = cols[idx] ?? null; });
+    const mapped = mapRow(r);
+    if (mapped.cnpj.length === 14) batch.push(mapped);
+  };
+
+  const flushBatch = async () => {
+    if (batch.length === 0) return;
+    const chunk = batch.splice(0, BATCH_SIZE);
+    const { error } = await supabase.from('osc_cadastro').upsert(chunk, { onConflict: 'cnpj' });
+    if (error) throw new Error(`Upsert osc_cadastro: ${error.message}`);
+    total += chunk.length;
+    if (total % 10000 === 0) log(`${total} registros inseridos...`);
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      if (leftover) processLine(leftover);
+      break;
+    }
+    const text  = leftover + decoder.decode(value, { stream: true });
+    const lines = text.split('\n');
+    leftover    = lines.pop() ?? '';
+    for (const line of lines) processLine(line);
+
+    while (batch.length >= BATCH_SIZE) await flushBatch();
   }
 
-  log(`Parse concluído: ${rows.length} registros. Mapeando campos...`);
+  // Flush restante
+  while (batch.length > 0) await flushBatch();
 
-  // Mapeia colunas do CSV para nosso schema
-  // O dicionário de dados IPEA define os nomes exatos das colunas
-  const mapped = rows.map(r => ({
-    cnpj:              normalizeCnpj(r['cd_identificador_osc'] ?? r['cnpj'] ?? r['CNPJ'] ?? ''),
-    razao_social:      r['tx_razao_social_osc'] ?? r['razao_social'] ?? null,
-    nome_fantasia:     r['tx_nome_fantasia_osc'] ?? r['nome_fantasia'] ?? null,
-    natureza_juridica: r['cd_natureza_juridica_osc'] ?? null,
-    cnae_principal:    r['cd_classe_ativ_economica_osc'] ?? null,
-    municipio:         r['tx_municipio'] ?? r['municipio'] ?? null,
-    uf:                r['sg_uf'] ?? r['uf'] ?? null,
-    situacao:          r['bo_osc_ativa'] === '1' || r['bo_osc_ativa'] === 'true' ? 'ATIVA' : 'INATIVA',
-    data_abertura:     r['dt_fundacao_osc'] ?? null,
-    data_encerramento: r['dt_encerramento_osc'] ?? null,
-    matriz_filial:     r['bo_matriz'] ?? null,
-    updated_at:        new Date().toISOString(),
-  })).filter(r => r.cnpj.length === 14);
-
-  log(`Upserting ${mapped.length} OSCs no Supabase...`);
-  return upsertBatches(supabase, 'osc_cadastro', mapped, 'cnpj');
+  log(`Base Principal concluída: ${total} OSCs inseridas.`);
+  return total;
 }
 
 // ── 2. Sincroniza CEBAS ───────────────────────────────────────────────────

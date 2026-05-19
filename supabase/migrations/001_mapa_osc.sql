@@ -28,8 +28,8 @@ CREATE INDEX IF NOT EXISTS idx_osc_razao      ON public.osc_cadastro USING gin (
 -- 2. Certificações CEBAS (Saúde, Educação, Assistência Social)
 CREATE TABLE IF NOT EXISTS public.osc_certificacoes (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  cnpj        TEXT        NOT NULL REFERENCES public.osc_cadastro(cnpj) ON DELETE CASCADE,
-  tipo        TEXT        NOT NULL, -- 'SAUDE' | 'EDUCACAO' | 'ASSISTENCIA_SOCIAL'
+  cnpj        TEXT        NOT NULL,   -- sem FK: dados abertos podem ter inconsistências
+  tipo        TEXT        NOT NULL,   -- 'SAUDE' | 'EDUCACAO' | 'ASSISTENCIA_SOCIAL'
   status      TEXT,
   validade    DATE,
   portaria    TEXT,
@@ -42,7 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_cebas_tipo ON public.osc_certificacoes (tipo);
 -- 3. Projetos e parcerias históricas
 CREATE TABLE IF NOT EXISTS public.osc_projetos (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  cnpj        TEXT        REFERENCES public.osc_cadastro(cnpj) ON DELETE CASCADE,
+  cnpj        TEXT,       -- sem FK: dados abertos podem ter inconsistências
   titulo      TEXT,
   area        TEXT,
   subarea     TEXT,
@@ -57,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_projetos_cnpj ON public.osc_projetos (cnpj);
 
 -- 4. Áreas e subáreas de atuação
 CREATE TABLE IF NOT EXISTS public.osc_areas (
-  cnpj        TEXT    NOT NULL REFERENCES public.osc_cadastro(cnpj) ON DELETE CASCADE,
+  cnpj        TEXT    NOT NULL,   -- sem FK: dados abertos podem ter inconsistências
   area        TEXT    NOT NULL,
   subarea     TEXT    NOT NULL DEFAULT '',
   PRIMARY KEY (cnpj, area, subarea)
@@ -75,6 +75,13 @@ CREATE TABLE IF NOT EXISTS public.osc_sync_log (
   detalhes     JSONB
 );
 
+-- Grants para service_role (backend) poder escrever nas tabelas
+GRANT ALL ON TABLE public.osc_cadastro       TO service_role;
+GRANT ALL ON TABLE public.osc_certificacoes  TO service_role;
+GRANT ALL ON TABLE public.osc_projetos       TO service_role;
+GRANT ALL ON TABLE public.osc_areas          TO service_role;
+GRANT ALL ON TABLE public.osc_sync_log       TO service_role;
+
 -- RLS: tabelas OSC são leitura pública (dados abertos IPEA)
 ALTER TABLE public.osc_cadastro       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.osc_certificacoes  ENABLE ROW LEVEL SECURITY;
@@ -83,6 +90,12 @@ ALTER TABLE public.osc_areas          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.osc_sync_log       ENABLE ROW LEVEL SECURITY;
 
 -- Usuários autenticados podem ler todos os dados OSC (dados públicos IPEA)
+DROP POLICY IF EXISTS "authenticated_read_osc"       ON public.osc_cadastro;
+DROP POLICY IF EXISTS "authenticated_read_cebas"     ON public.osc_certificacoes;
+DROP POLICY IF EXISTS "authenticated_read_projetos"  ON public.osc_projetos;
+DROP POLICY IF EXISTS "authenticated_read_areas"     ON public.osc_areas;
+DROP POLICY IF EXISTS "authenticated_read_sync_log"  ON public.osc_sync_log;
+
 CREATE POLICY "authenticated_read_osc"       ON public.osc_cadastro      FOR SELECT TO authenticated USING (true);
 CREATE POLICY "authenticated_read_cebas"     ON public.osc_certificacoes FOR SELECT TO authenticated USING (true);
 CREATE POLICY "authenticated_read_projetos"  ON public.osc_projetos      FOR SELECT TO authenticated USING (true);
