@@ -234,6 +234,7 @@ export async function syncAreas(
 }
 
 // ── Sync completo (chamado pelo endpoint /api/sync/mapa-osc) ──────────────
+// Áreas NÃO está incluída aqui — use /api/sync/areas separadamente (XLSX 82 MB)
 export async function syncMapaOsc(log: (msg: string) => void): Promise<{
   osc: number; cebas: number; projetos: number; areas: number;
 }> {
@@ -242,7 +243,12 @@ export async function syncMapaOsc(log: (msg: string) => void): Promise<{
   const osc      = await syncBasePrincipal(supabase, log);
   const cebas    = await syncCebas(supabase, log);
   const projetos = await syncProjetos(supabase, log);
-  const areas    = await syncAreas(supabase, log);
 
-  return { osc, cebas, projetos, areas };
+  return { osc, cebas, projetos, areas: 0 };
+}
+
+// ── Sync só de Áreas (endpoint dedicado para XLSX pesado) ─────────────────
+export async function syncSoAreas(log: (msg: string) => void): Promise<number> {
+  const supabase = getSupabase();
+  return syncAreas(supabase, log);
 }

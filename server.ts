@@ -1,4 +1,7 @@
 import 'dotenv/config';
+import ws from 'ws';
+// @ts-ignore
+if (!globalThis.WebSocket) globalThis.WebSocket = ws;
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -9,7 +12,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { createRequire } from "module";
 import path from "path";
-import { syncMapaOsc } from "./src/lib/ipea.js";
+import { syncMapaOsc, syncSoAreas } from "./src/lib/ipea.js";
 
 const _require = createRequire(import.meta.url);
 const pdfParse = _require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
@@ -908,12 +911,18 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
     }
   });
 
+  // ── Lock global para evitar syncs concorrentes ───────────────────────────────
+  let syncRunning = false;
+
   // ── Sync Mapa OSC / IPEA ─────────────────────────────────────────────────────
   app.post('/api/sync/mapa-osc', async (req, res) => {
     const auth = req.headers.authorization ?? '';
     const secret = process.env.SYNC_SECRET;
     if (!secret || auth !== `Bearer ${secret}`) {
       return res.status(401).json({ error: 'Não autorizado' });
+    }
+    if (syncRunning) {
+      return res.status(409).json({ error: 'Sync já em execução' });
     }
 
     // Registra início no log
@@ -928,6 +937,7 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
     const log = (msg: string) => { msgs.push(msg); console.log(`[IPEA sync] ${msg}`); };
 
     // Responde imediatamente — sync roda em background
+    syncRunning = true;
     res.json({ ok: true, logId, message: 'Sync iniciado em background' });
 
     try {
@@ -950,6 +960,8 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
           detalhes:    { error: err.message, log: msgs },
         }).eq('id', logId);
       }
+    } finally {
+      syncRunning = false;
     }
   });
 
@@ -991,6 +1003,24 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
 
     if (error) return res.status(500).json({ error: error.message });
     res.json({ data: data ?? [], total: count ?? 0 });
+  });
+
+  // ── Sync só de Áreas e Subáreas (XLSX pesado — roda isolado) ────────────────
+  app.post('/api/sync/areas', async (req, res) => {
+    const auth = req.headers.authorization ?? '';
+    const secret = process.env.SYNC_SECRET;
+    if (!secret || auth !== `Bearer ${secret}`) {
+      return res.status(401).json({ error: 'Não autorizado' });
+    }
+    const msgs: string[] = [];
+    const log = (msg: string) => { msgs.push(msg); console.log(`[IPEA areas] ${msg}`); };
+    res.json({ ok: true, message: 'Sync de Áreas iniciado em background' });
+    try {
+      const total = await syncSoAreas(log);
+      console.log(`[IPEA areas] Concluído: ${total} registros`);
+    } catch (err: any) {
+      console.error('[IPEA areas] Erro:', err.message);
+    }
   });
 
   // ── Status da última sincronização ───────────────────────────────────────────
