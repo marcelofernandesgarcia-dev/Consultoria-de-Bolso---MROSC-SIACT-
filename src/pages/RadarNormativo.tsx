@@ -2,30 +2,20 @@ import React, { useState } from 'react';
 import { Gavel, Loader2, CheckCircle2, FileText, ArrowRight, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
+import { useParsePdf } from '../lib/useParsePdf';
 
 export function RadarNormativo() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
+  const { parsePdf, loading: pdfLoading } = useParsePdf({ onError: console.error });
 
   const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPdfLoading(true);
-    const form = new FormData();
-    form.append('file', file);
-    try {
-      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
-      if (!res.ok) throw new Error('Erro ao processar PDF');
-      const data = await res.json();
-      if (data.text) setText(data.text.slice(0, 80000));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPdfLoading(false);
-      e.target.value = '';
-    }
+    const extracted = await parsePdf(file);
+    if (extracted) setText(extracted);
+    e.target.value = '';
   };
 
   const handleAnalyze = async () => {

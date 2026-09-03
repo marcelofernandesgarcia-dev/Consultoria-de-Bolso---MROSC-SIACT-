@@ -2,31 +2,21 @@ import React, { useState } from 'react';
 import { ShieldCheck, Loader2, FileText, UserX, AlertOctagon, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
+import { useParsePdf } from '../lib/useParsePdf';
 
 export function PapeisImpedimentos() {
   const [dirigentes, setDirigentes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
   const [erro, setErro] = useState('');
+  const { parsePdf, loading: pdfLoading } = useParsePdf({ onError: setErro });
 
   const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPdfLoading(true);
-    const form = new FormData();
-    form.append('file', file);
-    try {
-      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      if (data.text) setDirigentes(data.text.slice(0, 80000));
-    } catch {
-      setErro('Erro ao extrair texto do PDF.');
-    } finally {
-      setPdfLoading(false);
-      e.target.value = '';
-    }
+    const extracted = await parsePdf(file);
+    if (extracted) setDirigentes(extracted);
+    e.target.value = '';
   };
 
   const handleAnalyze = async () => {

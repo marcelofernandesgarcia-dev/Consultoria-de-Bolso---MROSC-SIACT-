@@ -4,6 +4,7 @@ import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Clock, Loader2, BarC
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../lib/apiFetch';
+import { STATUS_LABEL, STATUS_BADGE_DARK } from '../lib/statusVisual';
 
 interface DashboardStats {
   total: number;
@@ -41,15 +42,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 function StatusBadge({ status }: { status: RecentAnalysis['status'] }) {
-  const map = {
-    CONFORME: 'bg-emerald-500/10 text-emerald-400',
-    RESSALVA: 'bg-amber-500/10 text-amber-400',
-    NAO_CONFORME: 'bg-red-500/10 text-red-400',
-  };
-  const labels = { CONFORME: 'Conforme', RESSALVA: 'Ressalva', NAO_CONFORME: 'Não Conforme' };
   return (
-    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${map[status]}`}>
-      {labels[status]}
+    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${STATUS_BADGE_DARK[status]}`}>
+      {STATUS_LABEL[status]}
     </span>
   );
 }

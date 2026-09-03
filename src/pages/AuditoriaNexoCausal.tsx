@@ -2,35 +2,28 @@ import React, { useState } from 'react';
 import { Activity, Loader2, CheckCircle2, AlertTriangle, ShieldAlert, Link2, Upload } from 'lucide-react';
 import { AIAnalysisResult } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
+import { useParsePdf } from '../lib/useParsePdf';
 
 export function AuditoriaNexoCausal() {
   const [despesa, setDespesa] = useState('');
   const [meta, setMeta] = useState('');
   const [loading, setLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState<'despesa' | 'meta' | null>(null);
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
   const [erro, setErro] = useState('');
+  const { parsePdf: parseDespesaPdf, loading: despesaPdfLoading } = useParsePdf({ maxChars: 40000, onError: setErro });
+  const { parsePdf: parseMetaPdf, loading: metaPdfLoading } = useParsePdf({ maxChars: 40000, onError: setErro });
+  // Mantém o mesmo comportamento visual de antes: os dois uploads ficam desabilitados
+  // enquanto qualquer um dos dois estiver em andamento.
+  const pdfLoading: 'despesa' | 'meta' | null = despesaPdfLoading ? 'despesa' : metaPdfLoading ? 'meta' : null;
 
   const handlePdf = async (campo: 'despesa' | 'meta', e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPdfLoading(campo);
-    const form = new FormData();
-    form.append('file', file);
-    try {
-      const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      if (data.text) {
-        const txt = data.text.slice(0, 40000);
-        campo === 'despesa' ? setDespesa(txt) : setMeta(txt);
-      }
-    } catch {
-      setErro('Erro ao extrair texto do PDF.');
-    } finally {
-      setPdfLoading(null);
-      e.target.value = '';
+    const extracted = campo === 'despesa' ? await parseDespesaPdf(file) : await parseMetaPdf(file);
+    if (extracted) {
+      campo === 'despesa' ? setDespesa(extracted) : setMeta(extracted);
     }
+    e.target.value = '';
   };
 
   const handleAnalyze = async () => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Scale, Loader2, FileOutput, Copy, Check, AlertTriangle, BookOpen, Lightbulb, Download } from 'lucide-react';
 import { apiFetch } from '../lib/apiFetch';
+import { STATUS_LABEL, STATUS_BADGE_DARK, STATUS_HEX, type StatusFinal } from '../lib/statusVisual';
 
 const TEMAS_RAPIDOS = [
   'Uma OSC com 2 anos de existência pode firmar Acordo de Cooperação?',
@@ -27,20 +28,9 @@ function buildPdfHtml(pergunta: string, result: ParecerResult): string {
   });
   const numero = `PT-${Date.now().toString().slice(-6)}`;
 
-  const statusColor: Record<string, string> = {
-    CONFORME: '#059669',
-    RESSALVA: '#D97706',
-    NAO_CONFORME: '#DC2626',
-    INCONCLUSIVO: '#6B7280',
-  };
-  const statusLabel: Record<string, string> = {
-    CONFORME: 'CONFORME',
-    RESSALVA: 'RESSALVA',
-    NAO_CONFORME: 'NÃO CONFORME',
-    INCONCLUSIVO: 'INCONCLUSIVO',
-  };
-  const cor = statusColor[result.status_final ?? ''] ?? '#4F46E5';
-  const label = statusLabel[result.status_final ?? ''] ?? (result.status_final ?? '');
+  const statusKey = result.status_final as StatusFinal | undefined;
+  const cor = statusKey ? STATUS_HEX[statusKey] : '#4F46E5';
+  const label = statusKey ? STATUS_LABEL[statusKey].toUpperCase() : (result.status_final ?? '');
 
   const baseLegalHtml = (result.baseLegal ?? [])
     .map(b => `<li>${b}</li>`).join('');
@@ -325,13 +315,8 @@ export function GeradorParecer() {
                 </div>
                 <h3 className="text-sm font-bold text-white">Parecer Técnico</h3>
                 {result.status_final && (
-                  <span className={`ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                    result.status_final === 'CONFORME' ? 'bg-emerald-500/10 text-emerald-400' :
-                    result.status_final === 'RESSALVA' ? 'bg-amber-500/10 text-amber-400' :
-                    result.status_final === 'NAO_CONFORME' ? 'bg-red-500/10 text-red-400' :
-                    'bg-slate-500/10 text-slate-400'
-                  }`}>
-                    {result.status_final === 'NAO_CONFORME' ? 'NÃO CONFORME' : result.status_final}
+                  <span className={`ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE_DARK[result.status_final as StatusFinal]}`}>
+                    {STATUS_LABEL[result.status_final as StatusFinal].toUpperCase()}
                   </span>
                 )}
               </div>

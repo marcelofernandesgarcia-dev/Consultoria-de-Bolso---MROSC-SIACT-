@@ -3,6 +3,7 @@ import { Radar, Upload, FileCheck, Loader2, ExternalLink, ChevronDown, ChevronUp
 import { apiFetch } from '../lib/apiFetch';
 import { SemaforoRisco } from '../components/SemaforoRisco';
 import { AIAnalysisResult } from '../types';
+import { useParsePdf } from '../lib/useParsePdf';
 
 type Tab = 'radar' | 'edital' | 'proposta';
 
@@ -25,15 +26,6 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'proposta', label: 'Pré-Análise da Proposta', icon: FileCheck },
 ];
 
-async function parsePdf(file: File): Promise<string> {
-  const form = new FormData();
-  form.append('file', file);
-  const res = await fetch('/api/parse-pdf', { method: 'POST', body: form });
-  if (!res.ok) throw new Error('Erro ao processar PDF.');
-  const data = await res.json();
-  return (data.text || '').slice(0, 80000);
-}
-
 export function ChamamentosAbertos() {
   const [tab, setTab] = useState<Tab>('radar');
 
@@ -48,12 +40,12 @@ export function ChamamentosAbertos() {
   const [explicarErrors, setExplicarErrors] = useState<Record<string, string>>({});
 
   const [editalText, setEditalText] = useState('');
-  const [editalPdfLoading, setEditalPdfLoading] = useState(false);
+  const { parsePdf: parseEditalPdf, loading: editalPdfLoading } = useParsePdf({ onError: console.error });
   const [editalLoading, setEditalLoading] = useState(false);
   const [editalResult, setEditalResult] = useState<AIAnalysisResult | null>(null);
 
   const [propostaText, setPropostaText] = useState('');
-  const [propostaPdfLoading, setPropostaPdfLoading] = useState(false);
+  const { parsePdf: parsePropostaPdf, loading: propostaPdfLoading } = useParsePdf({ onError: console.error });
   const [propostaLoading, setPropostaLoading] = useState(false);
   const [propostaResult, setPropostaResult] = useState<AIAnalysisResult | null>(null);
   const [editalContexto, setEditalContexto] = useState<EditalSelecionado | null>(null);
@@ -111,29 +103,17 @@ export function ChamamentosAbertos() {
   const handleEditalPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setEditalPdfLoading(true);
-    try {
-      setEditalText(await parsePdf(file));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setEditalPdfLoading(false);
-      e.target.value = '';
-    }
+    const extracted = await parseEditalPdf(file);
+    if (extracted) setEditalText(extracted);
+    e.target.value = '';
   };
 
   const handlePropostaPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPropostaPdfLoading(true);
-    try {
-      setPropostaText(await parsePdf(file));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPropostaPdfLoading(false);
-      e.target.value = '';
-    }
+    const extracted = await parsePropostaPdf(file);
+    if (extracted) setPropostaText(extracted);
+    e.target.value = '';
   };
 
   const analisarEdital = async () => {
@@ -437,11 +417,7 @@ export function ChamamentosAbertos() {
           {propostaResult && (
             <div className="space-y-4">
               <SemaforoRisco
-                status={
-                  propostaResult.status_final === 'NAO_CONFORME' ? 'NAO_CONFORME'
-                  : propostaResult.status_final === 'RESSALVA' ? 'ATENCAO'
-                  : 'CONFORME'
-                }
+                status={propostaResult.status_final ?? 'CONFORME'}
                 titulo={typeof propostaResult.score_prediction === 'number' ? `Nota estimada: ${propostaResult.score_prediction}` : undefined}
                 mensagem={propostaResult.summary || propostaResult.message}
               />
