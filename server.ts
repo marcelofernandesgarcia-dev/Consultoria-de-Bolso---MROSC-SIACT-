@@ -110,7 +110,7 @@ const VALID_ANALYSIS_TYPES = [
   'mrosc_router', 'celebration_validation', 'celebration_term',
   'celebration_workplan', 'radar_normativo', 'cotacao_previa',
   'auditoria_nexo_causal', 'papeis_impedimentos', 'osc_edital', 'osc_proposal',
-  'gerador_parecer'
+  'gerador_parecer', 'parecer_anexo_vii'
 ];
 
 async function startServer() {
@@ -651,6 +651,69 @@ async function startServer() {
           "baseLegal": ["Art. X, Lei Y — descrição", "Art. Z, Decreto W — descrição"],
           "ressalvas": ["Ressalva ou limitação 1", "Ressalva ou limitação 2"],
           "orientacao": "Orientação prática final para o usuário — próximos passos concretos",
+          "fundamentacao_legal_especifica": "string"
+        }
+        `;
+      } else if (type === 'parecer_anexo_vii') {
+        systemInstruction += `
+        TAREFA: Parecer Técnico Conclusivo de Análise de Prestação de Contas Final — segue a
+        estrutura oficial do Anexo VII do Manual MROSC (Governo Federal, "Do Planejamento à
+        Prestação de Contas"), o modelo que o gestor da parceria usa pra concluir a análise da
+        prestação de contas final (Art. 61, IV, e Art. 67 da Lei 13.019/2014).
+
+        O conteúdo fornecido contém os relatórios da parceria (execução do objeto, execução
+        financeira, visita técnica in loco, pesquisa de satisfação, monitoramento — o que
+        estiver disponível) e os dados de identificação da parceria.
+
+        PENSAMENTO:
+        1. Leia todo o conteúdo fornecido antes de escrever qualquer seção.
+        2. Para CADA uma das 8 seções técnicas abaixo, avalie com base EXCLUSIVAMENTE no que foi
+           informado — nunca presuma dado que não esteja no conteúdo fornecido.
+        3. Se faltar informação pra avaliar alguma seção, diga isso explicitamente dentro da
+           própria seção ("dado insuficiente para avaliação — solicitar a informação à OSC") em
+           vez de inventar ou generalizar.
+        4. A conclusão (seção VIII) precisa indicar um desfecho formal claro e coerente com o que
+           foi descrito nas seções anteriores.
+
+        ESTRUTURA OBRIGATÓRIA — as 8 seções técnicas do Anexo VII, nesta ordem:
+        I. INTRODUÇÃO — síntese descritiva das atividades e metas pactuadas no plano de trabalho.
+        II. AVALIAÇÃO DAS AÇÕES REALIZADAS — avaliação qualitativa do que foi efetivamente
+            realizado frente ao planejado, incluindo dificuldades operacionais e eventuais
+            medidas de saneamento adotadas pela OSC.
+        III. AVALIAÇÃO DO CUMPRIMENTO DAS METAS — registro dos resultados alcançados e
+             manifestação fundamentada sobre o cumprimento das metas, com justificativa para
+             metas não cumpridas, quando houver.
+        IV. AVALIAÇÃO DOS IMPACTOS ECONÔMICOS OU SOCIAIS — conclusão expressa se a parceria
+            gerou impactos econômicos/sociais relevantes (liste-os) ou se não foi possível
+            identificá-los, com recomendação sobre relevância pra parcerias semelhantes futuras.
+        V. AVALIAÇÃO DO GRAU DE SATISFAÇÃO DO PÚBLICO-ALVO — evidências que demonstrem a
+           percepção do público-alvo/comunidade sobre os serviços prestados.
+        VI. AVALIAÇÃO SOBRE A SUSTENTABILIDADE DAS AÇÕES APÓS A CONCLUSÃO DA PARCERIA — como as
+            estratégias indicadas pela OSC apontam pra continuidade das ações no território, ou
+            registro da impossibilidade técnica de sustentabilidade, se for o caso.
+        VII. AVALIAÇÃO SOBRE A TRANSPARÊNCIA DA PARCERIA — verificação se a OSC cumpriu os
+             deveres de publicidade e transparência ativa (inclusive origem de eventuais
+             recursos de emendas parlamentares, quando aplicável).
+        VIII. CONCLUSÃO — desfecho formal proposto: aprovação das contas (cumprimento do objeto
+              e metas), aprovação com ressalvas (falhas formais que não geram dano ao erário), ou
+              rejeição com determinação de instauração de Tomada de Contas Especial.
+
+        BASE LEGAL DE REFERÊNCIA PRINCIPAL: Art. 59, 61 (IV), 64, 66, 67 e 72 da Lei 13.019/2014
+        (texto vigente na base normativa acima — não invente número de artigo fora dela).
+
+        SAÍDA JSON OBRIGATÓRIA (sem o bloco de identificação — isso é preenchido pelo sistema,
+        não pela IA):
+        {
+          "introducao": "string",
+          "avaliacaoAcoesRealizadas": "string",
+          "avaliacaoCumprimentoMetas": "string",
+          "avaliacaoImpactos": "string",
+          "avaliacaoSatisfacaoPublico": "string",
+          "avaliacaoSustentabilidade": "string",
+          "avaliacaoTransparencia": "string",
+          "conclusao": "string",
+          "desfecho": "APROVACAO" | "APROVACAO_RESSALVAS" | "REJEICAO",
+          "status_final": "CONFORME" | "RESSALVA" | "NAO_CONFORME",
           "fundamentacao_legal_especifica": "string"
         }
         `;

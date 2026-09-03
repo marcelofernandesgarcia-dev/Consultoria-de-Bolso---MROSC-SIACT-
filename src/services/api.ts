@@ -50,7 +50,8 @@ export interface MROSCAnalysisRequest {
     | 'papeis_impedimentos'
     | 'osc_edital'
     | 'osc_proposal'
-    | 'gerador_parecer';
+    | 'gerador_parecer'
+    | 'parecer_anexo_vii';
   textContent: string;
   context?: Record<string, unknown>;
   documentName?: string;
