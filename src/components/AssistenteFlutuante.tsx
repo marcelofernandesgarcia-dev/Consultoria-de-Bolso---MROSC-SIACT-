@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Loader2, User, Paperclip, BookOpen, Scale, Sparkles } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { type Modo, SISTEMA_PROMPT } from '../lib/assistentePrompts';
+import { apiFetch } from '../lib/apiFetch';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -73,7 +74,7 @@ export function AssistenteFlutuante() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, systemPrompt: SISTEMA_PROMPT[modo] }),

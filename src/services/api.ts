@@ -1,4 +1,5 @@
 import type { AIAnalysisResult, ItemCotacaoAnalise } from '../types';
+import { apiFetch } from '../lib/apiFetch';
 
 export interface AnalysisResult {
   metadados: {
@@ -65,7 +66,7 @@ export async function analyzeProcess(
   textContent: string,
   images: { data: string; mimeType: string }[] = [],
 ): Promise<AnalysisResult> {
-  const response = await fetch('/api/analyze', {
+  const response = await apiFetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ textContent, images }),
@@ -80,7 +81,7 @@ export async function analyzeProcess(
 }
 
 export async function analyzeMROSC(request: MROSCAnalysisRequest): Promise<MROSCAnalysisResult> {
-  const response = await fetch('/api/analyze-mrosc', {
+  const response = await apiFetch('/api/analyze-mrosc', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),

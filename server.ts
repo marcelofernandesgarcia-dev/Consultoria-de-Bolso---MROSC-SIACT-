@@ -196,6 +196,8 @@ async function startServer() {
 
   // --- MROSC ANALYSIS API ---
   app.post("/api/analyze-mrosc", async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
     try {
       const { type, textContent, documentName = "Documento Sem Nome", context = {} } = req.body;
 
@@ -628,8 +630,7 @@ async function startServer() {
         parsedData.status = parsedData.status_final;
       }
 
-      // Persist to Supabase — user_id verificado via JWT (nunca confia no cliente)
-      const userId = await getAuthUser(req);
+      // Persist to Supabase — user_id já verificado via JWT no topo do handler
       await supabase.from('analysis_history').insert({
         type,
         document_name: documentName,
@@ -707,6 +708,8 @@ async function startServer() {
 
   // --- Busca + explica um edital específico (link vindo do Radar) — automação ponta a ponta ---
   app.post("/api/mrosc/edital-explicar", async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
     try {
       const { link, title } = req.body;
       if (!link || typeof link !== "string") {
@@ -766,6 +769,8 @@ async function startServer() {
   });
 
   app.post("/api/analyze", async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
     try {
       const { textContent, images } = req.body;
 
@@ -890,6 +895,8 @@ ESTRUTURA JSON ESPERADA:
 
   // --- CHAT API ---
   app.post("/api/chat", async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
     try {
       const { message, systemPrompt: clientSystemPrompt } = req.body;
       if (!message || typeof message !== 'string' || message.trim().length === 0) {

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, Loader2, Bot, User, Sparkles, Paperclip, BookOpen, Scale } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { type Modo, SISTEMA_PROMPT } from '../lib/assistentePrompts';
+import { apiFetch } from '../lib/apiFetch';
 
 const PROMPTS = [
   { id: 1, fase: 'Fase de Seleção', texto: 'Quais os requisitos obrigatórios para uma OSC participar de um chamamento público segundo o MROSC?' },
@@ -75,7 +76,7 @@ export function AssistenteSiact() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, systemPrompt: SISTEMA_PROMPT[modo] }),
