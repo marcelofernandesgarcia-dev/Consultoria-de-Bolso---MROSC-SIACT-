@@ -117,12 +117,30 @@ export function Inicio() {
         </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — traços com leve efeito neon de tons alternando */}
       <div className="flex gap-2">
         {[1, 2, 3].map(s => (
-          <div key={s} className={`h-1.5 flex-1 rounded-full transition-all ${step >= s ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+          <div key={s} className="h-1.5 flex-1 rounded-full overflow-hidden">
+            <div
+              className="h-full w-full rounded-full"
+              style={{
+                background: step >= s
+                  ? 'linear-gradient(90deg, #6366F1, #A855F7, #22D3EE, #6366F1)'
+                  : 'linear-gradient(90deg, #E2E8F0, #CBD5E1, #E2E8F0)',
+                backgroundSize: '300% 100%',
+                animation: `progresso-neon ${step >= s ? '3s' : '6s'} ease-in-out infinite`,
+                boxShadow: step >= s ? '0 0 8px rgba(129,140,248,0.55)' : 'none',
+              }}
+            />
+          </div>
         ))}
       </div>
+      <style>{`
+        @keyframes progresso-neon {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
 
       {/* STEP 1 — Perfil */}
       {step === 1 && (
