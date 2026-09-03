@@ -3,6 +3,7 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { Sidebar, SIDEBAR_W_EXPANDED, SIDEBAR_W_COLLAPSED } from './Sidebar';
 import { AssistenteFlutuante } from '../AssistenteFlutuante';
+import { BotaoInicio } from '../BotaoInicio';
 import { useAuth } from '../../contexts/AuthContext';
 import { perfilDaRota, homePathForPerfil } from '../../lib/nav';
 
@@ -72,6 +73,7 @@ export function Layout() {
         </main>
       </div>
 
+      <BotaoInicio />
       <AssistenteFlutuante />
     </div>
   );

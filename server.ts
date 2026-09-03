@@ -211,13 +211,7 @@ async function startServer() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const base = (q: any) => userId ? q.eq('user_id', userId) : q;
 
-      const [
-        { count: total },
-        { count: approved },
-        { count: warning },
-        { count: rejected },
-        { data: recent }
-      ] = await Promise.all([
+      const [totalRes, approvedRes, warningRes, rejectedRes, recentRes] = await Promise.all([
         base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })),
         base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })).eq('status', 'CONFORME'),
         base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })).eq('status', 'RESSALVA'),
@@ -225,11 +219,21 @@ async function startServer() {
         base(supabase.from('analysis_history').select('id, document_name, status, date, type')).order('date', { ascending: false }).limit(5),
       ]);
 
+      // Cada resposta do Supabase carrega seu próprio `error` — sem checar, uma falha
+      // de permissão vira silenciosamente "0 análises" em vez de aparecer como erro real.
+      const firstError = [totalRes, approvedRes, warningRes, rejectedRes, recentRes].find(r => r.error)?.error;
+      if (firstError) throw firstError;
+
       const growth = { total: 0, approved: 0, warning: 0, rejected: 0 };
-      res.json({ stats: { total: total ?? 0, approved: approved ?? 0, warning: warning ?? 0, rejected: rejected ?? 0, growth }, recent: recent ?? [] });
+      res.json({
+        stats: { total: totalRes.count ?? 0, approved: approvedRes.count ?? 0, warning: warningRes.count ?? 0, rejected: rejectedRes.count ?? 0, growth },
+        recent: recentRes.data ?? [],
+      });
     } catch (error: any) {
       console.error("Dashboard error:", error);
-      res.status(500).json({ error: error.message });
+      // Consultas com { head: true } não trazem corpo na resposta do Postgrest —
+      // um erro de permissão nelas chega com error.message vazio.
+      res.status(500).json({ error: error.message || "Erro ao consultar analysis_history" });
     }
   });
 
@@ -678,8 +682,10 @@ async function startServer() {
         parsedData.status = parsedData.status_final;
       }
 
-      // Persist to Supabase — user_id já verificado via JWT no topo do handler
-      await supabase.from('analysis_history').insert({
+      // Persist to Supabase — user_id já verificado via JWT no topo do handler.
+      // Falha aqui não deve derrubar a resposta (a análise em si já foi concluída),
+      // mas precisa ficar visível no log — antes era descartada em silêncio.
+      const { error: historyError } = await supabase.from('analysis_history').insert({
         type,
         document_name: documentName,
         status: parsedData.status_final || 'RESSALVA',
@@ -688,7 +694,10 @@ async function startServer() {
         user_id: userId,
         created_at: new Date().toISOString(),
       });
-      
+      if (historyError) {
+        console.error("Falha ao salvar histórico da análise (analysis_history):", historyError.message);
+      }
+
       res.json(parsedData);
 
     } catch (error: any) {
@@ -1194,10 +1203,17 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
     ]);
 
     // Conta usuários distintos
-    const { data: users } = await supabase
+    const { data: users, error: usersError } = await supabase
       .from('analysis_history')
       .select('user_id')
       .not('user_id', 'is', null);
+
+    // Sem essa checagem, uma falha de permissão vira "0 análises, 0 usuários" em vez de um erro visível.
+    const statsError = [total, conforme, ressalva, naoConforme, last7].find(r => r.error)?.error ?? usersError;
+    if (statsError) {
+      console.error("Erro ao consultar analysis_history (admin/stats):", statsError.message);
+      return res.status(500).json({ error: statsError.message || "Erro ao consultar analysis_history" });
+    }
 
     const uniqueUsers = new Set((users ?? []).map((r: any) => r.user_id)).size;
 
