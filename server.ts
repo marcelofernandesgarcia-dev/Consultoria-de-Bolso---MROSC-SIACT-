@@ -147,8 +147,15 @@ async function startServer() {
   }
 
   // --- HEALTH CHECK ---
-  app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", version: "4.0.0", env: process.env.NODE_ENV ?? "development" });
+  app.get("/api/health", async (_req, res) => {
+    const base = { version: "4.0.0", env: process.env.NODE_ENV ?? "development", timestamp: new Date().toISOString() };
+    try {
+      const { error } = await supabase.from('analysis_history').select('id').limit(1);
+      if (error) throw error;
+      res.json({ status: "ok", ...base });
+    } catch (err: any) {
+      res.status(503).json({ status: "down", ...base, error: err.message });
+    }
   });
 
   // --- PDF PARSING API ---
@@ -883,16 +890,6 @@ ESTRUTURA JSON ESPERADA:
   });
 
   // --- HEALTH CHECK ---
-  app.get("/api/health", async (_req, res) => {
-    try {
-      const { error } = await supabase.from('analysis_history').select('id').limit(1);
-      if (error) throw error;
-      res.json({ status: 'ok', timestamp: new Date().toISOString() });
-    } catch (err: any) {
-      res.status(503).json({ status: 'down', error: err.message });
-    }
-  });
-
   // --- CHAT API ---
   app.post("/api/chat", async (req, res) => {
     const userId = await getAuthUser(req);
