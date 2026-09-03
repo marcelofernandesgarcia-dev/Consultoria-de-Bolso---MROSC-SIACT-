@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X,
 } from 'lucide-react';
@@ -46,7 +46,6 @@ const C: Record<SectionColor, {
 
 /* ─── Componente ──────────────────────────────────────────────── */
 export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
-  const location = useLocation();
   const { user, isAdmin, perfilVisivel, previewPerfil, setPreviewPerfil, signOut } = useAuth();
   const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel));
   const isMobile = useIsMobile();
@@ -62,16 +61,6 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
 
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'GP';
   const displayName = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Usuário';
-
-  /* Auto-pinar grupo pela rota atual */
-  useEffect(() => {
-    for (const g of navegacaoVisivel) {
-      const match = g.items.some(item =>
-        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
-      );
-      if (match) { setPinnedGroup(g.id); return; }
-    }
-  }, [location.pathname]);
 
   /* Progresso capacitação */
   useEffect(() => {
@@ -317,40 +306,42 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
             </NavLink>
           )}
 
-          {/* Perfil do usuário */}
-          <div
-            className="flex items-center overflow-hidden"
-            style={{
-              padding: expanded ? '10px 12px' : '10px',
-              gap: expanded ? 10 : 0,
-              justifyContent: expanded ? 'flex-start' : 'center',
-            }}
-          >
-            <NavLink
-              to="/conta"
-              onClick={() => isMobile && onMobileClose()}
-              title={!expanded ? `${displayName} — Minha conta` : undefined}
-              className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 hover:ring-2 hover:ring-indigo-500/40 transition-all"
-              style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
+          {/* Perfil do usuário — só aparece pra Setorial já logado via gov.br. Antes da escolha de perfil (OSC/Setorial) e para OSC (acesso livre, sem identidade formal), fica oculto. */}
+          {perfilVisivel === 'setorial' && (
+            <div
+              className="flex items-center overflow-hidden"
+              style={{
+                padding: expanded ? '10px 12px' : '10px',
+                gap: expanded ? 10 : 0,
+                justifyContent: expanded ? 'flex-start' : 'center',
+              }}
             >
-              <span className="text-[11px] font-bold text-white">{initials}</span>
-            </NavLink>
-            {expanded && (
-              <>
-                <NavLink to="/conta" onClick={() => isMobile && onMobileClose()} className="flex-1 min-w-0 group">
-                  <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate group-hover:text-white transition-colors">{displayName}</p>
-                  <p className="text-[9px] text-slate-600 mt-0.5 truncate">{user?.email ?? ''}</p>
-                </NavLink>
-                <button
-                  onClick={signOut}
-                  title="Sair"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.04] transition-colors shrink-0"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )}
-          </div>
+              <NavLink
+                to="/conta"
+                onClick={() => isMobile && onMobileClose()}
+                title={!expanded ? `${displayName} — Minha conta` : undefined}
+                className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 hover:ring-2 hover:ring-indigo-500/40 transition-all"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
+              >
+                <span className="text-[11px] font-bold text-white">{initials}</span>
+              </NavLink>
+              {expanded && (
+                <>
+                  <NavLink to="/conta" onClick={() => isMobile && onMobileClose()} className="flex-1 min-w-0 group">
+                    <p className="text-[11.5px] font-semibold text-slate-300 leading-none truncate group-hover:text-white transition-colors">{displayName}</p>
+                    <p className="text-[9px] text-slate-600 mt-0.5 truncate">{user?.email ?? ''}</p>
+                  </NavLink>
+                  <button
+                    onClick={signOut}
+                    title="Sair"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.04] transition-colors shrink-0"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </aside>
     </>
