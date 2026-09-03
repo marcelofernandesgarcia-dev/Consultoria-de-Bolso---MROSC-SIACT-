@@ -187,6 +187,13 @@ IMPORTANTE: este artigo trata exclusivamente de CONTRAPARTIDA — não contém n
 "mínimo de 3 propostas de fornecedores" nem qualquer menção a R$ 120.000,00. Essa combinação, se
 usada em algum material de apoio, não corresponde ao texto oficial deste artigo.
 
+Art. 42, II (redação dada pelo Decreto nº 11.948/2024). A remuneração de equipe paga com recursos
+da parceria deve: sejam compatíveis com o valor de mercado na região de atuação da OSC e observem
+os acordos e convenções coletivas de trabalho e, em seu valor bruto e individual, o TETO DA
+REMUNERAÇÃO DO PODER EXECUTIVO FEDERAL. IMPORTANTE: é um teto INDIVIDUAL por pessoa (referenciado
+ao teto do funcionalismo federal) — não existe um "percentual máximo do total da parceria" pra
+gasto com pessoal; o que a norma limita é o valor de cada remuneração isolada.
+
 Art. 39, §1º (redação dada pelo Decreto nº 11.948/2024). As multas, os juros ou as correções
 monetárias referentes a pagamentos ou a recolhimentos realizados fora dos prazos pela
 organização da sociedade civil poderão ser pagos com recursos da parceria, DESDE QUE decorrentes

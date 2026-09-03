@@ -6,7 +6,7 @@ import { STATUS_LABEL, STATUS_BADGE_DARK, STATUS_HEX, type StatusFinal } from '.
 const TEMAS_RAPIDOS = [
   'Uma OSC com 2 anos de existência pode firmar Acordo de Cooperação?',
   'Quais documentos de habilitação foram dispensados pelo Decreto 11.948/2024?',
-  'Como calcular o percentual máximo de pagamento de pessoal com recursos da parceria?',
+  'Existe um teto de remuneração para pessoal contratado com recursos da parceria?',
   'Quais são os requisitos mínimos para uma OSC ser considerada elegível?',
   'Em que situações é obrigatório o chamamento público?',
   'O que caracteriza desvio de finalidade no uso dos recursos da parceria?',
