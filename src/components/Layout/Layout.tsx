@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { Bell, X, ArrowRight } from 'lucide-react';
+import { Bell, X, ArrowRight, Menu } from 'lucide-react';
 import { Sidebar, SIDEBAR_W_EXPANDED, SIDEBAR_W_COLLAPSED } from './Sidebar';
+import { AssistenteFlutuante } from '../AssistenteFlutuante';
 import { useAuth } from '../../contexts/AuthContext';
 import { perfilDaRota, homePathForPerfil } from '../../lib/nav';
 
@@ -74,8 +75,12 @@ export function Layout() {
     });
   };
 
-  /* Largura total ocupada pelo sidebar */
+  /* Largura total ocupada pelo sidebar (só se aplica em telas ≥768px — ver className do wrapper abaixo) */
   const sidebarWidth = isExpanded ? SIDEBAR_W_EXPANDED : SIDEBAR_W_COLLAPSED;
+
+  /* Drawer mobile — fechado por padrão, fecha sozinho ao trocar de rota */
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
 
   /* Notificações */
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed);
@@ -104,23 +109,37 @@ export function Layout() {
   return (
     <div className="flex min-h-screen" style={{ background: '#F2F4F8' }}>
 
-      <Sidebar isExpanded={isExpanded} onToggle={toggleSidebar} />
+      <Sidebar
+        isExpanded={isExpanded}
+        onToggle={toggleSidebar}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
 
-      {/* Conteúdo principal — margem dinâmica com transição suave */}
+      {/* Conteúdo principal — em mobile ocupa 100% (sidebar vira drawer por cima); em desktop reserva a largura da sidebar */}
       <div
-        className="flex-1 flex flex-col min-h-screen transition-all duration-200 print:!ml-0"
-        style={{ marginLeft: sidebarWidth }}
+        className="flex-1 flex flex-col min-h-screen transition-all duration-200 ml-0 md:!ml-[var(--sbw)] print:!ml-0"
+        style={{ '--sbw': `${sidebarWidth}px` } as React.CSSProperties}
       >
         {/* Top bar */}
         <header
-          className="sticky top-0 z-20 shrink-0 h-12 flex items-center px-7 gap-2 print:hidden"
+          className="sticky top-0 z-20 shrink-0 h-12 flex items-center px-4 md:px-7 gap-2 print:hidden"
           style={{ background: 'rgba(242,244,248,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}
         >
-          <span className="text-[11px] text-slate-400 font-medium" title="Sistema Inteligente de Análise e Controle de Transferências da União">
+          {/* Hambúrguer — só mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden -ml-1 mr-1 w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200/70 transition-colors shrink-0"
+            title="Abrir menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <span className="text-[11px] text-slate-400 font-medium hidden sm:inline" title="Sistema Inteligente de Análise e Controle de Transferências da União">
             SIACT-MROSC
           </span>
-          <span className="text-[11px] text-slate-300 mx-0.5">/</span>
-          <span className="text-[11px] text-slate-700 font-semibold">{pageTitle}</span>
+          <span className="text-[11px] text-slate-300 mx-0.5 hidden sm:inline">/</span>
+          <span className="text-[11px] text-slate-700 font-semibold truncate">{pageTitle}</span>
 
           <div className="ml-auto flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -148,7 +167,7 @@ export function Layout() {
 
               {bellOpen && (
                 <div
-                  className="absolute right-0 top-9 w-80 rounded-2xl shadow-xl overflow-hidden"
+                  className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-14 sm:top-9 w-auto sm:w-80 rounded-2xl shadow-xl overflow-hidden"
                   style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', zIndex: 50 }}
                 >
                   <div className="px-4 py-3 flex items-center justify-between"
@@ -199,10 +218,12 @@ export function Layout() {
           </div>
         </header>
 
-        <main className="flex-1 p-7">
+        <main className="flex-1 p-4 pb-24 md:p-7">
           <Outlet />
         </main>
       </div>
+
+      <AssistenteFlutuante />
     </div>
   );
 }

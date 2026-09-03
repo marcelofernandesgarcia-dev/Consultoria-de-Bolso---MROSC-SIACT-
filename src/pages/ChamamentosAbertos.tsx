@@ -276,20 +276,21 @@ export function ChamamentosAbertos() {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
                             <button
                               onClick={() => explicarNaLista(op)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-cyan-50 hover:text-cyan-700 hover:border-cyan-200 transition-colors"
+                              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-cyan-50 hover:text-cyan-700 hover:border-cyan-200 transition-colors text-center"
                             >
-                              {isLoadingThis ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              {isLoadingThis ? <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" /> : isExpanded ? <ChevronUp className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
                               Explicar Edital
                             </button>
                             <button
                               onClick={() => usarNaPreAnalise(op)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-colors"
+                              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-colors text-center"
                             >
-                              <FileCheck className="w-3.5 h-3.5" />
-                              Pré-Análise da Proposta
+                              <FileCheck className="w-3.5 h-3.5 shrink-0" />
+                              <span className="sm:hidden">Pré-Análise</span>
+                              <span className="hidden sm:inline">Pré-Análise da Proposta</span>
                             </button>
                           </div>
                         </div>

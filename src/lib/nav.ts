@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
-  Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
+  Activity, GraduationCap, LayoutTemplate, Route,
   Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, Radar,
 } from 'lucide-react';
 
@@ -29,7 +29,6 @@ export const NAVIGATION: NavGroup[] = [
     items: [
       { id: 'dashboard',  label: 'Dashboard',        icon: LayoutDashboard, path: '/', perfil: 'setorial' },
       { id: 'inicio',     label: 'Por onde começar', icon: Compass,         path: '/inicio' },
-      { id: 'assistente', label: 'Assistente SIACT', icon: MessageSquare,   path: '/assistente' },
     ],
   },
   {
