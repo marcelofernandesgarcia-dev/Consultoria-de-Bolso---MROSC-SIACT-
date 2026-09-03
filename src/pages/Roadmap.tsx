@@ -16,8 +16,8 @@ const PHASES = [
     statusBorder: '#C7D2FE',
     description: 'Garantia de segurança jurídica, rastreabilidade e mitigação de alucinações da IA.',
     tasks: [
-      { text: 'Implementar arquitetura RAG (Retrieval-Augmented Generation)', done: true },
-      { text: 'Avaliar migração do motor de IA (Gemini) para infraestrutura soberana SERPRO — ConversAÍ Studio / SerproLLM', done: false },
+      { text: 'Implementar arquitetura RAG (Retrieval-Augmented Generation)', done: false },
+      { text: 'Avaliar migração do motor de IA (Claude, Anthropic) para infraestrutura soberana SERPRO — ConversAÍ Studio / SerproLLM', done: false },
       { text: 'Criar banco de dados vetorial com jurisprudência (TCU/CGU)', done: false },
       { text: 'Geração de Hash de segurança para cada Parecer emitido', done: false },
       { text: 'Fluxo de aprovação humana obrigatória (Human-in-the-loop)', done: false },

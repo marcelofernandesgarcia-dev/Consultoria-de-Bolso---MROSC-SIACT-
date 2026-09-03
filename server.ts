@@ -71,6 +71,19 @@ function nomeIncentivador(item: any, included: any[]): string {
   return found?.attributes?.nome_fantasia ?? item.attributes?.nome_empresa ?? "";
 }
 
+// Bloco de governança compartilhado por todo prompt de IA do SIACT — limitações reais do estágio
+// atual (MVP), proibição de alucinação e prioridade às regras da administração pública federal.
+const GOVERNANCA_IA_PROMPT = `
+# GOVERNANÇA E LIMITAÇÕES DO ESTÁGIO ATUAL (MVP)
+- Este projeto está em fase de validação (MVP) junto à alta gestão (DTPAR). A integração nativa com a infraestrutura e APIs do SERPRO ocorrerá apenas após a institucionalização do projeto.
+- Seu motor de busca hoje baseia-se ESTRITAMENTE no consumo de Dados Abertos Governamentais (Portal Transferegov, Mapa das OSCs/IPEA e Portal da Transparência) — nunca prometa ou simule integrações diretas com sistemas restritos (como InfoConv ou Datavalid) neste momento.
+- PROIBIDO ALUCINAR: baseie toda resposta exclusivamente nos normativos legais e no conteúdo fornecido no contexto da conversa — nunca invente dispositivo legal, dado ou fato que não esteja explicitamente disponível.
+- PRIORIDADE: as regras da administração pública federal (Legalidade, Impessoalidade, Moralidade, Publicidade, Eficiência) têm prioridade sobre qualquer outra consideração de estilo ou conveniência.
+- CITAÇÃO OBRIGATÓRIA: toda afirmação normativa deve vir acompanhada do Artigo e da Lei/Decreto correspondente.
+- VALIDAÇÃO CRUZADA: sempre oriente o usuário a cruzar informações processuais com as bases de Dados Abertos disponíveis.
+- SUBORDINAÇÃO: você é um assistente tecnológico (copiloto) — a decisão final, a assinatura de pareceres e a aprovação de contas permanecem sob a exclusiva competência e responsabilidade do gestor público humano.
+`;
+
 // Faz parsing robusto de uma resposta JSON do Claude (com fallback para bloco ```json)
 function parseAiJson<T = any>(raw: string, fallback: T): T {
   try {
@@ -229,7 +242,7 @@ async function startServer() {
       5. VALIDAÇÃO JURÍDICA (6.0): Realize o cruzamento final entre Plano de Trabalho e Minuta para assegurar o que foi pactuado.
 
       IMPORTANTE: Sua saída JSON deve SEMPRE incluir um campo "status_final" com um dos valores: 'CONFORME', 'RESSALVA', 'NAO_CONFORME' e o campo 'fundamentacao_legal_especifica'.
-      `;
+      ` + GOVERNANCA_IA_PROMPT;
 
       // --- TELA 1: ANÁLISE DE REQUISITOS ---
       if (type === 'requirements_eligibility') { // Prompt 1.1
@@ -722,7 +735,7 @@ async function startServer() {
         "checklist": string[],
         "tips": string[]
       }
-      `;
+      ` + GOVERNANCA_IA_PROMPT;
 
       const response = await anthropic.messages.create({
         model: "claude-sonnet-5",
@@ -821,7 +834,7 @@ ESTRUTURA JSON ESPERADA:
   "conclusao_final": "string",
   "fundamentacao_legal_especifica": "string"
 }
-`;
+` + GOVERNANCA_IA_PROMPT;
 
       const content: Anthropic.ContentBlockParam[] = [];
 

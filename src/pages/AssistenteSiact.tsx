@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, Loader2, Bot, User, Sparkles, Paperclip, BookOpen, Scale } from 'lucide-react';
 import Markdown from 'react-markdown';
-
-type Modo = 'simples' | 'tecnica';
+import { type Modo, SISTEMA_PROMPT } from '../lib/assistentePrompts';
 
 const PROMPTS = [
   { id: 1, fase: 'Fase de Seleção', texto: 'Quais os requisitos obrigatórios para uma OSC participar de um chamamento público segundo o MROSC?' },
@@ -10,13 +9,6 @@ const PROMPTS = [
   { id: 3, fase: 'Fase de Execução', texto: 'É permitido alterar o plano de trabalho durante a execução da parceria? Quais as regras?' },
   { id: 4, fase: 'Prestação de Contas', texto: 'Qual a diferença entre prestação de contas anual e final no MROSC?' },
 ];
-
-const SISTEMA_PROMPT: Record<Modo, string> = {
-  simples: `Você é um consultor de linguagem simples especializado no Marco Regulatório das OSCs (Lei 13.019/2014 e Decreto 11.948/2024).
-Responda de forma clara e direta, evitando termos jurídicos complexos. Use exemplos práticos e linguagem acessível para gestores de organizações da sociedade civil sem formação jurídica. Quando citar artigos da lei, explique o que eles significam na prática.`,
-  tecnica: `Você é um especialista técnico-jurídico no Marco Regulatório das Organizações da Sociedade Civil (MROSC — Lei 13.019/2014, alterada pela Lei 13.204/2015, e Decreto 11.948/2024).
-Responda com precisão técnica, citando artigos, incisos e parágrafos da legislação. Use terminologia jurídica adequada. Estruture a resposta com fundamento legal, análise e conclusão. Mencione orientações do TCU e CGU quando pertinentes.`,
-};
 
 interface ChatMessage {
   role: 'user' | 'assistant';

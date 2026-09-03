@@ -162,7 +162,7 @@ function buildPdfHtml(pergunta: string, result: ParecerResult): string {
   </div>` : ''}
 
   <div class="footer">
-    Parecer gerado pelo SIACT-MROSC · Parte do conteúdo produzida com auxílio de Inteligência Artificial (Gemini 2.5 Flash).<br/>
+    Parecer gerado pelo SIACT-MROSC · Parte do conteúdo produzida com auxílio de Inteligência Artificial (Claude, Anthropic).<br/>
     Este documento é consultivo e orientativo. O servidor público permanece responsável pela revisão, autoria e assinatura do ato administrativo.<br/>
     Portaria SGD/MGI nº 473/2026 — Classificação AIE: Risco Baixo.
   </div>
