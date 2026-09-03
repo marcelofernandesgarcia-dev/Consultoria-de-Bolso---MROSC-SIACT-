@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Building2, FileSearch, BookOpen, PlayCircle,
   FileCheck, AlertTriangle, ChevronRight, ArrowLeft, Sparkles, Radar, Check
 } from 'lucide-react';
 import { NAVIGATION, itensVisiveis, NAV_META_IDS } from '../lib/nav';
+import { loadJornada, saveJornada, type PerfilJornada, type FaseJornada } from '../lib/jornada';
 
 // Mesma fonte que a sidebar usa (gavetas "osc"/"setorial") — cada card filtra pelo seu perfil,
 // excluindo itens de navegação/meta (Dashboard, Por onde começar, FAQ, Capacitação, Sistema).
@@ -19,10 +20,8 @@ const SUBITENS: Record<string, string[]> = {
   integracao: ['Busca por CNPJ', 'Busca por Nome/UF'],
 };
 
-type Perfil = 'osc' | 'gestor' | null;
-type Fase =
-  | 'chamamento' | 'plano_trabalho' | 'execucao'
-  | 'prestacao' | 'tce' | null;
+type Perfil = PerfilJornada | null;
+type Fase = FaseJornada | null;
 
 interface Destino {
   label: string;
@@ -98,9 +97,14 @@ const FASES = [
 
 export function Inicio() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [perfil, setPerfil] = useState<Perfil>(null);
-  const [fase, setFase] = useState<Fase>(null);
+  // Retomar de onde o usuário parou — sem isso, todo retorno à /inicio (botão flutuante,
+  // sidebar, F5) resetava o wizard pro passo 1 mesmo com uma escolha já feita.
+  const jornadaSalva = loadJornada();
+  const [step, setStep] = useState<1 | 2 | 3>(jornadaSalva ? 3 : 1);
+  const [perfil, setPerfil] = useState<Perfil>(jornadaSalva?.perfil ?? null);
+  const [fase, setFase] = useState<Fase>(jornadaSalva?.fase ?? null);
+
+  useEffect(() => { saveJornada(perfil, fase); }, [perfil, fase]);
 
   const chave = perfil && fase ? `${perfil}_${fase}` : null;
   const destinos: Destino[] = chave ? (DESTINOS_POR_FASE[chave] ?? []) : [];

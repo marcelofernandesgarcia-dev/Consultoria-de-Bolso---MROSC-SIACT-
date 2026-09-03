@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
-  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X, ChevronDown,
+  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X, ChevronDown, Compass,
 } from 'lucide-react';
 import { NAVIGATION, grupoVisivel, itensVisiveis, type SectionColor, type Perfil } from '../../lib/nav';
+import { loadJornada, PERFIL_LABEL, FASE_LABEL, type Jornada } from '../../lib/jornada';
 import { useAuth } from '../../contexts/AuthContext';
 import { useIsMobile } from '../../lib/useIsMobile';
 
@@ -49,6 +50,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
   const { user, isAdmin, perfilVisivel, previewPerfil, setPreviewPerfil, signOut } = useAuth();
   const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel));
   const isMobile = useIsMobile();
+  const location = useLocation();
   // No mobile o drawer é sempre "expandido" (mostra labels) — só a visibilidade (translate) muda.
   const expanded = isMobile ? true : isExpanded;
 
@@ -57,14 +59,15 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
   /* grupo hovado = temporário */
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [capacPct, setCapacPct] = useState(loadCapacitacaoPct);
+  const [jornada, setJornada] = useState<Jornada | null>(loadJornada);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'GP';
   const displayName = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Usuário';
 
-  /* Progresso capacitação */
+  /* Progresso capacitação + posição na jornada (perfil/fase escolhidos em /inicio) */
   useEffect(() => {
-    const sync = () => setCapacPct(loadCapacitacaoPct());
+    const sync = () => { setCapacPct(loadCapacitacaoPct()); setJornada(loadJornada()); };
     window.addEventListener('storage', sync);
     const t = setInterval(sync, 3000);
     return () => { window.removeEventListener('storage', sync); clearInterval(t); };
@@ -133,6 +136,25 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
             </button>
           )}
         </div>
+
+        {/* ── SUA JORNADA — posição salva do wizard "Por onde começar" (perfil + fase) ── */}
+        {expanded && jornada && location.pathname !== '/inicio' && (
+          <NavLink
+            to="/inicio"
+            onClick={() => isMobile && onMobileClose()}
+            className="flex items-center gap-2 mx-3 mt-2.5 px-2.5 py-2 rounded-lg shrink-0 transition-colors hover:brightness-125"
+            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)' }}
+            title="Voltar para suas ferramentas recomendadas"
+          >
+            <Compass className="w-3.5 h-3.5 text-indigo-300 shrink-0" strokeWidth={2} />
+            <span className="min-w-0 flex-1">
+              <p className="text-[9px] font-bold text-indigo-300/80 uppercase tracking-wider leading-none">Sua jornada</p>
+              <p className="text-[11px] font-semibold text-slate-200 truncate mt-0.5">
+                {PERFIL_LABEL[jornada.perfil]} · {FASE_LABEL[jornada.fase]}
+              </p>
+            </span>
+          </NavLink>
+        )}
 
         {/* ── SELETOR DE VISUALIZAÇÃO (só admin) — para apresentar a viabilidade sob as duas óticas ── */}
         {expanded && isAdmin && (
