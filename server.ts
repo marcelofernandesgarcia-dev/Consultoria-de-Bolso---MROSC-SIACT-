@@ -97,8 +97,8 @@ function parseAiJson<T = any>(raw: string, fallback: T): T {
   }
 }
 
-// Configure multer for memory storage
-const upload = multer({ storage: multer.memoryStorage() });
+// Configure multer for memory storage — limite de 10MB (mesmo teto já anunciado no frontend)
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const VALID_ANALYSIS_TYPES = [
   'requirements_eligibility', 'requirements_docs', 'requirements_budget',
@@ -159,17 +159,25 @@ async function startServer() {
   });
 
   // --- PDF PARSING API ---
-  app.post("/api/parse-pdf", upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "Nenhum arquivo enviado." });
+  app.post("/api/parse-pdf", (req, res) => {
+    upload.single("file")(req, res, async (err: any) => {
+      if (err) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(413).json({ error: "Arquivo muito grande. O limite é 10MB." });
+        }
+        return res.status(400).json({ error: "Erro ao processar o upload: " + err.message });
       }
-      const data = await pdfParse(req.file.buffer);
-      res.json({ text: data.text });
-    } catch (error: any) {
-      console.error("PDF parsing error:", error);
-      res.status(500).json({ error: "Erro ao processar o PDF. " + error.message });
-    }
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "Nenhum arquivo enviado." });
+        }
+        const data = await pdfParse(req.file.buffer);
+        res.json({ text: data.text });
+      } catch (error: any) {
+        console.error("PDF parsing error:", error);
+        res.status(500).json({ error: "Erro ao processar o PDF. " + error.message });
+      }
+    });
   });
 
   // --- DASHBOARD API ---
