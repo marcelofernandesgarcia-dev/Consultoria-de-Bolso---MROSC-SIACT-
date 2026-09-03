@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Clock, Loader2, BarChart3 } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Clock, Loader2, BarChart3, Compass, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../lib/apiFetch';
@@ -206,7 +207,18 @@ export function Dashboard() {
               Análises Recentes
             </h2>
             {data.recent.length === 0 ? (
-              <p className="text-slate-500 text-sm">Nenhuma análise encontrada. Utilize o Assistente SIACT para começar.</p>
+              <div className="flex flex-col items-center text-center gap-3 py-6">
+                <div className="w-11 h-11 bg-indigo-500/10 rounded-xl flex items-center justify-center">
+                  <Compass className="w-5 h-5 text-indigo-400" />
+                </div>
+                <p className="text-slate-500 text-sm max-w-xs">Nenhuma análise ainda. Não sabe por onde começar? A gente indica o próximo passo.</p>
+                <Link
+                  to="/inicio"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 px-3 py-2 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/10 transition-colors"
+                >
+                  Por onde começar <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             ) : (
               <div className="space-y-2">
                 {data.recent.map((item) => (

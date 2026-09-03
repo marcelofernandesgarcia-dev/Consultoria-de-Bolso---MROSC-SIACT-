@@ -118,16 +118,16 @@ async function startServer() {
 
   // Security headers — CSP só em produção: em dev o cliente do Vite (HMR) precisa de
   // liberdade que uma CSP estrita quebraria (WebSocket em porta variável, module scripts
-  // injetados). O app não carrega nenhum script/estilo/fonte externa nem usa <img> (todos
-  // os ícones são SVG via lucide-react), então a política pode ficar restrita a 'self'.
+  // injetados). O app não usa <img> (todos os ícones são SVG via lucide-react) e só carrega
+  // recurso externo do Google Fonts (fonte Public Sans) — daí as duas exceções abaixo.
   app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"], // estilos inline (style={{...}}) usados em várias telas
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // estilos inline (style={{...}}) + folha de estilo do Google Fonts
         imgSrc: ["'self'", "data:"],
-        fontSrc: ["'self'"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],

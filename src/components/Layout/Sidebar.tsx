@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X,
+  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X, ChevronDown,
 } from 'lucide-react';
 import { NAVIGATION, grupoVisivel, itensVisiveis, type SectionColor, type Perfil } from '../../lib/nav';
 import { useAuth } from '../../contexts/AuthContext';
@@ -191,9 +191,16 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
                     strokeWidth={isOpen ? 2.2 : 1.7}
                   />
                   {expanded && (
-                    <span className={`text-[10px] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${isOpen ? c.groupLabel : 'text-slate-600'}`}>
-                      {label}
-                    </span>
+                    <>
+                      <span className={`text-[10px] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${isOpen ? c.groupLabel : 'text-slate-600'}`}>
+                        {label}
+                      </span>
+                      <ChevronDown
+                        className={`shrink-0 ml-auto transition-transform duration-150 ${isOpen ? c.activeIcon : 'text-slate-700'}`}
+                        style={{ width: 13, height: 13, transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                        strokeWidth={2}
+                      />
+                    </>
                   )}
                 </button>
 
