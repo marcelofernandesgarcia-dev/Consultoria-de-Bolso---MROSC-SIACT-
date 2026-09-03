@@ -27,18 +27,21 @@ reescritas.
 
 ## Marco de criação
 
-- **Data de criação do repositório:** anterior a 03/09/2026 (protótipo já
-  existia como app AI Studio antes do pivô institucional).
+- **Data de criação do repositório:** 2026-03-17 (commit inicial —
+  protótipo como app AI Studio, antes do pivô institucional).
 - **Data do pivô institucional** (de SaaS comercial para produto MGI/DTPAR):
   03/09/2026.
-- **Data de início deste Diário de Bordo:** 03/09/2026 — entradas anteriores
-  a esta data não foram registradas retroativamente ainda (ver README.md
-  para o estado do backfill).
+- **Data de início deste Diário de Bordo:** 03/09/2026, com backfill
+  retroativo completo até o commit inicial (36 entradas, uma por commit do
+  histórico do Git — ver `README.md`).
 
 ## Histórico de versões relevantes para o registro
 
 | Data | Evento |
 |---|---|
+| 2026-03-17 | Criação do repositório — protótipo inicial (app AI Studio) |
+| 2026-05-16 | Maior lote de entregas da v4 — SaaS, Supabase, dark mode, deploy |
+| 2026-05-17 a 2026-05-20 | Correções de infraestrutura e integração inicial com Mapa OSC/IPEA |
 | 2026-09-03 | Pivô de SaaS comercial para produto institucional MGI/DTPAR |
 | 2026-09-03 | Migração do motor de IA de Gemini para Claude (Anthropic) |
-| 2026-09-03 | Início do Diário de Bordo deste projeto |
+| 2026-09-03 | Início do Diário de Bordo deste projeto, com backfill retroativo completo |
