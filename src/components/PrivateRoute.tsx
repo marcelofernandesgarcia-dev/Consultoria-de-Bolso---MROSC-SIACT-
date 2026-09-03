@@ -2,9 +2,10 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { PerfilChooser } from './PerfilChooser';
 
 export function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, perfil, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -25,6 +26,12 @@ export function PrivateRoute({ children }: { children: React.ReactNode }) {
   // Em desenvolvimento, libera acesso sem autenticação
   if (!user && import.meta.env.PROD) {
     return <Navigate to="/landing" replace />;
+  }
+
+  // Usuário autenticado sem perfil definido ainda: precisa se identificar antes de ver o app
+  // Admins pulam essa escolha — usam o seletor "Visualizar como" na sidebar em vez disso.
+  if (user && !perfil && !isAdmin) {
+    return <PerfilChooser />;
   }
 
   return <>{children}</>;

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
   ShieldCheck, Search, Gavel, FileText, BarChart3, MessageSquare,
-  CheckCircle2, ArrowRight, Zap, Lock, Star, ChevronDown
+  ArrowRight, Zap, Lock, Star, ChevronDown
 } from 'lucide-react';
 
 const FEATURES = [
@@ -51,56 +51,11 @@ const FEATURES = [
   },
 ];
 
-const PLANS = [
-  {
-    name: 'Básico',
-    price: 97,
-    desc: 'Para técnicos e analistas individuais',
-    highlight: false,
-    features: [
-      'Até 50 análises/mês',
-      'Dossiê 360° OSC',
-      'Assistente MROSC',
-      'Dashboard básico',
-      'Suporte por e-mail',
-    ],
-  },
-  {
-    name: 'Pro',
-    price: 297,
-    desc: 'Para equipes de auditoria e CGU',
-    highlight: true,
-    features: [
-      'Análises ilimitadas',
-      'Todas as funcionalidades Básico',
-      'Radar Normativo avançado',
-      'Validação de nexo causal',
-      'Upload de PDF em lote',
-      'Histórico completo exportável',
-      'Suporte prioritário',
-    ],
-  },
-  {
-    name: 'Enterprise',
-    price: null,
-    desc: 'Para órgãos e ministérios',
-    highlight: false,
-    features: [
-      'Tudo do Pro',
-      'Multi-tenant por unidade',
-      'SSO / autenticação gov.br',
-      'SLA garantido',
-      'Treinamento presencial',
-      'Integração SIAFI sob demanda',
-    ],
-  },
-];
-
 const STATS = [
-  { label: 'Análises realizadas', value: '4.200+' },
-  { label: 'Taxa de conformidade', value: '94%' },
-  { label: 'Artigos da Lei mapeados', value: '130+' },
-  { label: 'Órgãos atendidos', value: '18' },
+  { label: 'Módulos de análise MROSC', value: '14' },
+  { label: 'OSCs no Brasil', value: '900 mil+' },
+  { label: 'Base legal', value: 'Lei 13.019/2014' },
+  { label: 'Disponibilidade', value: '24/7' },
 ];
 
 export function Landing() {
@@ -109,8 +64,9 @@ export function Landing() {
   const faqs = [
     { q: 'O sistema substitui a responsabilidade do servidor?', a: 'Não. O SIACT-MROSC é uma ferramenta de apoio à decisão. Toda análise gerada por IA deve ser revisada e assinada pelo servidor responsável, conforme legislação vigente.' },
     { q: 'Quais bases legais são cobertas?', a: 'Lei 13.019/2014 (MROSC), Decreto 11.948/2024, IN 98/2024, Portaria SGD/MGI nº 473/2026 e toda jurisprudência do TCU relacionada a parcerias OSC.' },
-    { q: 'Os dados das análises ficam armazenados onde?', a: 'No plano Básico e Pro, em banco de dados seguro na nuvem (Supabase). Clientes Enterprise podem optar por hospedagem em infraestrutura própria ou GovCloud.' },
-    { q: 'Há período de trial?', a: 'Sim — 14 dias grátis no plano Pro, sem cartão de crédito. Basta solicitar acesso por e-mail.' },
+    { q: 'Os dados das análises ficam armazenados onde?', a: 'Em banco de dados seguro na nuvem (Supabase), com controle de acesso por usuário e conformidade LGPD.' },
+    { q: 'Como faço para ter acesso ao sistema?', a: 'O acesso é por convite. Solicite ao administrador responsável pelo seu órgão.' },
+    { q: 'OSCs de pequeno porte também podem usar?', a: 'Sim — essa é uma das prioridades da iniciativa. O SIACT-MROSC é gratuito e foi pensado especialmente para ajudar OSCs de pequeno e médio porte a entender e participar de chamamentos públicos, sem precisar de consultoria especializada.' },
   ];
 
   return (
@@ -126,13 +82,12 @@ export function Landing() {
           </div>
           <div className="flex items-center gap-4">
             <a href="#features" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">Funcionalidades</a>
-            <a href="#pricing" className="text-sm text-slate-400 hover:text-white transition-colors hidden md:block">Planos</a>
             <Link to="/login" className="text-sm text-slate-400 hover:text-white transition-colors">Entrar</Link>
             <Link
               to="/login"
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-indigo-900/30"
             >
-              Começar Trial
+              Acessar o sistema
             </Link>
           </div>
         </div>
@@ -152,7 +107,7 @@ export function Landing() {
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-xs font-medium mb-6"
           >
             <Zap className="w-3.5 h-3.5" />
-            Powered by Gemini 2.5 Flash · Lei 13.019/2014
+            Iniciativa DTPAR/SEGES/MGI · Lei 13.019/2014
           </motion.div>
 
           <motion.h1
@@ -162,7 +117,7 @@ export function Landing() {
             className="text-5xl md:text-6xl font-bold tracking-tight mb-6 leading-tight"
             style={{ fontFamily: 'Outfit, sans-serif' }}
           >
-            Auditoria MROSC com{' '}
+            MROSC ao alcance de setoriais e OSCs com{' '}
             <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-violet-400 bg-clip-text text-transparent">
               Inteligência Artificial
             </span>
@@ -174,7 +129,7 @@ export function Landing() {
             transition={{ delay: 0.14 }}
             className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Analise elegibilidade, valide nexo causal, gere pareceres fundamentados e consulte dossiês completos de OSCs — em segundos, com base legal precisa.
+            Uma iniciativa alinhada à Diretoria de Transferências e Parcerias da União (DTPAR/SEGES/MGI) para ampliar o conhecimento sobre o MROSC — apoiando setoriais na análise técnica e OSCs de pequeno e médio porte a entender e participar de chamamentos públicos.
           </motion.p>
 
           <motion.div
@@ -187,7 +142,7 @@ export function Landing() {
               to="/login"
               className="flex items-center gap-2 px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl transition-all shadow-xl shadow-indigo-900/30 text-sm"
             >
-              Começar Trial Grátis — 14 dias
+              Acessar o sistema
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
@@ -197,15 +152,6 @@ export function Landing() {
               Ver funcionalidades
             </a>
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-4 text-xs text-slate-600"
-          >
-            Sem cartão de crédito · Cancele quando quiser
-          </motion.p>
         </div>
       </section>
 
@@ -226,7 +172,7 @@ export function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Tudo que você precisa para auditar parcerias OSC
+              Tudo que setoriais e OSCs precisam em cada fase da parceria MROSC
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto">
               Do chamamento público à prestação de contas — cada fase coberta com IA especializada e fundamentação legal automática.
@@ -274,80 +220,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>Planos e Preços</h2>
-            <p className="text-slate-400">Escolha o plano ideal para o seu contexto. Trial de 14 dias no Pro, sem cartão.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PLANS.map((plan) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className={`relative rounded-2xl p-8 flex flex-col ${
-                  plan.highlight
-                    ? 'bg-indigo-600 border border-indigo-500 shadow-2xl shadow-indigo-900/40'
-                    : 'glass-card border border-white/10'
-                }`}
-              >
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-400 to-orange-400 text-slate-900 text-xs font-bold rounded-full">
-                    MAIS POPULAR
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <h3 className={`text-xl font-bold mb-1 ${plan.highlight ? 'text-white' : 'text-white'}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-                    {plan.name}
-                  </h3>
-                  <p className={`text-sm ${plan.highlight ? 'text-indigo-200' : 'text-slate-400'}`}>{plan.desc}</p>
-                </div>
-
-                <div className="mb-8">
-                  {plan.price ? (
-                    <div className="flex items-end gap-1">
-                      <span className={`text-sm font-medium ${plan.highlight ? 'text-indigo-200' : 'text-slate-400'}`}>R$</span>
-                      <span className="text-4xl font-bold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>{plan.price}</span>
-                      <span className={`text-sm mb-1 ${plan.highlight ? 'text-indigo-200' : 'text-slate-400'}`}>/mês</span>
-                    </div>
-                  ) : (
-                    <p className="text-2xl font-bold text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>Sob consulta</p>
-                  )}
-                </div>
-
-                <ul className="space-y-3 flex-1 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5">
-                      <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${plan.highlight ? 'text-indigo-200' : 'text-indigo-400'}`} />
-                      <span className={`text-sm ${plan.highlight ? 'text-indigo-100' : 'text-slate-300'}`}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to="/login"
-                  className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-                    plan.highlight
-                      ? 'bg-white text-indigo-700 hover:bg-indigo-50'
-                      : plan.price
-                      ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                      : 'border border-white/20 hover:border-white/40 text-white'
-                  }`}
-                >
-                  {plan.price ? 'Começar agora' : 'Falar com a equipe'}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* FAQ */}
       <section className="py-24 px-6 border-t border-white/5">
         <div className="max-w-2xl mx-auto">
@@ -382,19 +254,18 @@ export function Landing() {
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-violet-600/10 pointer-events-none" />
             <div className="relative z-10">
               <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Pronto para transformar sua auditoria MROSC?
+                Pronto para simplificar sua jornada no MROSC?
               </h2>
               <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-                Junte-se aos técnicos e auditores que já usam IA para analisar parcerias OSC com mais velocidade, precisão e segurança jurídica.
+                Uma iniciativa da DTPAR/SEGES/MGI para setoriais e OSCs de pequeno e médio porte que precisam entender, participar e executar parcerias com segurança jurídica.
               </p>
               <Link
                 to="/login"
                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl transition-all shadow-xl shadow-indigo-900/30 text-sm"
               >
-                Começar Trial Grátis — 14 dias
+                Acessar o sistema
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <p className="text-xs text-slate-600 mt-4">Sem cartão de crédito · Cancele quando quiser</p>
             </div>
           </div>
         </div>
@@ -410,7 +281,7 @@ export function Landing() {
             <span className="text-sm font-bold text-white">SIACT-MROSC</span>
           </div>
           <p className="text-xs text-slate-600">
-            © 2026 SIACT-MROSC · Parte do conteúdo gerado com o auxílio de IA · O servidor permanece responsável pela revisão e autoria plena.
+            © 2026 SIACT-MROSC · Iniciativa alinhada à DTPAR/SEGES/MGI · Parte do conteúdo gerado com o auxílio de IA · O servidor permanece responsável pela revisão e autoria plena.
           </p>
           <Link to="/login" className="text-xs text-slate-500 hover:text-white transition-colors">
             Área restrita →

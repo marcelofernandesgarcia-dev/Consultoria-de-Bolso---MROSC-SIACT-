@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
-  Activity, GraduationCap, MessageSquare, LayoutTemplate, Route,
-  Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale,
-  LogOut, ChevronsLeft, ChevronsRight, CreditCard, UserCircle, ShieldAlert,
+  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert,
 } from 'lucide-react';
-
-const ADMIN_EMAILS = ['marcelofernandesgarcia@gmail.com'];
+import { NAVIGATION, grupoVisivel, itensVisiveis, groupLabel, type SectionColor, type Perfil } from '../../lib/nav';
 import { useAuth } from '../../contexts/AuthContext';
 
 /* ─── Constantes exportadas para Layout ───────────────────────── */
@@ -26,56 +22,10 @@ function loadCapacitacaoPct(): number {
   } catch { return 0; }
 }
 
-/* ─── Tipos ────────────────────────────────────────────────────── */
-type SectionColor = 'indigo' | 'violet' | 'amber' | 'slate';
-interface NavItem { id: string; label: string; icon: React.ElementType; path: string; }
-interface NavGroup { group: string; color: SectionColor; groupIcon: React.ElementType; items: NavItem[]; }
-
 export interface SidebarProps {
   isExpanded: boolean;
   onToggle: () => void;
 }
-
-/* ─── Navegação ────────────────────────────────────────────────── */
-const NAVIGATION: NavGroup[] = [
-  {
-    group: 'Principal', color: 'indigo', groupIcon: LayoutDashboard,
-    items: [
-      { id: 'dashboard',  label: 'Dashboard',        icon: LayoutDashboard, path: '/' },
-      { id: 'inicio',     label: 'Por onde começar', icon: Compass,         path: '/inicio' },
-      { id: 'assistente', label: 'Assistente SIACT', icon: MessageSquare,   path: '/assistente' },
-    ],
-  },
-  {
-    group: 'Ferramentas OSC', color: 'violet', groupIcon: Sparkles,
-    items: [
-      { id: 'simulador',   label: 'Simulador de Elegibilidade', icon: Sparkles,     path: '/simulador' },
-      { id: 'checklist',   label: 'Checklist de Documentos',   icon: FileCheck,    path: '/checklist' },
-      { id: 'calendario',  label: 'Calendário de Prazos',      icon: CalendarDays, path: '/calendario' },
-      { id: 'faq',         label: 'Perguntas Frequentes',      icon: BookOpen,     path: '/faq' },
-      { id: 'capacitacao', label: 'Capacitação',               icon: GraduationCap,path: '/capacitacao' },
-    ],
-  },
-  {
-    group: 'Auditoria e Gestão', color: 'amber', groupIcon: Gavel,
-    items: [
-      { id: 'integracao',   label: 'Mapa OSC',        icon: Search,       path: '/integracao' },
-      { id: 'governanca',   label: 'Governança',       icon: ShieldCheck,  path: '/governanca' },
-      { id: 'normas',       label: 'Radar Normativo',  icon: Gavel,        path: '/normas' },
-      { id: 'planejamento', label: 'Cotação Prévia',   icon: ClipboardList,path: '/planejamento' },
-      { id: 'monitoramento',label: 'Nexo Causal',      icon: Activity,     path: '/monitoramento' },
-      { id: 'parecer',      label: 'Parecer Técnico',  icon: Scale,        path: '/parecer' },
-    ],
-  },
-  {
-    group: 'Sistema', color: 'slate', groupIcon: LayoutTemplate,
-    items: [
-      { id: 'planos',      label: 'Planos',      icon: CreditCard,    path: '/planos' },
-      { id: 'arquitetura', label: 'Arquitetura', icon: LayoutTemplate, path: '/arquitetura' },
-      { id: 'roadmap',     label: 'Roadmap',     icon: Route,          path: '/roadmap' },
-    ],
-  },
-];
 
 /* ─── Cores por seção ─────────────────────────────────────────── */
 const C: Record<SectionColor, {
@@ -86,12 +36,14 @@ const C: Record<SectionColor, {
   violet: { dot:'bg-violet-500/30', groupLabel:'text-violet-400/80', groupBg:'hover:bg-violet-500/10', groupText:'hover:text-violet-300', activeIcon:'text-violet-300', activeBg:'bg-violet-500/[0.18]', activeDot:'bg-violet-400' },
   amber:  { dot:'bg-amber-500/30',  groupLabel:'text-amber-400/80',  groupBg:'hover:bg-amber-500/10',  groupText:'hover:text-amber-300',  activeIcon:'text-amber-300',  activeBg:'bg-amber-500/[0.18]',  activeDot:'bg-amber-400'  },
   slate:  { dot:'bg-slate-500/30',  groupLabel:'text-slate-400/70',  groupBg:'hover:bg-slate-500/10',  groupText:'hover:text-slate-300',  activeIcon:'text-slate-300',  activeBg:'bg-slate-500/[0.18]',  activeDot:'bg-slate-400'  },
+  teal:   { dot:'bg-teal-500/30',   groupLabel:'text-teal-400/80',   groupBg:'hover:bg-teal-500/10',   groupText:'hover:text-teal-300',   activeIcon:'text-teal-300',   activeBg:'bg-teal-500/[0.18]',   activeDot:'bg-teal-400'   },
 };
 
 /* ─── Componente ──────────────────────────────────────────────── */
 export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, perfilVisivel, previewPerfil, setPreviewPerfil, signOut } = useAuth();
+  const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel));
 
   /* grupo pinado = clicado (persiste ao tirar o mouse) */
   const [pinnedGroup, setPinnedGroup] = useState<string | null>(null);
@@ -105,11 +57,11 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
   /* Auto-pinar grupo pela rota atual */
   useEffect(() => {
-    for (const g of NAVIGATION) {
+    for (const g of navegacaoVisivel) {
       const match = g.items.some(item =>
         item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
       );
-      if (match) { setPinnedGroup(g.group); return; }
+      if (match) { setPinnedGroup(g.id); return; }
     }
   }, [location.pathname]);
 
@@ -165,22 +117,51 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         )}
       </div>
 
+      {/* ── SELETOR DE VISUALIZAÇÃO (só admin) — para apresentar a viabilidade sob as duas óticas ── */}
+      {isExpanded && isAdmin && (
+        <div className="px-3 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Visualizar como</p>
+          <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            {([
+              { key: null, label: 'Admin (tudo)' },
+              { key: 'osc' as Perfil, label: 'OSC' },
+              { key: 'setorial' as Perfil, label: 'Setorial' },
+            ]).map(opt => {
+              const active = previewPerfil === opt.key;
+              return (
+                <button
+                  key={opt.label}
+                  onClick={() => setPreviewPerfil(opt.key)}
+                  className={`flex-1 text-[10px] font-semibold py-1.5 rounded-md transition-colors ${
+                    active ? 'bg-indigo-500/25 text-indigo-200' : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── NAV ───────────────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 overflow-x-hidden"
            style={{ padding: isExpanded ? '12px 8px' : '12px 10px' }}>
-        {NAVIGATION.map((group) => {
+        {navegacaoVisivel.map((group) => {
           const c = C[group.color];
-          const isOpen = openGroup === group.group;
+          const isOpen = openGroup === group.id;
           const GroupIcon = group.groupIcon;
+          const items = itensVisiveis(group, perfilVisivel);
+          const label = groupLabel(group, perfilVisivel);
 
           return (
-            <div key={group.group}>
+            <div key={group.id}>
               {/* ── Cabeçalho da seção ── */}
               <button
-                onMouseEnter={() => onEnter(group.group)}
+                onMouseEnter={() => onEnter(group.id)}
                 onMouseLeave={onLeave}
-                onClick={() => setPinnedGroup(group.group)}
-                title={!isExpanded ? group.group : undefined}
+                onClick={() => setPinnedGroup(group.id)}
+                title={!isExpanded ? label : undefined}
                 className={`w-full flex items-center rounded-lg transition-all duration-150 ${c.groupBg} ${c.groupText} ${
                   isOpen ? 'text-white' : 'text-slate-600'
                 }`}
@@ -193,7 +174,7 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 />
                 {isExpanded && (
                   <span className={`text-[10px] font-extrabold uppercase tracking-[0.14em] whitespace-nowrap ${isOpen ? c.groupLabel : 'text-slate-600'}`}>
-                    {group.group}
+                    {label}
                   </span>
                 )}
               </button>
@@ -203,19 +184,19 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 <div
                   style={{
                     overflow: 'hidden',
-                    maxHeight: isOpen ? `${group.items.length * 40}px` : '0px',
+                    maxHeight: isOpen ? `${items.length * 40}px` : '0px',
                     transition: 'max-height 200ms ease',
                   }}
-                  onMouseEnter={() => onEnter(group.group)}
+                  onMouseEnter={() => onEnter(group.id)}
                   onMouseLeave={onLeave}
                 >
                   <div className="pl-2 pb-1 space-y-px">
-                    {group.items.map((item) => (
+                    {items.map((item) => (
                       <NavLink
                         key={item.id}
                         to={item.path}
                         end={item.path === '/'}
-                        onClick={() => setPinnedGroup(group.group)}
+                        onClick={() => setPinnedGroup(group.id)}
                         className={({ isActive }) =>
                           `flex flex-col px-3 py-[6px] rounded-lg text-[12.5px] font-medium transition-all duration-100 ${
                             isActive
@@ -291,7 +272,7 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       >
         {/* Admin link — só para admins */}
-        {isExpanded && user?.email && ADMIN_EMAILS.includes(user.email) && (
+        {isExpanded && isAdmin && (
           <NavLink
             to="/admin"
             className={({ isActive }) =>

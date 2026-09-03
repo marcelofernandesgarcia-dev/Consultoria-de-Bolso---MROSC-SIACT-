@@ -148,14 +148,15 @@ export function Login() {
             >
               <span className="text-sm font-black text-white">Consultoria de Bolso</span>
             </div>
+            <p className="mt-2 text-[10px] font-medium" style={{ color: 'rgba(148,163,184,0.5)' }}>
+              Iniciativa alinhada à DTPAR/SEGES/MGI
+            </p>
 
             {/* Proposta */}
             <p className="mt-5 text-base font-medium leading-relaxed max-w-sm"
                style={{ color: 'rgba(203,213,225,0.8)' }}>
-              Consultores especializados em MROSC cobram{' '}
-              <strong style={{ color: '#fff' }}>R$ 300–800/hora</strong>.
-              O SIACT democratiza esse acesso — gratuitamente — para as mais de{' '}
-              <strong style={{ color: '#a5b4fc' }}>900 mil OSCs</strong> brasileiras.
+              Conhecimento técnico e capacitação em MROSC, com apoio de IA, para setoriais e as mais de{' '}
+              <strong style={{ color: '#a5b4fc' }}>900 mil OSCs</strong> brasileiras — especialmente as de pequeno e médio porte.
             </p>
 
             {/* Features */}

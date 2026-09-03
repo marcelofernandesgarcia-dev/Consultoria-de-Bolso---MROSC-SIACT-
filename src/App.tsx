@@ -16,13 +16,13 @@ import { Arquitetura } from './pages/Arquitetura';
 import { Roadmap } from './pages/Roadmap';
 import { Inicio } from './pages/Inicio';
 import { ChecklistDocumentos } from './pages/ChecklistDocumentos';
+import { ChamamentosAbertos } from './pages/ChamamentosAbertos';
 import { CalendarioObrigacoes } from './pages/CalendarioObrigacoes';
 import { SimuladorElegibilidade } from './pages/SimuladorElegibilidade';
 import { FAQ } from './pages/FAQ';
 import { LessonViewer } from './pages/LessonViewer';
 import { GeradorParecer } from './pages/GeradorParecer';
 import { Landing } from './pages/Landing';
-import { Planos } from './pages/Planos';
 import { Conta } from './pages/Conta';
 import { Admin } from './pages/Admin';
 
@@ -53,12 +53,12 @@ export default function App() {
             <Route path="capacitacao/:cursoId/:aulaId" element={<LessonViewer />} />
             <Route path="assistente" element={<AssistenteSiact />} />
             <Route path="checklist" element={<ChecklistDocumentos />} />
+            <Route path="chamamentos" element={<ChamamentosAbertos />} />
             <Route path="calendario" element={<CalendarioObrigacoes />} />
             <Route path="simulador" element={<SimuladorElegibilidade />} />
             <Route path="faq" element={<FAQ />} />
             <Route path="arquitetura" element={<Arquitetura />} />
             <Route path="roadmap" element={<Roadmap />} />
-            <Route path="planos" element={<Planos />} />
             <Route path="conta" element={<Conta />} />
             <Route path="admin" element={<Admin />} />
           </Route>

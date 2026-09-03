@@ -11,7 +11,7 @@ export function Arquitetura() {
         </div>
         <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Arquitetura SIACT-MROSC</h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Sistema de Inteligência e Auditoria Contínua de Transferências. Conheça os 5 pilares que garantem segurança jurídica e reduzem a burocracia.
+          Sistema de Inteligência e Auditoria Contínua de Transferências, desenvolvido para ampliar o conhecimento sobre o MROSC entre setoriais e OSCs de pequeno e médio porte. Conheça os 5 pilares que garantem segurança jurídica e reduzem a burocracia.
         </p>
       </header>
 
@@ -46,7 +46,7 @@ export function Arquitetura() {
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Público-Alvo:</strong> Gestores Públicos e OSCs</p>
+              <p className="text-slate-700"><strong>Público-Alvo:</strong> Setoriais (órgãos concedentes) e OSCs de pequeno/médio porte</p>
             </li>
           </ul>
         </motion.div>
@@ -70,7 +70,7 @@ export function Arquitetura() {
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Motor:</strong> LLM Especializado em Auditoria Pública</p>
+              <p className="text-slate-700"><strong>Motor:</strong> LLM generativo — evolução planejada para infraestrutura soberana SERPRO (ConversAÍ Studio / SerproLLM)</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
@@ -83,6 +83,10 @@ export function Arquitetura() {
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
               <p className="text-slate-700"><strong>Geração:</strong> Pareceres Técnicos Automatizados e Semáforo de Riscos</p>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
+              <p className="text-slate-700"><strong>Governança:</strong> Sob o Framework de Autoavaliação de Impacto Ético em IA (AIE/NIA), conforme Portarias SGD/MGI nº 6.618/2024 e nº 473/2026</p>
             </li>
           </ul>
         </motion.div>

@@ -2,8 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Building2, FileSearch, BookOpen, PlayCircle,
-  FileCheck, AlertTriangle, ChevronRight, ArrowLeft, Sparkles
+  FileCheck, AlertTriangle, ChevronRight, ArrowLeft, Sparkles, Radar, Check
 } from 'lucide-react';
+import { NAVIGATION, itensVisiveis } from '../lib/nav';
+
+// Mesma fonte que a sidebar usa (grupo único "ferramentas") — cada card filtra pelo seu perfil.
+const GRUPO_FERRAMENTAS = NAVIGATION.find(g => g.id === 'ferramentas');
+const FERRAMENTAS_OSC = GRUPO_FERRAMENTAS ? itensVisiveis(GRUPO_FERRAMENTAS, 'osc') : [];
+const FERRAMENTAS_SETORIAL = GRUPO_FERRAMENTAS ? itensVisiveis(GRUPO_FERRAMENTAS, 'setorial') : [];
+
+// Ações automatizadas dentro de cada ferramenta — não são rotas próprias, então não vêm do nav.ts
+const SUBITENS: Record<string, string[]> = {
+  chamamentos: ['Explicar Edital', 'Pré-Análise da Proposta'],
+  integracao: ['Busca por CNPJ', 'Busca por Nome/UF'],
+};
 
 type Perfil = 'osc' | 'gestor' | null;
 type Fase =
@@ -20,7 +32,8 @@ interface Destino {
 
 const DESTINOS_POR_FASE: Record<string, Destino[]> = {
   osc_chamamento: [
-    { label: 'Simulador de Elegibilidade', path: '/simulador', descricao: 'Verifique em segundos se sua OSC atende os requisitos do edital.', icon: <Sparkles className="w-5 h-5" />, badge: 'Comece aqui' },
+    { label: 'Chamamentos Abertos', path: '/chamamentos', descricao: 'Descubra editais abertos e entenda o que cada um pede.', icon: <Radar className="w-5 h-5" />, badge: 'Comece aqui' },
+    { label: 'Simulador de Elegibilidade', path: '/simulador', descricao: 'Verifique em segundos se sua OSC atende os requisitos do edital.', icon: <Sparkles className="w-5 h-5" /> },
     { label: 'Checklist de Documentos', path: '/checklist', descricao: 'Saiba exatamente quais documentos levar ao chamamento.', icon: <FileCheck className="w-5 h-5" /> },
     { label: 'Integração (Mapa OSC)', path: '/integracao', descricao: 'Consulte o perfil da sua OSC na Receita Federal e IPEA.', icon: <FileSearch className="w-5 h-5" /> },
     { label: 'FAQ — Fase de Seleção', path: '/faq', descricao: 'Perguntas frequentes sobre chamamentos públicos.', icon: <BookOpen className="w-5 h-5" /> },
@@ -121,26 +134,78 @@ export function Inicio() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={() => { setPerfil('osc'); setStep(2); }}
-              className="flex items-start gap-4 p-6 bg-white border-2 border-slate-200 hover:border-indigo-400 rounded-2xl text-left transition-all group"
+              className="flex flex-col items-start p-6 bg-white border-2 border-slate-200 hover:border-indigo-400 rounded-2xl text-left transition-all group"
             >
-              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-100">
-                <Users className="w-6 h-6 text-indigo-600" />
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-100">
+                  <Users className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900">Organização da Sociedade Civil (OSC)</p>
+                  <p className="text-sm text-slate-500 mt-1">Associação, fundação, cooperativa ou entidade parceira</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-slate-900">Organização da Sociedade Civil (OSC)</p>
-                <p className="text-sm text-slate-500 mt-1">Associação, fundação, cooperativa ou entidade parceira</p>
+              <div className="mt-4 pt-4 border-t border-slate-100 w-full">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Disponível para você</p>
+                <ul className="space-y-1.5">
+                  {FERRAMENTAS_OSC.map(item => (
+                    <li key={item.id}>
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <Check className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                        {item.label}
+                      </div>
+                      {SUBITENS[item.id] && (
+                        <ul className="ml-[22px] mt-1 space-y-1">
+                          {SUBITENS[item.id].map(sub => (
+                            <li key={sub} className="flex items-center gap-2 text-xs text-slate-400">
+                              <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                              {sub}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-slate-400 mt-2.5">+ Capacitação, Perguntas Frequentes e Assistente de IA</p>
               </div>
             </button>
             <button
               onClick={() => { setPerfil('gestor'); setStep(2); }}
-              className="flex items-start gap-4 p-6 bg-white border-2 border-slate-200 hover:border-indigo-400 rounded-2xl text-left transition-all group"
+              className="flex flex-col items-start p-6 bg-white border-2 border-slate-200 hover:border-indigo-400 rounded-2xl text-left transition-all group"
             >
-              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-emerald-100">
-                <Building2 className="w-6 h-6 text-emerald-600" />
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-emerald-100">
+                  <Building2 className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900">Gestor Público / Administração</p>
+                  <p className="text-sm text-slate-500 mt-1">Servidor do órgão concedente, fiscal ou parecerista</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-slate-900">Gestor Público / Administração</p>
-                <p className="text-sm text-slate-500 mt-1">Servidor do órgão concedente, fiscal ou parecerista</p>
+              <div className="mt-4 pt-4 border-t border-slate-100 w-full">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Disponível para você</p>
+                <ul className="space-y-1.5">
+                  {FERRAMENTAS_SETORIAL.map(item => (
+                    <li key={item.id}>
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        {item.label}
+                      </div>
+                      {SUBITENS[item.id] && (
+                        <ul className="ml-[22px] mt-1 space-y-1">
+                          {SUBITENS[item.id].map(sub => (
+                            <li key={sub} className="flex items-center gap-2 text-xs text-slate-400">
+                              <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                              {sub}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-slate-400 mt-2.5">+ Capacitação, Perguntas Frequentes e Assistente de IA</p>
               </div>
             </button>
           </div>

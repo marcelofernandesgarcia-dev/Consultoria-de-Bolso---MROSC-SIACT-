@@ -60,6 +60,13 @@ export interface AIAnalysisResult {
   ressalvas?: string[];
   orientacao?: string;
   fundamentacao_legal_especifica?: string;
+  summary?: string;
+  deadlines?: string[];
+  checklist?: string[];
+  tips?: string[];
+  score_prediction?: number;
+  weak_points?: string[];
+  suggestions?: string[];
 }
 
 export interface ItemCotacaoAnalise {

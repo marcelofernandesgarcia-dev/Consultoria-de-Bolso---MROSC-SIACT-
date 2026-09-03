@@ -7,7 +7,8 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import Anthropic from "@anthropic-ai/sdk";
+import * as cheerio from "cheerio";
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { createRequire } from "module";
@@ -24,15 +25,57 @@ const supabase = createSupabaseClient(
   { auth: { persistSession: false } }
 );
 
-// Initialize Gemini
-const getGeminiModel = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+// Initialize Claude (Anthropic) — motor de IA do SIACT-MROSC
+const getAnthropicClient = () => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+    throw new Error("ANTHROPIC_API_KEY is not set");
   }
-  const ai = new GoogleGenAI({ apiKey });
-  return ai.models;
+  const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
+  return new Anthropic({
+    apiKey,
+    defaultHeaders: workspaceId ? { "anthropic-workspace-id": workspaceId } : undefined,
+  });
 };
+
+// Extrai o primeiro bloco de texto de uma resposta da Messages API
+function claudeText(msg: Anthropic.Message): string {
+  const block = msg.content.find((b): b is Anthropic.TextBlock => b.type === "text");
+  return block?.text ?? "";
+}
+
+// Busca e extrai o texto limpo da página de um edital específico (whitelist de domínio por segurança)
+const EDITAL_ALLOWED_HOSTS = ["plataformaosc.org.br"];
+async function fetchEditalContent(link: string): Promise<string> {
+  const url = new URL(link);
+  if (!EDITAL_ALLOWED_HOSTS.includes(url.hostname)) {
+    throw new Error("Domínio não permitido para busca de edital.");
+  }
+  const res = await fetch(link, { headers: { "User-Agent": "SIACT-MROSC/4.0 (gov.br)" } });
+  if (!res.ok) throw new Error(`Falha ao acessar o edital: HTTP ${res.status}`);
+  const html = await res.text();
+  const $ = cheerio.load(html);
+  const article = $("article").first();
+  const text = (article.length ? article.text() : $("body").text())
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40000);
+  if (!text) throw new Error("Não foi possível extrair conteúdo do edital.");
+  return text;
+}
+
+// Faz parsing robusto de uma resposta JSON do Claude (com fallback para bloco ```json)
+function parseAiJson<T = any>(raw: string, fallback: T): T {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const match = raw.match(/```json\n([\s\S]*?)\n```/);
+    if (match) {
+      try { return JSON.parse(match[1]); } catch { /* cai no fallback */ }
+    }
+    return fallback;
+  }
+}
 
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
@@ -146,7 +189,7 @@ async function startServer() {
         return res.status(400).json({ error: 'Documento muito extenso. Máximo 80.000 caracteres.' });
       }
 
-      const models = getGeminiModel();
+      const anthropic = getAnthropicClient();
 
       let systemInstruction = `
       # PERSONA E AUTORIDADE TÉCNICA
@@ -307,7 +350,7 @@ async function startServer() {
       }
 
       // --- TELA 3: ASSISTENTE OSC ---
-      else if (type === 'osc_edital_explainer') { // Prompt 3.2
+      else if (type === 'osc_edital') { // Prompt 3.2
         systemInstruction += `
         TAREFA: Explicar o Edital em linguagem simples para a OSC.
         AÇÃO: Resuma o objeto, prazos, critérios de seleção e documentos necessários.
@@ -322,7 +365,7 @@ async function startServer() {
           "fundamentacao_legal_especifica": "string"
         }
         `;
-      } else if (type === 'osc_proposal_precheck') { // Prompt 3.3
+      } else if (type === 'osc_proposal') { // Prompt 3.3
         systemInstruction += `
         TAREFA: Pré-análise preventiva da proposta da OSC.
         AÇÃO: Simule o papel da comissão de seleção. Identifique erros que levariam à desclassificação.
@@ -547,35 +590,18 @@ async function startServer() {
         `;
       }
 
-      const response = await models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: {
-            role: "user",
-            parts: [{ text: `Analise o seguinte conteúdo:\n${textContent}` }]
-        },
-        config: {
-            systemInstruction: systemInstruction,
-            temperature: 0.1, // Alta precisão para compliance
-            responseMimeType: "application/json"
-        }
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 8192,
+        system: systemInstruction + "\n\nIMPORTANTE: Responda APENAS com o objeto JSON solicitado, sem texto antes ou depois, sem blocos de código markdown.",
+        messages: [{ role: "user", content: `Analise o seguinte conteúdo:\n${textContent}` }],
       });
 
-      const jsonResponse = response.text;
-      let parsedData;
-      try {
-        parsedData = JSON.parse(jsonResponse);
-      } catch (e) {
-        const match = jsonResponse.match(/```json\n([\s\S]*?)\n```/);
-        if (match) {
-            parsedData = JSON.parse(match[1]);
-        } else {
-            parsedData = { 
-              status_final: "RESSALVA", 
-              summary: "Erro ao processar resposta da IA", 
-              error: "Non-JSON response" 
-            };
-        }
-      }
+      const parsedData = parseAiJson(claudeText(response), {
+        status_final: "RESSALVA",
+        summary: "Erro ao processar resposta da IA",
+        error: "Non-JSON response",
+      });
 
       // Normalise status field — AI returns status_final, frontend reads status
       if (!parsedData.status && parsedData.status_final) {
@@ -602,66 +628,95 @@ async function startServer() {
     }
   });
 
-  // --- OPPORTUNITIES RADAR API ---
+  // --- OPPORTUNITIES RADAR API — scraping determinístico, sem IA (lista completa e estável) ---
   app.get("/api/mrosc/opportunities", async (req, res) => {
     try {
-      const models = getGeminiModel();
-      
+      const pageRes = await fetch("https://plataformaosc.org.br/editais/", {
+        headers: { "User-Agent": "SIACT-MROSC/4.0 (gov.br)" },
+      });
+      if (!pageRes.ok) throw new Error(`Falha ao acessar a Plataforma OSC: HTTP ${pageRes.status}`);
+      const html = await pageRes.text();
+      const $ = cheerio.load(html);
+
+      const opportunities = $(".post")
+        .map((i, el) => {
+          const a = $(el).find("h3.title a").first();
+          const title = a.text().trim();
+          const link = a.attr("href") ?? "";
+          const description = $(el).find(".excerpt").first().text().trim();
+          const dateMatch = link.match(/\/blog\/(\d{4})\/(\d{2})\/(\d{2})\//);
+          const date = dateMatch ? `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}` : "";
+          const dateSort = dateMatch ? `${dateMatch[1]}${dateMatch[2]}${dateMatch[3]}` : "00000000";
+          return { id: i, title, link, description, date, dateSort };
+        })
+        .get()
+        .filter((op) => op.title && op.link)
+        .sort((a, b) => b.dateSort.localeCompare(a.dateSort))
+        .map(({ dateSort, ...op }) => op);
+
+      res.json({ opportunities, source: "https://plataformaosc.org.br/editais/", total: opportunities.length });
+    } catch (error: any) {
+      console.error("Opportunities Radar error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // --- Busca + explica um edital específico (link vindo do Radar) — automação ponta a ponta ---
+  app.post("/api/mrosc/edital-explicar", async (req, res) => {
+    try {
+      const { link, title } = req.body;
+      if (!link || typeof link !== "string") {
+        return res.status(400).json({ error: "link é obrigatório." });
+      }
+
+      const editalText = await fetchEditalContent(link);
+      const anthropic = getAnthropicClient();
+
       const systemInstruction = `
       # PERSONA E AUTORIDADE TÉCNICA
       - Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
       - Atua como o braço direito do Coordenador de Análise Financeira, com 15 anos de experiência e doutorado em IA e Governança Pública.
 
-      Sua tarefa é analisar a página de editais da Plataforma OSC (https://plataformaosc.org.br/editais/) e extrair todos os editais de chamamento público (MROSC - Lei 13.019/2014) ATIVOS e ABERTOS.
-      
-      REQUISITOS:
-      - Use a ferramenta urlContext para acessar e ler o conteúdo de https://plataformaosc.org.br/editais/
-      - Identifique o título de cada edital.
-      - Identifique a data limite para adesão/submissão.
-      - Se disponível, extraia o ministério/órgão responsável, valor e link direto.
-      - Retorne uma lista de oportunidades reais encontradas na página.
-      - Utilize a primeira pessoa do singular: "informo" em vez de "informamos".
-      - Utilize o termo "pactuar" em vez de "balizar".
-      - Toda saída documental deve conter a nota: "Parte do conteúdo gerado com o auxílio de IA".
-      
+      TAREFA: Explicar o edital abaixo em linguagem simples para uma OSC de pequeno/médio porte.
+      AÇÃO: Resuma o objeto, prazos, critérios de seleção e documentos necessários.
+      TOM: Educativo, claro e encorajador.
+      IMPORTANTE: Se o conteúdo indicar que o edital já tem RESULTADO PRELIMINAR ou RESULTADO FINAL publicado, ou qualquer sinal de que o prazo já passou, avise isso claramente no campo "summary" — não trate como oportunidade aberta se já foi encerrado.
+
+      Responda APENAS com o objeto JSON abaixo, sem texto antes ou depois, sem blocos de código markdown.
+
       SAÍDA JSON: {
-        "opportunities": [
-          {
-            "id": number,
-            "title": string,
-            "ministry": string,
-            "deadline": string,
-            "value": string,
-            "link": string,
-            "description": string,
-            "fundamentacao_legal_especifica": "string"
-          }
-        ]
+        "status_final": "CONFORME",
+        "summary": "Resumo do edital, incluindo alerta se já encerrado...",
+        "deadlines": string[],
+        "checklist": string[],
+        "tips": string[]
       }
       `;
 
-      const response = await models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: "Analise a página https://plataformaosc.org.br/editais/ e liste todos os editais abertos encontrados, incluindo título e data limite.",
-        config: {
-          systemInstruction: systemInstruction,
-          tools: [{ urlContext: {} }],
-          responseMimeType: "application/json"
-        }
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 4096,
+        system: systemInstruction,
+        messages: [{ role: "user", content: `Título: ${title ?? ""}\nURL: ${link}\n\nConteúdo extraído da página do edital:\n${editalText}` }],
       });
 
-      const jsonResponse = response.text;
-      let parsedData;
-      try {
-        parsedData = JSON.parse(jsonResponse);
-      } catch (e) {
-        const match = jsonResponse.match(/```json\n([\s\S]*?)\n```/);
-        parsedData = match ? JSON.parse(match[1]) : { opportunities: [] };
-      }
-
+      const parsedData = parseAiJson(claudeText(response), { summary: "Não foi possível analisar este edital." });
       res.json(parsedData);
     } catch (error: any) {
-      console.error("Opportunities Radar error:", error);
+      console.error("Edital explicar error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // --- Busca só o texto de um edital (sem IA) — usado para contextualizar a Pré-Análise da Proposta ---
+  app.get("/api/mrosc/edital-texto", async (req, res) => {
+    try {
+      const link = req.query.link as string;
+      if (!link) return res.status(400).json({ error: "link é obrigatório." });
+      const text = await fetchEditalContent(link);
+      res.json({ text });
+    } catch (error: any) {
+      console.error("Edital texto error:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -674,8 +729,8 @@ async function startServer() {
         return res.status(400).json({ error: "No content provided for analysis" });
       }
 
-      const models = getGeminiModel();
-      
+      const anthropic = getAnthropicClient();
+
       const systemInstruction = `
 # PERSONA E AUTORIDADE TÉCNICA
 - Você é o SIACT — Sistema Inteligente de Análise e Controle de Transferências da União, integrado à plataforma MROSC Consultoria de Bolso.
@@ -737,39 +792,31 @@ ESTRUTURA JSON ESPERADA:
 }
 `;
 
-      const parts = [];
-      
+      const content: Anthropic.ContentBlockParam[] = [];
+
       if (textContent) {
-        parts.push({ text: `Conteúdo textual do processo:\n${textContent}` });
+        content.push({ type: "text", text: `Conteúdo textual do processo:\n${textContent}` });
       }
 
       if (images && Array.isArray(images)) {
         for (const img of images) {
-            // img should be { data: base64String, mimeType: "image/png" }
-            parts.push({ inlineData: { data: img.data, mimeType: img.mimeType } });
+            // img deve ser { data: base64String, mimeType: "image/png" }
+            content.push({ type: "image", source: { type: "base64", media_type: img.mimeType, data: img.data } });
         }
       }
 
-      const response = await models.generateContent({
-        model: "gemini-2.5-flash", // Using Flash for large context window
-        contents: {
-            role: "user",
-            parts: parts
-        },
-        config: {
-            systemInstruction: systemInstruction,
-            temperature: 0.2, // Low temperature for extraction precision
-            responseMimeType: "application/json"
-        }
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 8192,
+        system: systemInstruction,
+        messages: [{ role: "user", content }],
       });
 
-      const jsonResponse = response.text;
-      // Ensure we parse the JSON correctly even if the model wraps it in markdown (though system instruction says not to)
+      const jsonResponse = claudeText(response);
       let parsedData;
       try {
         parsedData = JSON.parse(jsonResponse);
       } catch (e) {
-        // Fallback: try to extract JSON from markdown block
         const match = jsonResponse.match(/```json\n([\s\S]*?)\n```/);
         if (match) {
             parsedData = JSON.parse(match[1]);
@@ -777,7 +824,7 @@ ESTRUTURA JSON ESPERADA:
             throw new Error("Failed to parse JSON response");
         }
       }
-      
+
       res.json(parsedData);
 
     } catch (error: any) {
@@ -807,7 +854,7 @@ ESTRUTURA JSON ESPERADA:
       if (message.length > 10000) {
         return res.status(400).json({ error: 'Mensagem muito longa. Máximo 10.000 caracteres.' });
       }
-      const models = getGeminiModel();
+      const anthropic = getAnthropicClient();
 
       const defaultSystemInstruction = `
 # IDENTIDADE DO SISTEMA
@@ -895,16 +942,14 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
         ? clientSystemPrompt.trim().substring(0, 5000)
         : defaultSystemInstruction;
 
-      const response = await models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: message,
-        config: {
-          systemInstruction,
-          temperature: 0.3
-        }
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 4096,
+        system: systemInstruction,
+        messages: [{ role: "user", content: message }],
       });
 
-      res.json({ reply: response.text });
+      res.json({ reply: claudeText(response) });
     } catch (error: any) {
       console.error("Chat error:", error);
       res.status(500).json({ error: error.message });

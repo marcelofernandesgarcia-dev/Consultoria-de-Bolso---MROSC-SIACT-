@@ -3,8 +3,6 @@ import { Users, FileText, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../lib/apiFetch';
 
-const ADMIN_EMAILS = ['marcelofernandesgarcia@gmail.com'];
-
 interface Stats {
   total_analyses: number;
   total_users: number;
@@ -15,11 +13,9 @@ interface Stats {
 }
 
 export function Admin() {
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   useEffect(() => {
     if (!isAdmin) return;

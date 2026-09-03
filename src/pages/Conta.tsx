@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, LogOut, Shield, Key } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Key } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -46,7 +46,6 @@ export function Conta() {
       <div className="glass-card rounded-2xl border border-slate-700/50 divide-y divide-slate-700/40">
         <Row icon={<Mail size={15} />} label="E-mail" value={user?.email ?? '—'} />
         <Row icon={<User size={15} />} label="ID da conta" value={user?.id ? user.id.slice(0, 8) + '…' : '—'} />
-        <Row icon={<Shield size={15} />} label="Plano atual" value="Pro" accent="text-indigo-400" />
       </div>
 
       {/* Ações */}

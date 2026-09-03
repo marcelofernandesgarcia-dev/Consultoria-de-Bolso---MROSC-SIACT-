@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Bell, X, ArrowRight } from 'lucide-react';
 import { Sidebar, SIDEBAR_W_EXPANDED, SIDEBAR_W_COLLAPSED } from './Sidebar';
+import { useAuth } from '../../contexts/AuthContext';
+import { perfilDaRota, homePathForPerfil } from '../../lib/nav';
 
 /* ─── Títulos por rota ────────────────────────────────────────── */
 const PAGE_TITLES: [string, string][] = [
@@ -49,6 +51,15 @@ export function Layout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const pageTitle = getPageTitle(pathname);
+  const { perfilVisivel } = useAuth();
+
+  // Bloqueia acesso direto (por URL) a rotas fora do perfil visível no momento.
+  // Para admin sem preview ativo, perfilVisivel é null e nada é bloqueado (vê tudo).
+  // Com um preview escolhido (OSC/Setorial), o bloqueio vale igual pra demonstrar a restrição real.
+  const rotaPerfil = perfilDaRota(pathname);
+  if (perfilVisivel && rotaPerfil && rotaPerfil !== 'ambos' && rotaPerfil !== perfilVisivel) {
+    return <Navigate to={homePathForPerfil(perfilVisivel)} replace />;
+  }
 
   /* Sidebar expanded state — persiste no localStorage */
   const [isExpanded, setIsExpanded] = useState<boolean>(() =>
