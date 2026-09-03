@@ -63,7 +63,7 @@ export function ChamamentosAbertos() {
     setRadarError(null);
     try {
       const res = await apiFetch('/api/mrosc/opportunities');
-      if (!res.ok) throw new Error('Falha ao consultar a Plataforma OSC.');
+      if (!res.ok) throw new Error('Falha ao consultar o Mapa das OSC.');
       const data = await res.json();
       setOportunidades(Array.isArray(data.opportunities) ? data.opportunities : []);
     } catch (err: any) {
@@ -227,7 +227,7 @@ export function ChamamentosAbertos() {
               <h2 className="text-sm font-bold text-slate-800">
                 Editais encontrados {oportunidades.length > 0 && !loadingRadar && `(${oportunidades.length})`}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">Lista completa da Plataforma OSC, mais recentes primeiro — confirme sempre no site oficial do edital</p>
+              <p className="text-xs text-slate-500 mt-0.5">Lista completa do Mapa das OSC (IPEA) / Plataforma Prosas, prazo mais próximo primeiro — confirme sempre no site oficial do edital</p>
             </div>
             <button
               onClick={carregarRadar}
@@ -242,15 +242,15 @@ export function ChamamentosAbertos() {
             {loadingRadar ? (
               <div className="py-12 text-center text-slate-400 text-sm flex flex-col items-center gap-2">
                 <Loader2 className="w-6 h-6 animate-spin" />
-                Consultando editais na Plataforma OSC...
+                Consultando editais no Mapa das OSC...
               </div>
             ) : radarError ? (
               <div className="py-8 text-center text-sm text-red-600">{radarError}</div>
             ) : oportunidades.length === 0 ? (
               <div className="py-12 text-center text-slate-400 text-sm">
                 Nenhum edital encontrado no momento. Consulte também o{' '}
-                <a href="https://plataformaosc.org.br/editais/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
-                  site da Plataforma OSC
+                <a href="https://mapaosc.ipea.gov.br/editais" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                  Mapa das OSC (IPEA)
                 </a>.
               </div>
             ) : (

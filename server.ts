@@ -45,7 +45,7 @@ function claudeText(msg: Anthropic.Message): string {
 }
 
 // Busca e extrai o texto limpo da página de um edital específico (whitelist de domínio por segurança)
-const EDITAL_ALLOWED_HOSTS = ["plataformaosc.org.br"];
+const EDITAL_ALLOWED_HOSTS = ["prosas.com.br"];
 async function fetchEditalContent(link: string): Promise<string> {
   const url = new URL(link);
   if (!EDITAL_ALLOWED_HOSTS.includes(url.hostname)) {
@@ -55,13 +55,20 @@ async function fetchEditalContent(link: string): Promise<string> {
   if (!res.ok) throw new Error(`Falha ao acessar o edital: HTTP ${res.status}`);
   const html = await res.text();
   const $ = cheerio.load(html);
-  const article = $("article").first();
-  const text = (article.length ? article.text() : $("body").text())
+  const descricao = $(".summernote_description").first();
+  const text = (descricao.length ? descricao.text() : $("body").text())
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 40000);
   if (!text) throw new Error("Não foi possível extrair conteúdo do edital.");
   return text;
+}
+
+// Nome do incentivador (organização promotora) a partir do array "included" do JSON:API da Prosas
+function nomeIncentivador(item: any, included: any[]): string {
+  const relId = item.relationships?.incentivador?.data?.id;
+  const found = relId ? included.find((inc) => inc.type === "incentivador" && inc.id === relId) : null;
+  return found?.attributes?.nome_fantasia ?? item.attributes?.nome_empresa ?? "";
 }
 
 // Faz parsing robusto de uma resposta JSON do Claude (com fallback para bloco ```json)
@@ -628,33 +635,57 @@ async function startServer() {
     }
   });
 
-  // --- OPPORTUNITIES RADAR API — scraping determinístico, sem IA (lista completa e estável) ---
+  // --- OPPORTUNITIES RADAR API — consulta a API pública da Prosas (via widget do Mapa das OSC/IPEA), sem IA ---
   app.get("/api/mrosc/opportunities", async (req, res) => {
     try {
-      const pageRes = await fetch("https://plataformaosc.org.br/editais/", {
-        headers: { "User-Agent": "SIACT-MROSC/4.0 (gov.br)" },
-      });
-      if (!pageRes.ok) throw new Error(`Falha ao acessar a Plataforma OSC: HTTP ${pageRes.status}`);
-      const html = await pageRes.text();
-      const $ = cheerio.load(html);
+      const PAGE_SIZE = 100;
+      const MAX_PAGES = 5; // trava de segurança — hoje bastam 2 páginas pros ~131 editais
+      let page = 1;
+      let totalPages = 1;
+      const rawItems: any[] = [];
+      const included: any[] = [];
 
-      const opportunities = $(".post")
-        .map((i, el) => {
-          const a = $(el).find("h3.title a").first();
-          const title = a.text().trim();
-          const link = a.attr("href") ?? "";
-          const description = $(el).find(".excerpt").first().text().trim();
-          const dateMatch = link.match(/\/blog\/(\d{4})\/(\d{2})\/(\d{2})\//);
-          const date = dateMatch ? `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}` : "";
-          const dateSort = dateMatch ? `${dateMatch[1]}${dateMatch[2]}${dateMatch[3]}` : "00000000";
-          return { id: i, title, link, description, date, dateSort };
+      do {
+        const apiRes = await fetch(
+          `https://prosas.com.br/selecao/api/v2/publics/oportunidades?page[page]=${page}&page[size]=${PAGE_SIZE}&include=area_interesses,incentivador`,
+          { headers: { "User-Agent": "SIACT-MROSC/4.0 (gov.br)" } }
+        );
+        if (!apiRes.ok) throw new Error(`Falha ao acessar a API da Prosas: HTTP ${apiRes.status}`);
+        const json = await apiRes.json();
+        rawItems.push(...(json.data ?? []));
+        included.push(...(json.included ?? []));
+        totalPages = json.links?.last ?? 1;
+        page++;
+      } while (page <= totalPages && page <= MAX_PAGES);
+
+      const opportunities = rawItems
+        .map((item) => {
+          const attrs = item.attributes ?? {};
+          const prazoContinuo = attrs.prazo === "continuo" || !attrs.data_final_inscricoes;
+          const deadlineIso: string | null = prazoContinuo ? null : attrs.data_final_inscricoes;
+          const date = deadlineIso
+            ? new Date(deadlineIso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+            : "Inscrições contínuas";
+          const org = nomeIncentivador(item, included);
+          return {
+            id: String(item.id),
+            title: attrs.nome ?? "",
+            link: `https://prosas.com.br/editais/${item.id}`,
+            description: org,
+            date,
+            deadlineIso,
+          };
         })
-        .get()
         .filter((op) => op.title && op.link)
-        .sort((a, b) => b.dateSort.localeCompare(a.dateSort))
-        .map(({ dateSort, ...op }) => op);
+        .sort((a, b) => {
+          if (!a.deadlineIso && !b.deadlineIso) return 0;
+          if (!a.deadlineIso) return 1; // contínuos vão pro fim
+          if (!b.deadlineIso) return -1;
+          return a.deadlineIso.localeCompare(b.deadlineIso); // prazo mais próximo primeiro
+        })
+        .map(({ deadlineIso, ...op }) => op);
 
-      res.json({ opportunities, source: "https://plataformaosc.org.br/editais/", total: opportunities.length });
+      res.json({ opportunities, source: "https://mapaosc.ipea.gov.br/editais", total: opportunities.length });
     } catch (error: any) {
       console.error("Opportunities Radar error:", error);
       res.status(500).json({ error: error.message });

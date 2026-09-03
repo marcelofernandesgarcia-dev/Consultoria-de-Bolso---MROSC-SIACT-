@@ -4,12 +4,14 @@ import {
   Users, Building2, FileSearch, BookOpen, PlayCircle,
   FileCheck, AlertTriangle, ChevronRight, ArrowLeft, Sparkles, Radar, Check
 } from 'lucide-react';
-import { NAVIGATION, itensVisiveis } from '../lib/nav';
+import { NAVIGATION, itensVisiveis, NAV_META_IDS } from '../lib/nav';
 
-// Mesma fonte que a sidebar usa (grupo único "ferramentas") — cada card filtra pelo seu perfil.
-const GRUPO_FERRAMENTAS = NAVIGATION.find(g => g.id === 'ferramentas');
-const FERRAMENTAS_OSC = GRUPO_FERRAMENTAS ? itensVisiveis(GRUPO_FERRAMENTAS, 'osc') : [];
-const FERRAMENTAS_SETORIAL = GRUPO_FERRAMENTAS ? itensVisiveis(GRUPO_FERRAMENTAS, 'setorial') : [];
+// Mesma fonte que a sidebar usa (gavetas "osc"/"setorial") — cada card filtra pelo seu perfil,
+// excluindo itens de navegação/meta (Dashboard, Por onde começar, FAQ, Capacitação, Sistema).
+const GRUPO_OSC = NAVIGATION.find(g => g.id === 'osc');
+const GRUPO_SETORIAL = NAVIGATION.find(g => g.id === 'setorial');
+const FERRAMENTAS_OSC = GRUPO_OSC ? itensVisiveis(GRUPO_OSC, 'osc').filter(i => !NAV_META_IDS.includes(i.id)) : [];
+const FERRAMENTAS_SETORIAL = GRUPO_SETORIAL ? itensVisiveis(GRUPO_SETORIAL, 'setorial').filter(i => !NAV_META_IDS.includes(i.id)) : [];
 
 // Ações automatizadas dentro de cada ferramenta — não são rotas próprias, então não vêm do nav.ts
 const SUBITENS: Record<string, string[]> = {
@@ -112,7 +114,7 @@ export function Inicio() {
             <Sparkles className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Por onde começar?</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">MROSC - Guia de bolso</h1>
             <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>
               Responda 2 perguntas e o sistema indica exatamente o que você precisa
             </p>

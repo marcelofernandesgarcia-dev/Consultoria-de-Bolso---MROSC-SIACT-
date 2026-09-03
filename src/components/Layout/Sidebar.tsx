@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X,
 } from 'lucide-react';
-import { NAVIGATION, grupoVisivel, itensVisiveis, groupLabel, type SectionColor, type Perfil } from '../../lib/nav';
+import { NAVIGATION, grupoVisivel, itensVisiveis, type SectionColor, type Perfil } from '../../lib/nav';
 import { useAuth } from '../../contexts/AuthContext';
 import { useIsMobile } from '../../lib/useIsMobile';
 
@@ -36,11 +36,12 @@ const C: Record<SectionColor, {
   dot: string; groupLabel: string; groupBg: string; groupText: string;
   activeIcon: string; activeBg: string; activeDot: string;
 }> = {
-  indigo: { dot:'bg-indigo-500/30', groupLabel:'text-indigo-400/80', groupBg:'hover:bg-indigo-500/10', groupText:'hover:text-indigo-300', activeIcon:'text-indigo-300', activeBg:'bg-indigo-500/[0.18]', activeDot:'bg-indigo-400' },
-  violet: { dot:'bg-violet-500/30', groupLabel:'text-violet-400/80', groupBg:'hover:bg-violet-500/10', groupText:'hover:text-violet-300', activeIcon:'text-violet-300', activeBg:'bg-violet-500/[0.18]', activeDot:'bg-violet-400' },
-  amber:  { dot:'bg-amber-500/30',  groupLabel:'text-amber-400/80',  groupBg:'hover:bg-amber-500/10',  groupText:'hover:text-amber-300',  activeIcon:'text-amber-300',  activeBg:'bg-amber-500/[0.18]',  activeDot:'bg-amber-400'  },
-  slate:  { dot:'bg-slate-500/30',  groupLabel:'text-slate-400/70',  groupBg:'hover:bg-slate-500/10',  groupText:'hover:text-slate-300',  activeIcon:'text-slate-300',  activeBg:'bg-slate-500/[0.18]',  activeDot:'bg-slate-400'  },
-  teal:   { dot:'bg-teal-500/30',   groupLabel:'text-teal-400/80',   groupBg:'hover:bg-teal-500/10',   groupText:'hover:text-teal-300',   activeIcon:'text-teal-300',   activeBg:'bg-teal-500/[0.18]',   activeDot:'bg-teal-400'   },
+  indigo:  { dot:'bg-indigo-500/30',  groupLabel:'text-indigo-400/80',  groupBg:'hover:bg-indigo-500/10',  groupText:'hover:text-indigo-300',  activeIcon:'text-indigo-300',  activeBg:'bg-indigo-500/[0.18]',  activeDot:'bg-indigo-400'  },
+  violet:  { dot:'bg-violet-500/30',  groupLabel:'text-violet-400/80',  groupBg:'hover:bg-violet-500/10',  groupText:'hover:text-violet-300',  activeIcon:'text-violet-300',  activeBg:'bg-violet-500/[0.18]',  activeDot:'bg-violet-400'  },
+  amber:   { dot:'bg-amber-500/30',   groupLabel:'text-amber-400/80',   groupBg:'hover:bg-amber-500/10',   groupText:'hover:text-amber-300',   activeIcon:'text-amber-300',   activeBg:'bg-amber-500/[0.18]',   activeDot:'bg-amber-400'   },
+  slate:   { dot:'bg-slate-500/30',   groupLabel:'text-slate-400/70',   groupBg:'hover:bg-slate-500/10',   groupText:'hover:text-slate-300',   activeIcon:'text-slate-300',   activeBg:'bg-slate-500/[0.18]',   activeDot:'bg-slate-400'   },
+  teal:    { dot:'bg-teal-500/30',    groupLabel:'text-teal-400/80',    groupBg:'hover:bg-teal-500/10',    groupText:'hover:text-teal-300',    activeIcon:'text-teal-300',    activeBg:'bg-teal-500/[0.18]',    activeDot:'bg-teal-400'    },
+  emerald: { dot:'bg-emerald-500/30', groupLabel:'text-emerald-400/80', groupBg:'hover:bg-emerald-500/10', groupText:'hover:text-emerald-300', activeIcon:'text-emerald-300', activeBg:'bg-emerald-500/[0.18]', activeDot:'bg-emerald-400' },
 };
 
 /* ─── Componente ──────────────────────────────────────────────── */
@@ -180,7 +181,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
             const isOpen = openGroup === group.id;
             const GroupIcon = group.groupIcon;
             const items = itensVisiveis(group, perfilVisivel);
-            const label = groupLabel(group, perfilVisivel);
+            const label = group.group;
 
             return (
               <div key={group.id}>
@@ -189,7 +190,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
                   onMouseEnter={() => onEnter(group.id)}
                   onMouseLeave={onLeave}
                   onClick={() => setPinnedGroup(group.id)}
-                  title={!expanded ? label : undefined}
+                  title={!expanded ? group.fullLabel : undefined}
                   className={`w-full flex items-center rounded-lg transition-all duration-150 ${c.groupBg} ${c.groupText} ${
                     isOpen ? 'text-white' : 'text-slate-600'
                   }`}
