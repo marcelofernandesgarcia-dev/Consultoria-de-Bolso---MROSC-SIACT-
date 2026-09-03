@@ -15,6 +15,7 @@ import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import path from "path";
 import { syncMapaOsc, syncSoAreas } from "./src/lib/ipea.js";
+import { BASE_NORMATIVA_MROSC, TCU_NORMATIVOS_RESUMO } from "./src/lib/normativos.js";
 
 const _require = createRequire(import.meta.url);
 // pdf-parse v2 reescreveu a API: não é mais uma função, é a classe PDFParse (new PDFParse({ data }).getText()).
@@ -287,7 +288,7 @@ async function startServer() {
       5. VALIDAÇÃO JURÍDICA (6.0): Realize o cruzamento final entre Plano de Trabalho e Minuta para assegurar o que foi pactuado.
 
       IMPORTANTE: Sua saída JSON deve SEMPRE incluir um campo "status_final" com um dos valores: 'CONFORME', 'RESSALVA', 'NAO_CONFORME' e o campo 'fundamentacao_legal_especifica'.
-      ` + GOVERNANCA_IA_PROMPT;
+      ` + GOVERNANCA_IA_PROMPT + "\n\n" + BASE_NORMATIVA_MROSC;
 
       // --- TELA 1: ANÁLISE DE REQUISITOS ---
       if (type === 'requirements_eligibility') { // Prompt 1.1
@@ -301,8 +302,8 @@ async function startServer() {
         4. Compare cada item com o Art. 33 e 34 da Lei 13.019/2014.
         
         CRITÉRIOS OBRIGATÓRIOS:
-        - Tempo de existência: Mínimo 3 anos (Art. 33, I, a).
-        - Regularidade fiscal e trabalhista (Art. 34, II, III, IV).
+        - Tempo de existência: varia por esfera federativa — 1/2/3 anos conforme Município/Estado-DF/União (Art. 33, V, a).
+        - Regularidade fiscal, previdenciária e tributária (Art. 34, II) e existência jurídica comprovada (Art. 34, III).
         - Experiência prévia comprovada (Art. 33, V, b).
         
         SAÍDA JSON: { 
@@ -349,9 +350,9 @@ async function startServer() {
         
         CRITÉRIOS DE VALIDAÇÃO:
         - Identidade do objeto (Art. 42, I).
-        - Vigência compatível (Art. 42, II).
-        - Contrapartida (se houver) (Art. 42, III).
-        - Nexo Causal Orçamentário (Art. 45).
+        - Vigência compatível (Art. 42, VI).
+        - Contrapartida, se houver (Art. 42, V).
+        - Nexo Causal Orçamentário — finalidade alheia ao objeto é vedada (Art. 45, I).
         
         SAÍDA JSON: { 
           "status_final": "CONFORME" | "RESSALVA" | "NAO_CONFORME",
@@ -556,19 +557,19 @@ async function startServer() {
 
         BASE LEGAL VINCULANTE:
         - Art. 46, Lei 13.019/2014: compatibilidade dos preços com os praticados no mercado é obrigatória
-        - Art. 45, Lei 13.019/2014: vedações de despesa (taxas bancárias, multas, despesas pessoais, pagamentos a dirigentes)
-        - IN SEGES/ME nº 65/2021, Art. 34: sobrepreço configurado quando preço supera 25% do benchmark de mercado
-        - Decreto 11.948/2024, Art. 12: para parcerias até R$ 120.000, exige-se mínimo de 3 propostas de fornecedores distintos
-        - TCU Súmula 254: necessidade de documentar pesquisa de preços com pelo menos 3 propostas válidas
+        - Art. 45, I, Lei 13.019/2014: vedado usar recursos para finalidade alheia ao objeto da parceria
+        - Decreto 8.726/2016, Art. 39, §1º (redação do Decreto 11.948/2024): multas, juros ou correção monetária só podem ser pagos com recursos da parceria quando decorrerem de atraso da ADMINISTRAÇÃO PÚBLICA em liberar parcelas — nunca por atraso da própria OSC
+        - IN SEGES/ME nº 65/2021, Art. 5º, IV: pesquisa direta com no mínimo 3 fornecedores é um dos parâmetros aceitos de pesquisa de preços
+        - IN SEGES/ME nº 65/2021, Art. 2º, II: sobrepreço é definido de forma qualitativa (preço "expressivamente superior" ao de mercado) — a norma não fixa percentual; os limiares de +10%/+25% abaixo são critério operacional deste sistema, não citação literal da IN
 
         ETAPAS DE ANÁLISE OBRIGATÓRIAS:
         1. Para CADA item, calcule a variação: ((valorUnitarioCotado - valorUnitarioReferencia) / valorUnitarioReferencia) × 100
            - Até +10%: CONFORME (variação de mercado aceitável)
            - +10% a +25%: RESSALVA (variação significativa — exige justificativa documental)
-           - Acima de +25%: REJEITADO (indício forte de sobrepreço — Art. 46 + IN 65/2021)
+           - Acima de +25%: REJEITADO (indício forte de sobrepreço, por critério operacional deste sistema — a exigência legal de fundo é a compatibilidade de mercado do Art. 46 da Lei 13.019/2014)
            - Negativo: CONFORME (economia para a parceria — verifique sustentabilidade do fornecedor)
         2. Avalie a coerência entre descrição e valor unitário (ex: notebook por R$ 300 é implausível; serviço por R$ 5.000.000 merece ressalva)
-        3. Identifique itens vedados pelo Art. 45: taxas bancárias, pagamentos de multas, despesas pessoais, condução, refeições sem previsão
+        3. Identifique itens vedados: finalidade alheia ao objeto da parceria (Art. 45, I, Lei 13.019/2014); multas/juros só se decorrentes de atraso da administração pública (Decreto 8.726/2016, Art. 39, §1º)
         4. Determine status_final pela regra do item mais crítico presente na cotação
 
         REGRAS DE STATUS GLOBAL:
@@ -896,7 +897,7 @@ ESTRUTURA JSON ESPERADA:
   "conclusao_final": "string",
   "fundamentacao_legal_especifica": "string"
 }
-` + GOVERNANCA_IA_PROMPT;
+` + GOVERNANCA_IA_PROMPT + "\n\n# BASE NORMATIVA VERIFICADA (prescrição e TCE)\n" + TCU_NORMATIVOS_RESUMO;
 
       const content: Anthropic.ContentBlockParam[] = [];
 
@@ -1015,7 +1016,7 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
 **EXEMPLO 1: Análise de Elegibilidade (APROVADA)**
 - **Critério:** Tempo de existência da OSC.
 - **Evidência:** CNPJ 12.345.678/0001-90 comprova fundação em 2019 (5 anos).
-- **Fundamentação Legal:** Art. 33, inciso I da Lei 13.019/2014 (exigência mínima de 3 anos).
+- **Fundamentação Legal:** Art. 33, inciso V, alínea "a" da Lei 13.019/2014 (exigência varia por esfera: 1/2/3 anos conforme Município/Estado-DF/União).
 - **RESULTADO:** ELEGÍVEL.
 
 **EXEMPLO 2: Análise de Edital (APROVADA)**
@@ -1027,17 +1028,21 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
 **EXEMPLO 3: Análise de Despesa (REJEITADA)**
 - **Critério:** Pagamento de taxa de administração.
 - **Evidência:** Plano de Trabalho prevê 5% para "taxa de administração".
-- **Fundamentação Legal:** Art. 45, inciso I da Lei 13.019/2014 (vedação expressa).
+- **Fundamentação Legal:** Art. 45, inciso I da Lei 13.019/2014 (despesa não vinculada à execução do objeto pactuado — finalidade alheia à parceria).
 - **RESULTADO:** NÃO CONFORME.
 
 # INSTRUÇÕES DE ITERAÇÃO E CONTROLE DE ERROS
 - Se o documento fornecido estiver incompleto, **NÃO presuma informações**. Retorne o status "INCONCLUSIVO" e liste exatamente quais documentos ou dados faltam, citando a exigência legal.
 - Em caso de conflito normativo, priorize a regra mais recente e específica (ex: inovações do Decreto 11.948/2024 sobre regras antigas).
 - Mantenha a taxa de erro de análise abaixo de 1% atendo-se estritamente ao texto da lei.
-      `;
 
+      ` + BASE_NORMATIVA_MROSC;
+
+      // Base normativa é sempre anexada, mesmo quando o cliente envia seu próprio systemPrompt
+      // (AssistenteFlutuante/AssistenteSiact) — senão o grounding contra citação incorreta só
+      // valeria pro prompt padrão, nunca pro assistente flutuante que é o mais usado.
       const systemInstruction = (typeof clientSystemPrompt === 'string' && clientSystemPrompt.trim().length > 0)
-        ? clientSystemPrompt.trim().substring(0, 5000)
+        ? clientSystemPrompt.trim().substring(0, 5000) + "\n\n" + BASE_NORMATIVA_MROSC
         : defaultSystemInstruction;
 
       const response = await anthropic.messages.create({

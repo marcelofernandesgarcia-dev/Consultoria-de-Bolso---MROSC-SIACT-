@@ -16,8 +16,8 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
     itens: [
       {
         pergunta: 'Minha OSC tem 2 anos e meio de existência. Pode participar do chamamento?',
-        resposta: 'Não. A lei exige que a OSC exista há pelo menos 3 anos comprovados pela data de abertura no CNPJ. OSCs com menos de 3 anos estão impedidas de participar de chamamentos públicos, independentemente de qualquer outra qualificação.',
-        fundamento: 'Art. 33, V, §1º, Lei 13.019/2014',
+        resposta: 'Depende da esfera. O tempo mínimo de existência não é fixo em 3 anos — varia conforme quem celebra a parceria: 1 ano para Municípios, 2 anos para Estados e Distrito Federal, e 3 anos para a União. Com 2 anos e meio, sua OSC já pode participar de chamamentos municipais e estaduais/distritais, mas ainda não de chamamentos federais.',
+        fundamento: 'Art. 33, V, "a", Lei 13.019/2014',
       },
       {
         pergunta: 'O CNPJ precisa ter o mesmo CNAE da atividade do chamamento?',
@@ -35,9 +35,9 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
         fundamento: 'Art. 39, I, Lei 13.019/2014',
       },
       {
-        pergunta: 'O chamamento pode dispensar a exigência de 3 anos de existência?',
-        resposta: 'A lei prevê exceção apenas para OSCs que comprovem capacidade técnica e operacional por outros meios, a critério do órgão concedente, conforme regulamentação específica. Consulte o edital e o Decreto 11.948/2024 para verificar se há previsão de dispensa.',
-        fundamento: 'Art. 33, V, §2º, Lei 13.019/2014',
+        pergunta: 'O chamamento pode dispensar a exigência de tempo mínimo de existência?',
+        resposta: 'Sim, mas por um mecanismo específico: a lei admite que cada ente federativo reduza esse prazo por ato próprio, exclusivamente na hipótese de nenhuma organização da região atingir o tempo mínimo exigido. Não existe dispensa geral por "capacidade técnica comprovada" — a OSC continua precisando comprovar capacidade técnica separadamente, além do tempo de existência (reduzido ou não).',
+        fundamento: 'Art. 33, V, "a", parte final, Lei 13.019/2014',
       },
     ],
   },
@@ -47,13 +47,13 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
     itens: [
       {
         pergunta: 'A OSC pode remanejar recursos entre rubricas do plano de trabalho?',
-        resposta: 'Sim, mas com limites. Remanejamentos de até 20% do valor de cada rubrica geralmente podem ser feitos com autorização do gestor. Alterações que modifiquem o objeto, as metas ou que ultrapassem o limite percentual exigem termo aditivo. Verifique sempre o instrumento firmado, pois pode estabelecer limites menores.',
+        resposta: 'Sim. O plano de trabalho pode ser revisto para alteração de valores ou metas, formalizado por termo aditivo (mudanças mais substanciais) ou por simples apostilamento (ajustes que não alteram o objeto). A lei não fixa um percentual único válido para todo o país — verifique sempre o instrumento firmado, que detalha os limites e o procedimento aplicável ao seu caso.',
         fundamento: 'Art. 57, Lei 13.019/2014',
       },
       {
         pergunta: 'É obrigatória a cotação de preços para todas as compras?',
-        resposta: 'Sim para compras acima de R$ 2.000,00 (valor de referência — verifique o edital). Para esse valor, exige-se no mínimo 3 cotações de fornecedores distintos, com justificativa da escolha. Compras de pequeno valor podem ser realizadas sem cotação formal, mas devem ser documentadas e economicamente justificadas.',
-        fundamento: 'Art. 45, Lei 13.019/2014',
+        resposta: 'Não existe um valor fixo (como R$ 2.000,00) que dispare essa obrigatoriedade — a OSC segue regras de contratação de direito privado, não o regime de licitação pública. O que a lei exige é comprovar a compatibilidade dos custos com os preços de mercado, usando qualquer um de 11 métodos aceitos (contratação similar recente, ata de registro de preços, tabela de associação profissional, Compras.gov.br, PNCP, entre outros) — cotação com 3 fornecedores é só um deles, não uma exigência isolada.',
+        fundamento: 'Art. 46, Lei 13.019/2014; Decreto 8.726/2016, Art. 25, §1º',
       },
       {
         pergunta: 'A OSC pode pagar salários com recursos da parceria?',
@@ -78,8 +78,8 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
     itens: [
       {
         pergunta: 'Qual é o prazo para a OSC entregar a prestação de contas final?',
-        resposta: 'A OSC tem até 90 dias após o término da vigência da parceria para entregar a prestação de contas final ao órgão concedente. Esse prazo é peremptório — o descumprimento caracteriza inadimplência. Use o Calendário de Obrigações do sistema para calcular a data exata.',
-        fundamento: 'Art. 69, Lei 13.019/2014',
+        resposta: 'A Lei 13.019/2014 permite até 90 dias após o fim da parceria, prorrogável por mais 30. Mas atenção: no âmbito federal, o Decreto 8.726/2016 e o Manual MROSC reduzem esse prazo especificamente para o Relatório Final de Execução do Objeto — até 30 dias após o término da execução, prorrogável por mais 15 mediante justificativa prévia da OSC. Como o prazo federal na prática é bem mais curto que os 90 dias da lei geral, confirme sempre o prazo exato no instrumento firmado e use o Calendário de Obrigações do sistema.',
+        fundamento: 'Art. 69, Lei 13.019/2014; Decreto 8.726/2016, Art. 62 c/c Art. 65, I',
       },
       {
         pergunta: 'Qual a diferença entre a prestação de contas anual e a prestação de contas final?',
@@ -88,13 +88,13 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
       },
       {
         pergunta: 'O saldo remanescente precisa ser devolvido antes ou depois da prestação de contas?',
-        resposta: 'Antes. O saldo não utilizado deve ser devolvido ao órgão concedente em até 30 dias após o término da vigência. Somente após a devolução e a confirmação do pagamento é que a prestação de contas deve ser entregue. O comprovante de devolução é documento obrigatório da prestação de contas.',
-        fundamento: 'Art. 73, Lei 13.019/2014',
+        resposta: 'Antes. O saldo não utilizado deve ser devolvido ao órgão concedente em até 30 dias após o término da vigência — prazo improrrogável, sob pena de instauração imediata de Tomada de Contas Especial. Somente após a devolução e a confirmação do pagamento é que a prestação de contas deve ser entregue. O comprovante de devolução é documento obrigatório da prestação de contas.',
+        fundamento: 'Art. 52, Lei 13.019/2014',
       },
       {
         pergunta: 'A OSC precisa publicar a prestação de contas em algum sítio eletrônico?',
-        resposta: 'Sim, para parcerias com valor global acima de R$ 600.000,00, é obrigatória a publicação de relatório de execução e prestação de contas em sítio eletrônico oficial ou do próprio órgão concedente. Para valores inferiores, a publicidade ocorre pelo sistema oficial de gestão.',
-        fundamento: 'Art. 11, Lei 13.019/2014',
+        resposta: 'Toda parceria, independentemente do valor, precisa ter sua relação divulgada no sítio oficial da administração pública. Para parcerias com valor acumulado acima de R$ 600.000,00, essa divulgação na internet passa a ser obrigatória (não facultativa) — mas o que é publicado são as informações básicas da parceria (identificação, objeto, valores, situação das contas), não um "relatório técnico" ou parecer de prestação de contas.',
+        fundamento: 'Art. 10 e 11, Lei 13.019/2014',
       },
       {
         pergunta: 'O que o órgão concedente verifica na prestação de contas?',
@@ -110,7 +110,7 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
       {
         pergunta: 'O que é uma Tomada de Contas Especial (TCE)?',
         resposta: 'A TCE é um processo administrativo de apuração de responsabilidade por dano ao erário. Ela é instaurada quando há irregularidade na aplicação de recursos públicos que não foi sanada por via ordinária. Pode resultar em imputação de débito (devolução do valor) e multa ao responsável, além de inscrição no CADIN e SIAFI irregular.',
-        fundamento: 'Art. 80, Lei 13.019/2014; IN TCU 71/2012',
+        fundamento: 'Art. 80, Lei 13.019/2014; IN TCU 98/2024',
       },
       {
         pergunta: 'Recebi notificação de instauração de TCE. Quais são meus direitos?',
@@ -119,13 +119,13 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
       },
       {
         pergunta: 'A TCE pode ser arquivada sem julgamento de mérito?',
-        resposta: 'Sim. O processo pode ser arquivado se: o dano ao erário for inferior ao valor mínimo estabelecido pelo Tribunal de Contas; as irregularidades forem sanadas com apresentação de documentação; os responsáveis efetuarem o ressarcimento voluntário do débito antes do julgamento.',
-        fundamento: 'Art. 80, §3º, Lei 13.019/2014',
+        resposta: 'Sim. O processo pode ser arquivado se: o dano ao erário for inferior ao valor mínimo de instauração (R$ 120.000,00); as irregularidades forem sanadas com apresentação de documentação; os responsáveis efetuarem o ressarcimento voluntário do débito antes do julgamento.',
+        fundamento: 'IN TCU 98/2024',
       },
       {
         pergunta: 'Quais são as consequências de uma TCE julgada procedente?',
-        resposta: 'Imputação de débito (devolução integral do valor com correção monetária e juros), aplicação de multa (até 100% do débito), inscrição no SIAFI como irregular, possível inclusão em cadastros restritivos (CADIN, CADIP), impossibilidade de celebrar novas parcerias com o poder público enquanto irregular.',
-        fundamento: 'Art. 73, §3º, Lei 13.019/2014; Lei 8.443/1992',
+        resposta: 'Imputação de débito (devolução integral do valor com correção monetária e juros), aplicação de multa, inscrição no SIAFI como irregular, possível inclusão em cadastros restritivos (CADIN, CADIP), impossibilidade de celebrar novas parcerias com o poder público enquanto irregular.',
+        fundamento: 'Art. 39, §2º, Lei 13.019/2014; Lei 8.443/1992 (Lei Orgânica do TCU)',
       },
       {
         pergunta: 'Como evitar que a prestação de contas leve a uma TCE?',
