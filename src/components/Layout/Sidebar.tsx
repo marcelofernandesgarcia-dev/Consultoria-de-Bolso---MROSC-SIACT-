@@ -135,8 +135,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
           </div>
           {expanded && (
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-extrabold text-white tracking-tight leading-none whitespace-nowrap">SIACT-MROSC</p>
-              <p className="text-[8.5px] text-slate-500 mt-0.5 font-medium leading-tight whitespace-nowrap">Consultoria de Bolso</p>
+              <p className="text-[13px] font-extrabold text-white tracking-tight leading-none whitespace-nowrap">MROSC - Guia de bolso</p>
             </div>
           )}
           {isMobile && (

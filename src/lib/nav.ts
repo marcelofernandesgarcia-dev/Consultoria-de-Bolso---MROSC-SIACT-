@@ -2,7 +2,7 @@ import React from 'react';
 import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, LayoutTemplate, Route,
-  Compass, FileCheck, CalendarDays, Sparkles, BookOpen, Scale, Radar,
+  FileCheck, CalendarDays, Sparkles, BookOpen, Scale, Radar,
   Users, Building2,
 } from 'lucide-react';
 
@@ -39,7 +39,6 @@ export const NAVIGATION: NavGroup[] = [
     groupIcon: Users,
     perfil: 'osc',
     items: [
-      { id: 'inicio',        label: 'Por onde começar',           icon: Compass,         path: '/inicio' },
       { id: 'chamamentos',   label: 'Chamamentos Abertos',        icon: Radar,           path: '/chamamentos' },
       { id: 'simulador',     label: 'Simulador de Elegibilidade', icon: Sparkles,        path: '/simulador' },
       { id: 'checklist',     label: 'Checklist de Documentos',    icon: FileCheck,       path: '/checklist' },
@@ -64,7 +63,6 @@ export const NAVIGATION: NavGroup[] = [
     perfil: 'setorial',
     items: [
       { id: 'dashboard',     label: 'Dashboard',                  icon: LayoutDashboard, path: '/' },
-      { id: 'inicio',        label: 'Por onde começar',           icon: Compass,         path: '/inicio' },
       { id: 'integracao',    label: 'Mapa OSC',                   icon: Search,          path: '/integracao' },
       { id: 'governanca',    label: 'Governança',                 icon: ShieldCheck,     path: '/governanca' },
       { id: 'normas',        label: 'Radar Normativo',            icon: Gavel,           path: '/normas' },

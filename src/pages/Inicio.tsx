@@ -109,16 +109,11 @@ export function Inicio() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Hero */}
       <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #3730A3 40%, #4F46E5 70%, #7C3AED 100%)' }}>
-        <div className="px-7 py-5 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
-            <Sparkles className="w-5 h-5 text-white" strokeWidth={2} />
+        <div className="px-6 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            <Sparkles className="w-4.5 h-4.5 text-white" strokeWidth={2} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">MROSC - Guia de bolso</h1>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              Responda 2 perguntas e o sistema indica exatamente o que você precisa
-            </p>
-          </div>
+          <h1 className="text-lg font-bold text-white tracking-tight">MROSC - Guia de bolso</h1>
         </div>
       </div>
 
