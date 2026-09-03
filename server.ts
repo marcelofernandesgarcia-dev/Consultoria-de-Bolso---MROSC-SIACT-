@@ -16,7 +16,10 @@ import path from "path";
 import { syncMapaOsc, syncSoAreas } from "./src/lib/ipea.js";
 
 const _require = createRequire(import.meta.url);
-const pdfParse = _require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
+// pdf-parse v2 reescreveu a API: não é mais uma função, é a classe PDFParse (new PDFParse({ data }).getText()).
+const { PDFParse } = _require("pdf-parse") as {
+  PDFParse: new (opts: { data: Buffer }) => { getText: () => Promise<{ text: string }>; destroy: () => Promise<void> };
+};
 
 // Initialize Supabase
 const supabase = createSupabaseClient(
@@ -171,7 +174,9 @@ async function startServer() {
         if (!req.file) {
           return res.status(400).json({ error: "Nenhum arquivo enviado." });
         }
-        const data = await pdfParse(req.file.buffer);
+        const parser = new PDFParse({ data: req.file.buffer });
+        const data = await parser.getText();
+        await parser.destroy();
         res.json({ text: data.text });
       } catch (error: any) {
         console.error("PDF parsing error:", error);
