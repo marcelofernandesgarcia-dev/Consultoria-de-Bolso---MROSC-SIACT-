@@ -62,7 +62,7 @@ export const NAVIGATION: NavGroup[] = [
     groupIcon: Building2,
     perfil: 'setorial',
     items: [
-      { id: 'dashboard',     label: 'Dashboard',                  icon: LayoutDashboard, path: '/' },
+      { id: 'dashboard',     label: 'Dashboard',                  icon: LayoutDashboard, path: '/dashboard' },
       { id: 'integracao',    label: 'Mapa OSC',                   icon: Search,          path: '/integracao' },
       { id: 'governanca',    label: 'Governança',                 icon: ShieldCheck,     path: '/governanca' },
       { id: 'normas',        label: 'Radar Normativo',            icon: Gavel,           path: '/normas' },
@@ -118,7 +118,7 @@ export function perfilDaRota(pathname: string): GrupoPerfil | null {
   return [...donos][0];
 }
 
-/** Rota inicial segura para cada perfil — evita mandar OSC pro Dashboard (setorial-only). */
-export function homePathForPerfil(perfil: Perfil | null): string {
-  return perfil === 'osc' ? '/inicio' : '/';
+/** Rota inicial padrão do sistema — a mesma pra todo mundo, independente do perfil. */
+export function homePathForPerfil(_perfil: Perfil | null): string {
+  return '/inicio';
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { PrivateRoute } from './components/PrivateRoute';
 import { Layout } from './components/Layout/Layout';
@@ -41,8 +41,10 @@ export default function App() {
               </PrivateRoute>
             }
           >
-            <Route index element={<Dashboard />} />
+            {/* A tela inicial padrão do sistema é sempre "Por onde começar" — mesma pra todo mundo. */}
+            <Route index element={<Navigate to="/inicio" replace />} />
             <Route path="inicio" element={<Inicio />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="integracao" element={<MapaOSCHub />} />
             <Route path="governanca" element={<PapeisImpedimentos />} />
             <Route path="normas" element={<RadarNormativo />} />
