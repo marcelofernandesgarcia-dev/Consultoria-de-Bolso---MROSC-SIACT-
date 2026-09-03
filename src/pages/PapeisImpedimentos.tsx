@@ -69,7 +69,7 @@ export function PapeisImpedimentos() {
       <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-200 rounded-xl">
         <AlertOctagon className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p className="text-sm text-amber-800 leading-relaxed">
-          <strong>Impedimentos legais:</strong> É vedada a celebração de parcerias com OSCs cujos dirigentes sejam cônjuges, companheiros ou parentes até o 2.º grau de agentes públicos (Art. 39, I, Lei 13.019/2014).
+          <strong>Impedimentos legais:</strong> É vedada a celebração de parcerias com OSCs cujos dirigentes sejam cônjuges, companheiros ou parentes até o 2.º grau de agentes públicos com poder decisório na parceria (Art. 39, III, Lei 13.019/2014).
         </p>
       </div>
 

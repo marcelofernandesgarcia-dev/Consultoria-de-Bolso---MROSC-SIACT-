@@ -66,7 +66,9 @@ export function MapaOSCHub() {
         certificacoes: [],
         projetosRecentes: [],
         ipeaInsights: {
-          isEligible: ageInYears >= 3,
+          // Tempo mínimo de existência varia por esfera (Art. 33, V, "a"): 1 ano Município,
+          // 2 Estado/DF, 3 União — isEligible reflete a esfera mais permissiva (Municipal).
+          isEligible: ageInYears >= 1,
           ageInYears,
           hasIpeaRecord: localRes.status === 'fulfilled' && localRes.value.ok,
           projetos: [],
@@ -209,7 +211,9 @@ export function MapaOSCHub() {
               </div>
             </div>
             {profile.ipeaInsights.isEligible
-              ? <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 shrink-0"><CheckCircle2 className="w-4 h-4" /><span className="text-xs font-bold">Elegível — Art. 33</span></div>
+              ? <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 shrink-0"><CheckCircle2 className="w-4 h-4" /><span className="text-xs font-bold">
+                  {profile.ipeaInsights.ageInYears >= 3 ? 'Elegível — todas as esferas' : profile.ipeaInsights.ageInYears >= 2 ? 'Elegível — Municipal/Estadual' : 'Elegível — Municipal'}
+                </span></div>
               : <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl border border-amber-200 shrink-0"><ShieldAlert className="w-4 h-4" /><span className="text-xs font-bold">Atenção — Tempo Mínimo</span></div>
             }
           </div>
@@ -246,7 +250,7 @@ export function MapaOSCHub() {
             <div className="mx-6 mb-5 flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
               <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800">
-                <strong>Elegibilidade pendente:</strong> A OSC precisa de pelo menos 3 anos de existência (Art. 33, Lei 13.019/2014). Atual: {profile.ipeaInsights.ageInYears} ano(s).
+                <strong>Elegibilidade pendente:</strong> o tempo mínimo de existência varia por esfera (Art. 33, V, "a", Lei 13.019/2014) — 1 ano pra chamamento municipal, 2 pra estadual/distrital, 3 pra federal. Com {profile.ipeaInsights.ageInYears} ano(s), essa OSC ainda não atinge nem o mínimo municipal.
               </p>
             </div>
           )}

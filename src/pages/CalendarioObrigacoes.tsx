@@ -19,6 +19,12 @@ export function CalendarioObrigacoes() {
   const [dataInicio, setDataInicio] = useState('');
   const [prazoMeses, setPrazoMeses] = useState(12);
   const [periodicidade, setPeriodicidade] = useState<'mensal' | 'trimestral'>('mensal');
+  // A Lei 13.019/2014 permite até 90 dias pra prestação de contas final (regra geral, válida
+  // pra todas as esferas) — mas no âmbito federal o Decreto 8.726/2016 reduz esse prazo
+  // especificamente pro Relatório Final de Execução do Objeto pra até 30 dias (+15 de
+  // prorrogação). Estados e Municípios têm regulamento próprio, que pode fixar outro prazo.
+  const [ambitoFederal, setAmbitoFederal] = useState(true);
+  const diasPrestacaoFinal = ambitoFederal ? 30 : 90;
 
   const prazos = useMemo<Prazo[]>(() => {
     if (!dataInicio) return [];
@@ -59,9 +65,9 @@ export function CalendarioObrigacoes() {
       lista.push({
         titulo: 'Prestação de Contas Intermediária (Anual)',
         data: pcIntermediaria,
-        fundamento: 'Art. 69, §3º, Lei 13.019/2014',
+        fundamento: 'Art. 69, §2º, Lei 13.019/2014',
         tipo: 'critico',
-        descricao: 'Obrigatória para parcerias com vigência superior a 12 meses. Prazo: até 30 dias após completar 12 meses.',
+        descricao: 'Obrigatória para parcerias com vigência superior a 1 ano — a OSC deve apresentar prestação de contas ao fim de cada exercício. A lei não fixa um número exato de dias pra esse prazo; confirme no instrumento firmado.',
       });
     }
 
@@ -74,35 +80,39 @@ export function CalendarioObrigacoes() {
       descricao: 'Data final de execução. Após este prazo, nenhuma nova despesa pode ser realizada com recursos da parceria.',
     });
 
-    // Devolução do saldo (30 dias após término)
+    // Devolução do saldo (30 dias após término — prazo improrrogável)
     lista.push({
       titulo: 'Devolução do Saldo Remanescente',
       data: addDays(encerramento, 30),
-      fundamento: 'Art. 73, Lei 13.019/2014',
+      fundamento: 'Art. 52, Lei 13.019/2014',
       tipo: 'critico',
-      descricao: 'O saldo não utilizado deve ser devolvido ao órgão público em até 30 dias após o término.',
+      descricao: 'O saldo não utilizado deve ser devolvido ao órgão público em até 30 dias após o término — prazo improrrogável, sob pena de instauração imediata de Tomada de Contas Especial.',
     });
 
-    // Prestação de contas final (90 dias após término)
+    // Prestação de contas final — geral (Lei) x federal (Decreto), conforme âmbito selecionado
     lista.push({
       titulo: 'Prestação de Contas Final',
-      data: addDays(encerramento, 90),
-      fundamento: 'Art. 69, Lei 13.019/2014',
+      data: addDays(encerramento, diasPrestacaoFinal),
+      fundamento: ambitoFederal
+        ? 'Decreto 8.726/2016, Art. 62 c/c Art. 65, I'
+        : 'Art. 69, Lei 13.019/2014',
       tipo: 'critico',
-      descricao: 'Prazo máximo de 90 dias após o término da parceria para entrega da prestação de contas final ao concedente.',
+      descricao: ambitoFederal
+        ? 'No âmbito federal, o Decreto 8.726/2016 reduz o prazo geral de 90 dias da Lei pra até 30 dias após o término da execução (prorrogável por mais 15, mediante justificativa prévia da OSC).'
+        : 'Prazo geral da Lei 13.019/2014: até 90 dias após o término da parceria. Estados e Municípios podem ter regulamento próprio com prazo diferente — confirme no instrumento firmado.',
     });
 
-    // Análise pelo órgão (até 150 dias da prestação de contas)
+    // Análise pelo órgão (até 150 dias contados do recebimento da prestação de contas)
     lista.push({
       titulo: 'Prazo para Análise pelo Órgão Concedente',
-      data: addDays(encerramento, 90 + 150),
+      data: addDays(encerramento, diasPrestacaoFinal + 150),
       fundamento: 'Art. 71, Lei 13.019/2014',
       tipo: 'informativo',
-      descricao: 'O órgão tem até 150 dias para analisar a prestação de contas após o recebimento.',
+      descricao: 'O órgão tem até 150 dias para analisar a prestação de contas, contados do recebimento.',
     });
 
     return lista.sort((a, b) => a.data.getTime() - b.data.getTime());
-  }, [dataInicio, prazoMeses, periodicidade]);
+  }, [dataInicio, prazoMeses, periodicidade, ambitoFederal, diasPrestacaoFinal]);
 
   const corTipo = {
     critico: 'border-l-red-500 bg-red-50',
@@ -178,6 +188,29 @@ export function CalendarioObrigacoes() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Âmbito da Parceria</label>
+          <p className="text-xs text-slate-500 mb-2">O prazo de prestação de contas final muda conforme o âmbito — a Lei geral permite 90 dias, mas o Decreto federal reduz pra 30 (+15).</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setAmbitoFederal(true)}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                ambitoFederal ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'
+              }`}
+            >
+              Federal (30 + 15 dias)
+            </button>
+            <button
+              onClick={() => setAmbitoFederal(false)}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                !ambitoFederal ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'
+              }`}
+            >
+              Estadual/Municipal (Lei geral — 90 dias)
+            </button>
           </div>
         </div>
       </div>
