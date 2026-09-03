@@ -128,7 +128,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
             </div>
           )}
           {isMobile && (
-            <button onClick={onMobileClose} className="shrink-0 text-slate-500 hover:text-white transition-colors p-1" title="Fechar menu">
+            <button onClick={onMobileClose} className="shrink-0 text-slate-500 hover:text-white transition-colors p-1" title="Fechar menu" aria-label="Fechar menu">
               <X className="w-5 h-5" />
             </button>
           )}
@@ -179,6 +179,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
                   onMouseLeave={onLeave}
                   onClick={() => setPinnedGroup(group.id)}
                   title={!expanded ? group.fullLabel : undefined}
+                  aria-label={group.fullLabel}
                   className={`w-full flex items-center rounded-lg transition-all duration-150 ${c.groupBg} ${c.groupText} ${
                     isOpen ? 'text-white' : 'text-slate-600'
                   }`}
@@ -271,6 +272,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
             <button
               onClick={onToggle}
               title={isExpanded ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={isExpanded ? 'Recolher menu' : 'Expandir menu'}
               className={`rounded-xl flex items-center justify-center transition-all duration-150 ${
                 isExpanded
                   ? 'w-8 h-8 text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
@@ -320,6 +322,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
                 to="/conta"
                 onClick={() => isMobile && onMobileClose()}
                 title={!expanded ? `${displayName} — Minha conta` : undefined}
+                aria-label={`${displayName} — Minha conta`}
                 className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 hover:ring-2 hover:ring-indigo-500/40 transition-all"
                 style={{ background: 'linear-gradient(135deg, #7C3AED, #4F46E5)' }}
               >
@@ -334,6 +337,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
                   <button
                     onClick={signOut}
                     title="Sair"
+                    aria-label="Sair"
                     className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/[0.04] transition-colors shrink-0"
                   >
                     <LogOut className="w-3.5 h-3.5" />

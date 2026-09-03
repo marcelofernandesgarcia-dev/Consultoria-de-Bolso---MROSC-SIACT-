@@ -107,7 +107,7 @@ export function AssistenteFlutuante() {
               <p className="text-sm font-bold text-white leading-none">Assistente SIACT</p>
               <p className="text-[10px] text-indigo-100 mt-0.5">Especialista em MROSC · Lei 13.019/14</p>
             </div>
-            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition-colors shrink-0">
+            <button onClick={() => setOpen(false)} aria-label="Fechar assistente" className="text-white/70 hover:text-white transition-colors shrink-0">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -234,6 +234,7 @@ export function AssistenteFlutuante() {
         <button
           onClick={() => setOpen(o => !o)}
           title="Assistente SIACT"
+          aria-label={open ? "Fechar assistente" : "Abrir Assistente SIACT"}
           className="w-14 h-14 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 relative"
           style={{
             background: 'linear-gradient(135deg, #6366F1, #4F46E5, #7C3AED)',

@@ -62,6 +62,7 @@ export function Layout() {
           className="md:hidden fixed top-4 left-4 z-20 w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 bg-white/90 shadow-sm border border-slate-200 print:hidden"
           style={{ backdropFilter: 'blur(12px)' }}
           title="Abrir menu"
+          aria-label="Abrir menu"
         >
           <Menu className="w-5 h-5" />
         </button>

@@ -658,7 +658,16 @@ async function startServer() {
         messages: [{ role: "user", content: `Analise o seguinte conteúdo:\n${textContent}` }],
       });
 
-      const parsedData = parseAiJson(claudeText(response), {
+      // A IA pode devolver "status" e/ou "message" além dos campos padrão, dependendo do
+      // tipo de análise — o índice extra reflete que o JSON real varia por `type`.
+      const parsedData = parseAiJson<{
+        status_final: string;
+        summary: string;
+        error: string;
+        status?: string;
+        message?: string;
+        [key: string]: unknown;
+      }>(claudeText(response), {
         status_final: "RESSALVA",
         summary: "Erro ao processar resposta da IA",
         error: "Non-JSON response",

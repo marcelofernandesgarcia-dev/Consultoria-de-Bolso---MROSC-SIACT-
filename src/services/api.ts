@@ -33,30 +33,24 @@ export type MROSCAnalysisResult = AIAnalysisResult & {
   status_final?: string;
 };
 
+// Precisa bater exatamente com VALID_ANALYSIS_TYPES em server.ts — qualquer valor fora
+// dessa lista é rejeitado com 400 pelo backend.
 export interface MROSCAnalysisRequest {
   type:
     | 'requirements_eligibility'
     | 'requirements_docs'
     | 'requirements_budget'
     | 'mrosc_router'
-    | 'osc_edital_explainer'
-    | 'osc_proposal_precheck'
-    | 'internal_planning_etp'
-    | 'internal_planning_edital'
-    | 'selection_ranking'
-    | 'selection_minutes'
+    | 'celebration_validation'
     | 'celebration_term'
     | 'celebration_workplan'
-    | 'celebration_validation'
     | 'radar_normativo'
     | 'cotacao_previa'
     | 'auditoria_nexo_causal'
     | 'papeis_impedimentos'
-    | 'gerador_parecer'
-    | 'osc_edital_analysis'
-    | 'concedente_planning'
-    | 'concedente_selection'
-    | 'concedente_celebration';
+    | 'osc_edital'
+    | 'osc_proposal'
+    | 'gerador_parecer';
   textContent: string;
   context?: Record<string, unknown>;
   documentName?: string;
