@@ -181,11 +181,11 @@ Para participar de um chamamento, a OSC deve comprovar:
 
 | Requisito | Fundamento | Prazo/Validade |
 |-----------|------------|----------------|
-| Existência há pelo menos **3 anos** | Art. 33, V, §1º | Data de abertura no CNPJ |
-| **CNPJ ativo** e regular | Art. 33, III | Verificar na Receita Federal |
+| Tempo mínimo de existência — **varia por esfera**: 1 ano (Município), 2 anos (Estado/DF), 3 anos (União) | Art. 33, V, "a" | Data de abertura no CNPJ |
+| **CNPJ ativo** e regular | Consulta à Receita Federal | Verificar na Receita Federal |
 | **Estatuto** compatível com o objeto | Art. 33, I | Vigente |
-| **CNDT** — Certidão Negativa de Débitos Trabalhistas | Art. 33, VII | 180 dias |
-| **CND** — Certidão Negativa Federal | Art. 33, V | 60 dias |
+| **CNDT** — Certidão Negativa de Débitos Trabalhistas | Art. 34, II | 180 dias |
+| **CND** — Certidão Negativa Federal | Art. 34, II | 60 dias |
 | Ausência de **impedimentos** do Art. 39 | Art. 39 | — |
 
 > **Dica prática:** Use o Simulador de Elegibilidade do sistema para verificar se sua OSC atende todos os requisitos antes de inscrever no chamamento.
@@ -231,7 +231,7 @@ As parcerias devem estar alinhadas com as políticas públicas vigentes.
 
 ### O papel do fiscal da parceria
 
-Um dos elementos mais importantes do MROSC é a figura do **fiscal** (Art. 67). Ele é o servidor público designado para:
+Um dos elementos mais importantes do MROSC é a figura do **gestor da parceria** (Art. 61). Ele é o servidor público designado para:
 - Acompanhar a execução in loco
 - Emitir relatórios periódicos
 - Alertar sobre desvios ou dificuldades
@@ -239,7 +239,7 @@ Um dos elementos mais importantes do MROSC é a figura do **fiscal** (Art. 67). 
 
 > O fiscal não é auditor. Seu papel é de acompanhamento e apoio, não de fiscalização punitiva.
 
-> **Fundamento legal:** Arts. 5º, 6º e 67, Lei 13.019/2014; Decreto 11.948/2024`,
+> **Fundamento legal:** Arts. 5º, 6º e 61, Lei 13.019/2014; Decreto 11.948/2024`,
           },
           {
             id: 'a1-6',
@@ -438,7 +438,7 @@ O Art. 26 da Lei 13.019/2014 estabelece prazo mínimo de **30 (trinta) dias** co
 
 Este prazo pode ser ampliado pelo órgão concedente, mas não reduzido. A contagem inicia no dia seguinte à publicação no Diário Oficial.
 
-**Exceção:** Para chamamentos de emergência (Art. 30), o prazo pode ser reduzido, mas deve ser justificado.
+**Atenção:** o Art. 30 não trata de "reduzir o prazo de 30 dias" — ele permite algo diferente: **dispensar o chamamento inteiro** em situações como urgência, guerra/calamidade pública ou atividades de saúde/educação/assistência social por OSCs já credenciadas. É uma hipótese à parte, não uma redução do prazo do chamamento comum.
 
 ### Onde deve ser publicado
 
@@ -482,11 +482,8 @@ Desastres naturais, epidemias, situações de calamidade. O prazo e os procedime
 **b) Programas de proteção a pessoas ameaçadas**
 Proteção de vítimas de violência, crianças em situação de risco, testemunhas.
 
-**c) Atividades voltadas a populações em situação de rua**
-Serviços de abrigo, alimentação, higiene para pessoas sem moradia.
-
-**d) Parcerias de pequeno valor (Decreto 11.948/2024)**
-Parcerias de valor total até R$ 120.000,00 podem ter chamamento simplificado, conforme regulamento do ente federativo.
+**c) Atividades de educação, saúde ou assistência social**
+Executadas por organizações da sociedade civil já credenciadas pelo órgão gestor da respectiva política pública (Art. 30, VI).
 
 ### Inexigibilidade (Art. 31)
 
@@ -515,11 +512,11 @@ A elegibilidade é a verificação dos requisitos mínimos para que a OSC possa 
 
 ### Requisitos obrigatórios (Art. 33)
 
-**1. Existência há pelo menos 3 anos (Art. 33, V, §1º)**
+**1. Tempo mínimo de existência — varia por esfera (Art. 33, V, "a")**
 
-A data de abertura registrada no CNPJ deve ser anterior em pelo menos 3 anos à data do chamamento. Não basta a existência do estatuto — é preciso que o CNPJ esteja ativo há esse período.
+A data de abertura registrada no CNPJ deve comprovar, no mínimo: 1 ano se a parceria for municipal, 2 anos se for estadual/distrital, 3 anos se for federal. Não basta a existência do estatuto — é preciso que o CNPJ esteja ativo há esse período.
 
-> Exceção: O órgão pode dispensar esse requisito quando a OSC comprova capacidade técnica por outros meios.
+> Exceção real: cada ente pode reduzir esse prazo por ato próprio, mas **só** na hipótese de nenhuma organização da região conseguir atingi-lo — não existe dispensa geral por "capacidade técnica comprovada".
 
 **2. CNPJ ativo e regular**
 
@@ -650,7 +647,9 @@ Em caso de empate na pontuação, a lei estabelece preferência para:
 2. OSC que já tenha parceria anterior bem avaliada com o mesmo órgão
 3. OSC com maior número de beneficiários atendidos
 
-> **Fundamento legal:** Art. 27, Decreto 11.948/2024; Art. 28, Lei 13.019/2014`,
+> **Atenção:** os critérios de desempate não estão fixados diretamente na Lei 13.019/2014 (o Art. 28 trata de outra coisa — verificação de documentos após a seleção) — cabe ao edital de cada chamamento definir a ordem de desempate.
+
+> **Fundamento legal:** Art. 27, Decreto 11.948/2024`,
           },
           {
             id: 'a2-7',
@@ -704,7 +703,7 @@ Teste seus conhecimentos com estas questões práticas sobre chamamentos públic
 **Questão 1**
 Uma OSC foi fundada há 2 anos e 8 meses. Ela pode participar de um chamamento público?
 
-✗ **Não.** O requisito mínimo é de **3 anos** de existência comprovada pela data de abertura no CNPJ (Art. 33, V, §1º, Lei 13.019/2014). Mesmo que a OSC tenha grande capacidade técnica, este requisito é bloqueante.
+✗ **Não** (supondo chamamento federal). O tempo mínimo varia por esfera: 1 ano (Município), 2 anos (Estado/DF) ou **3 anos (União)** — Art. 33, V, "a", Lei 13.019/2014. Com 2 anos e 8 meses, essa OSC já poderia participar de um chamamento municipal ou estadual, mas não federal.
 
 ---
 
@@ -718,7 +717,7 @@ Um edital foi publicado com prazo de 25 dias para inscrições. Isso é válido?
 **Questão 3**
 O presidente de uma OSC é irmão de um servidor do órgão concedente que vai assinar o termo de parceria. Há impedimento?
 
-✓ **Sim.** O Art. 39, I da Lei 13.019/2014 veda a participação de OSC cujo dirigente seja parente até o **2º grau** de autoridade do órgão concedente. Irmão é parente de 2º grau.
+✓ **Sim.** O Art. 39, III da Lei 13.019/2014 veda a participação de OSC cujo dirigente seja parente até o **2º grau** de agente com poder decisório na parceria. Irmão é parente de 2º grau.
 
 ---
 
@@ -732,7 +731,7 @@ Uma OSC com CNPJ ativo há 5 anos, mas com CNDT vencida há 30 dias, pode se ins
 **Questão 5**
 Em caso de empate entre duas propostas, qual critério de desempate a lei prevê?
 
-A lei prevê, nesta ordem: (1) OSC com maior tempo de existência; (2) OSC com histórico de parcerias bem avaliadas com o mesmo órgão; (3) critérios definidos no próprio edital.`,
+A Lei 13.019/2014 não fixa uma ordem própria de desempate — isso cabe ao edital de cada chamamento definir. Critérios comuns usados na prática: maior tempo de existência da OSC, histórico de parcerias bem avaliadas com o mesmo órgão, ou maior pontuação em critério técnico específico.`,
           },
         ],
       },
@@ -828,25 +827,23 @@ O Plano de Trabalho pode prever despesas com:
 - Contratação de terceiros para serviços específicos
 
 **Custos indiretos (overhead)**
-- Permitidos em percentual razoável (geralmente até 15% do valor total)
-- Devem ser proporcionais à parceria e justificados
+- Art. 46, III da Lei permite custos indiretos "seja qual for a proporção em relação ao valor total da parceria" — **a lei não fixa um percentual-teto**. Ainda assim, devem ser proporcionais à parceria e justificados no plano de trabalho.
 
-### Despesas VEDADAS (Art. 45)
+### Despesas VEDADAS
 
-❌ Taxa de administração, gerência ou similar
-❌ Pagamento de despesas realizadas antes ou após a vigência
-❌ Publicidade pessoal de agentes públicos
-❌ Pagamento de servidor ativo do órgão concedente (salvo casos específicos)
-❌ Despesas com fins eleitorais
-❌ Multas, juros e correção monetária por inadimplemento da própria OSC
+A Lei 13.019/2014 (Art. 45, redação vigente) hoje só veda expressamente duas coisas: **I** — usar recursos para finalidade alheia ao objeto da parceria; **II** — pagar servidor ou empregado público com recursos da parceria (salvo exceções legais). As vedações mais específicas que costumam ser citadas migraram pro nível de decreto:
 
-### Cotação prévia de preços (Art. 45, §2º)
+❌ Multas, juros e correção monetária — só podem ser pagos com recursos da parceria se decorrerem de atraso da **administração pública** (nunca por atraso da própria OSC) — Decreto 8.726/2016, Art. 39, §1º.
+❌ Finalidade alheia ao objeto da parceria (taxa de administração, despesas eleitorais, publicidade pessoal etc. se enquadram aqui) — Art. 45, I.
+❌ Pagamento de servidor público ativo do órgão concedente — Art. 45, II.
 
-Para compras acima de **R$ 2.000,00**, a OSC deve obter no mínimo **3 cotações** de fornecedores diferentes. O processo deve ser documentado e a escolha justificada (menor preço ou melhor custo-benefício).
+### Cotação prévia de preços
+
+Não existe um valor fixo (como R$ 2.000,00) que obrigue cotação — a OSC segue regras de contratação de direito privado, não licitação pública. O que a lei exige é comprovar a compatibilidade dos custos com os preços de mercado, por qualquer um de 11 métodos aceitos (contratação similar recente, ata de registro de preços, Compras.gov.br, PNCP, cotação com 3 fornecedores, entre outros) — Decreto 8.726/2016, Art. 25, §1º.
 
 > Use o módulo **Cotação Prévia** do sistema para analisar se os preços estão compatíveis com o mercado.
 
-> **Fundamento legal:** Arts. 45 e 46, Lei 13.019/2014`,
+> **Fundamento legal:** Art. 45, 46, Lei 13.019/2014; Decreto 8.726/2016, Art. 25 e 39`,
           },
           {
             id: 'a3-3',
@@ -879,7 +876,7 @@ Os recursos enquanto não utilizados devem ser mantidos em **aplicação finance
 
 ### Remanejamento entre rubricas
 
-Após a celebração, alterações de até **20% do valor de cada rubrica** geralmente podem ser feitas com autorização do gestor. Alterações maiores exigem **termo aditivo**.
+O plano de trabalho pode ser revisto por **termo aditivo** (mudanças mais substanciais) ou por simples **apostilamento** (ajustes que não alteram o objeto). A lei não fixa um percentual único válido pra todo o país — o instrumento firmado é quem detalha os limites e o procedimento aplicável ao caso.
 
 > **Fundamento legal:** Arts. 51, 53 e 57, Lei 13.019/2014`,
           },
@@ -926,7 +923,7 @@ Se o órgão ou o TCU entender que uma despesa não tem nexo causal com o objeto
 2. O valor deve ser **devolvido ao erário**
 3. Em caso de má-fé comprovada, pode gerar **Tomada de Contas Especial (TCE)**
 
-> **Fundamento legal:** Art. 69, IV, Lei 13.019/2014`,
+> **Fundamento legal:** Art. 64, §2º, Lei 13.019/2014 — "os dados financeiros serão analisados com o intuito de estabelecer o nexo de causalidade entre a receita e a despesa realizada"`,
           },
           {
             id: 'a3-5',
@@ -939,8 +936,8 @@ Imprevistos acontecem durante a execução de qualquer projeto. O MROSC prevê m
 
 ### Tipos de alteração
 
-**Alteração simples (sem aditivo)**
-- Remanejamento de até 20% entre rubricas
+**Apostilamento (sem termo aditivo)**
+- Remanejamentos e ajustes que não alterem o objeto pactuado
 - Ajustes no cronograma de atividades sem impacto nas metas
 - Substituição de membro da equipe por profissional equivalente
 - **Requer:** autorização do gestor público, com registro
@@ -949,7 +946,6 @@ Imprevistos acontecem durante a execução de qualquer projeto. O MROSC prevê m
 - Prorrogação do prazo de vigência
 - Aumento ou redução do valor total
 - Alteração do objeto
-- Remanejamento superior a 20% de qualquer rubrica
 - Mudança nas metas pactuadas
 
 ### Procedimento para solicitar aditivo
@@ -1028,16 +1024,16 @@ Quando houver atraso por culpa da administração pública (ex.: demora na liber
         id: 'm4',
         titulo: '4. Prestação de Contas e Encerramento',
         aulas: [
-          { id: 'a4-1', titulo: 'Tipos de Prestação de Contas', duracao: '20:00', tipo: 'texto', conteudo: `## Tipos de Prestação de Contas\n\nA Lei 13.019/2014 prevê dois tipos de prestação de contas:\n\n### Prestação de Contas Anual (Art. 69, §3º)\n\nObrigatória apenas para parcerias com vigência **superior a 12 meses**. Deve ser entregue em até **30 dias após completar cada 12 meses** de execução.\n\nNão encerra a parceria — é uma prestação intermediária, enquanto a parceria ainda está em execução.\n\n### Prestação de Contas Final (Art. 69)\n\nObrigatória para **todas as parcerias**. Deve ser entregue em até **90 dias após o término da vigência**.\n\nEsse prazo é peremptório — o descumprimento caracteriza inadimplência e pode resultar em:\n- Inclusão em cadastros restritivos (CADIN, CADIP)\n- Impossibilidade de celebrar novas parcerias\n- Instauração de Tomada de Contas Especial\n\n### Documentos obrigatórios (Art. 69)\n\n1. Relatório de execução do objeto (metas x resultados)\n2. Relatório de execução financeira (receitas x despesas)\n3. Extrato bancário completo do período\n4. Notas fiscais e recibos de todas as despesas\n5. Comprovante de devolução do saldo remanescente\n6. Comprovante de publicação (parcerias > R$ 600k)\n\n> **Use o Calendário de Prazos** do sistema para calcular automaticamente as datas de prestação de contas com base na data de início e prazo de vigência.\n\n> **Fundamento legal:** Arts. 69 e 73, Lei 13.019/2014` },
-          { id: 'a4-2', titulo: 'Saldo Remanescente e Devolução', duracao: '15:00', tipo: 'texto', conteudo: `## Saldo Remanescente e Devolução\n\nO saldo financeiro não utilizado ao final da parceria deve ser devolvido ao erário.\n\n### Prazo para devolução (Art. 73)\n\nO saldo deve ser devolvido em até **30 dias** após o término da vigência — **antes** da entrega da prestação de contas final.\n\n### O que é considerado saldo remanescente\n\n- Recursos não utilizados na conta corrente\n- Rendimentos das aplicações financeiras não utilizados\n- Valores recebidos que não foram aplicados no objeto\n\n### Como devolver\n\n1. Emitir Guia de Recolhimento da União (GRU) ou instrumento equivalente do ente\n2. Depositar o valor na conta indicada pelo órgão concedente\n3. Guardar o comprovante — é documento obrigatório da prestação de contas\n\n### E se a OSC não devolver no prazo?\n\n- Correção monetária + juros de mora\n- Caracterização de inadimplência\n- Possível abertura de Tomada de Contas Especial\n\n> **Atenção:** Rendimentos de aplicação financeira pertencem à parceria — se não utilizados no objeto, devem ser devolvidos junto com o saldo.\n\n> **Fundamento legal:** Art. 73, Lei 13.019/2014` },
+          { id: 'a4-1', titulo: 'Tipos de Prestação de Contas', duracao: '20:00', tipo: 'texto', conteudo: `## Tipos de Prestação de Contas\n\nA Lei 13.019/2014 prevê dois tipos de prestação de contas:\n\n### Prestação de Contas Anual (Art. 69, §2º)\n\nObrigatória apenas para parcerias com vigência **superior a 1 ano**: a OSC deve apresentar prestação de contas ao fim de cada exercício. Não encerra a parceria — é uma prestação intermediária, enquanto a parceria ainda está em execução.\n\n### Prestação de Contas Final (Art. 69)\n\nObrigatória para **todas as parcerias**. A lei geral permite até **90 dias após o término da vigência** — mas, no âmbito federal, o Decreto 8.726/2016 reduz esse prazo especificamente pro Relatório Final de Execução do Objeto pra até **30 dias (+15 de prorrogação)**. Confirme sempre o prazo exato no instrumento firmado.\n\nEsse prazo é peremptório — o descumprimento caracteriza inadimplência e pode resultar em:\n- Inclusão em cadastros restritivos (CADIN, CADIP)\n- Impossibilidade de celebrar novas parcerias\n- Instauração de Tomada de Contas Especial\n\n### Documentos obrigatórios (Art. 66)\n\n1. Relatório de execução do objeto (metas x resultados)\n2. Relatório de execução financeira (receitas x despesas)\n3. Extrato bancário completo do período\n4. Notas fiscais e recibos de todas as despesas\n5. Comprovante de devolução do saldo remanescente\n6. Divulgação das informações básicas da parceria no sítio oficial (obrigatória pra toda parceria, sem limite de valor — Art. 10 e 11)\n\n> **Use o Calendário de Prazos** do sistema para calcular automaticamente as datas de prestação de contas com base na data de início e prazo de vigência.\n\n> **Fundamento legal:** Arts. 66 e 69, Lei 13.019/2014; Decreto 8.726/2016, Art. 62 c/c Art. 65, I` },
+          { id: 'a4-2', titulo: 'Saldo Remanescente e Devolução', duracao: '15:00', tipo: 'texto', conteudo: `## Saldo Remanescente e Devolução\n\nO saldo financeiro não utilizado ao final da parceria deve ser devolvido ao erário.\n\n### Prazo para devolução (Art. 52)\n\nO saldo deve ser devolvido em até **30 dias** (prazo improrrogável) após o término da vigência — **antes** da entrega da prestação de contas final. Descumprir esse prazo dá causa a instauração imediata de Tomada de Contas Especial.\n\n### O que é considerado saldo remanescente\n\n- Recursos não utilizados na conta corrente\n- Rendimentos das aplicações financeiras não utilizados\n- Valores recebidos que não foram aplicados no objeto\n\n### Como devolver\n\n1. Emitir Guia de Recolhimento da União (GRU) ou instrumento equivalente do ente\n2. Depositar o valor na conta indicada pelo órgão concedente\n3. Guardar o comprovante — é documento obrigatório da prestação de contas\n\n### E se a OSC não devolver no prazo?\n\n- Correção monetária + juros de mora\n- Caracterização de inadimplência\n- Possível abertura de Tomada de Contas Especial\n\n> **Atenção:** Rendimentos de aplicação financeira pertencem à parceria — se não utilizados no objeto, devem ser devolvidos junto com o saldo.\n\n> **Fundamento legal:** Art. 52, Lei 13.019/2014` },
           { id: 'a4-3', titulo: 'Análise do Órgão Concedente', duracao: '20:00', tipo: 'texto', conteudo: `## Análise pelo Órgão Concedente\n\nApós o recebimento da prestação de contas, o órgão concedente tem **150 dias** para analisar e emitir parecer.\n\n### O que o órgão verifica\n\n**1. Execução do objeto**\n- As metas previstas foram atingidas?\n- Há documentação comprobatória das atividades?\n- O público beneficiário declarado é real e verificável?\n\n**2. Execução financeira**\n- As despesas têm nexo causal com as metas?\n- Os valores pagos são compatíveis com o mercado?\n- Houve cotação prévia quando exigido?\n\n**3. Regularidade formal**\n- Os documentos estão completos?\n- O saldo foi devolvido?\n- A conta foi encerrada após o término?\n\n### Resultados possíveis da análise\n\n| Resultado | Significado |\n|-----------|------------|\n| **Aprovada** | Prestação de contas regular, parceria encerrada |\n| **Aprovada com ressalvas** | Irregularidades formais sem dano ao erário |\n| **Reprovada** | Dano ao erário ou irregularidade grave |\n| **Reprovada com débito** | OSC deve devolver valores específicos |\n\n### Direito de defesa\n\nAntes de emitir parecer desfavorável, o órgão deve:\n1. Notificar a OSC\n2. Conceder prazo para manifestação (mínimo 30 dias)\n3. Analisar a defesa apresentada\n\n> **Fundamento legal:** Arts. 71 e 72, Lei 13.019/2014` },
-          { id: 'a4-4', titulo: 'Tomada de Contas Especial (TCE)', duracao: '30:00', tipo: 'texto', conteudo: `## Tomada de Contas Especial (TCE)\n\nA TCE é o instrumento mais severo de controle. É instaurada quando há indício de irregularidade com dano ao erário que não foi sanado por via ordinária.\n\n### Quando é instaurada (Art. 80)\n\n- OSC não apresentou prestação de contas no prazo\n- Prestação de contas foi reprovada com devolução de recursos\n- Constatado desvio, fraude ou malversação\n- Irregularidade não sanada após notificação e prazo de defesa\n\n### Fases da TCE\n\n**1. Instauração** — O órgão concedente notifica a OSC e inicia o processo administrativo.\n\n**2. Contraditório** — A OSC tem prazo para apresentar defesa, documentos e justificativas.\n\n**3. Julgamento pelo Tribunal de Contas** — O TCU/TCE analisa o processo e julga.\n\n**4. Condenação** (se procedente) — Imputação de débito e/ou multa.\n\n### Consequências da TCE julgada procedente\n\n- Devolução integral do valor com correção monetária e juros\n- Multa de até 100% do valor do débito\n- Inscrição no SIAFI como irregular\n- Inclusão em cadastros restritivos (CADIN)\n- Impedimento de novas parcerias com o poder público\n\n### Como EVITAR a TCE\n\n✓ Manter documentação organizada durante toda a execução\n✓ Entregar relatórios periódicos no prazo\n✓ Devolver o saldo em até 30 dias após o término\n✓ Entregar a prestação de contas final em até 90 dias\n✓ Guardar notas fiscais, extratos e registros fotográficos\n\n> **Use o Assistente SIACT** para orientação se receber notificação de TCE.\n\n> **Fundamento legal:** Art. 80, Lei 13.019/2014; IN TCU 71/2012` },
+          { id: 'a4-4', titulo: 'Tomada de Contas Especial (TCE)', duracao: '30:00', tipo: 'texto', conteudo: `## Tomada de Contas Especial (TCE)\n\nA TCE é o instrumento mais severo de controle. É instaurada quando há indício de irregularidade com dano ao erário que não foi sanado por via ordinária.\n\n### Quando é instaurada (IN TCU 98/2024)\n\n- OSC não apresentou prestação de contas no prazo\n- Prestação de contas foi reprovada com devolução de recursos\n- Constatado desvio, fraude ou malversação\n- Irregularidade não sanada após notificação e prazo de defesa\n\n> A instauração pode ser dispensada se o valor do débito for inferior a **R$ 120.000,00** (e abaixo de R$ 20.000,00 pra fins de somatório de débitos do mesmo responsável).\n\n### Fases da TCE\n\n**1. Instauração** — O órgão concedente notifica a OSC e inicia o processo administrativo.\n\n**2. Contraditório** — A OSC tem prazo para apresentar defesa, documentos e justificativas.\n\n**3. Julgamento pelo Tribunal de Contas** — O TCU/TCE analisa o processo e julga.\n\n**4. Condenação** (se procedente) — Imputação de débito e/ou multa.\n\n### Consequências da TCE julgada procedente\n\n- Devolução integral do valor com correção monetária e juros\n- Multa de até 100% do valor do débito\n- Inscrição no SIAFI como irregular\n- Inclusão em cadastros restritivos (CADIN)\n- Impedimento de novas parcerias com o poder público\n\n### Como EVITAR a TCE\n\n✓ Manter documentação organizada durante toda a execução\n✓ Entregar relatórios periódicos no prazo\n✓ Devolver o saldo em até 30 dias após o término\n✓ Entregar a prestação de contas final em até 90 dias\n✓ Guardar notas fiscais, extratos e registros fotográficos\n\n> **Use o Assistente SIACT** para orientação se receber notificação de TCE.\n\n> **Fundamento legal:** IN TCU 98/2024 (substituiu a IN TCU 71/2012)` },
           { id: 'a4-5', titulo: 'Boas Práticas de Documentação', duracao: '20:00', tipo: 'texto', conteudo: `## Boas Práticas de Documentação durante a Execução\n\nA prestação de contas começa no primeiro dia de execução. A organização dos documentos durante a execução é o que diferencia uma OSC que aprova das contas das que têm problemas.\n\n### Organização física e digital\n\n**Para cada despesa, mantenha:**\n- Nota fiscal ou recibo original\n- Comprovante de pagamento (transferência, depósito)\n- Relatório ou ata da atividade vinculada\n- Fotografia ou evidência da execução\n\n**Organize por:**\n- Mês de competência\n- Meta à qual se vincula\n- Tipo de despesa (RH, material, serviço)\n\n### Documentação de pessoal\n\nSe a parceria prevê pagamento de pessoal:\n- Contrato de trabalho ou de prestação de serviço\n- Folha de pagamento assinada\n- Controle de ponto ou equivalente\n- Comprovante de recolhimento dos encargos\n\n### Registro fotográfico\n\nRecomendado (e exigido por muitos órgãos):\n- Fotos das atividades realizadas com data e localização\n- Listas de presença com assinaturas\n- Registro das entregas de materiais (com recibo dos beneficiários)\n\n### Sistema de controle interno\n\nIdeal para OSCs maiores:\n- Planilha de controle financeiro por rubrica e meta\n- Conciliação bancária mensal\n- Revisão periódica do atingimento das metas\n\n> **Dica:** Use o módulo de **Checklist de Documentos** do sistema para não esquecer nenhum item obrigatório em cada fase da parceria.` },
-          { id: 'a4-6', titulo: 'Publicidade e Transparência', duracao: '15:00', tipo: 'texto', conteudo: `## Publicidade e Transparência na Parceria\n\n### Obrigações de publicidade (Art. 11)\n\n**Para todas as parcerias:**\n- O instrumento firmado deve ser publicado no Diário Oficial\n- Informações básicas devem estar disponíveis no Portal de Transparência\n\n**Para parcerias acima de R$ 600.000,00:**\n- Publicação do relatório de execução em sítio eletrônico oficial\n- Publicação da prestação de contas no Portal de Transferências\n- Identificação visual obrigatória nas ações (banners, publicações, redes sociais)\n\n### Identificação das ações da parceria\n\nA OSC deve identificar visualmente que as ações são realizadas com recursos públicos:\n- "Realizado com recursos do [Nome do Órgão] — [Nome do Programa]"\n- Logotipo do órgão concedente nas publicações\n- Referência ao instrumento nos documentos da parceria\n\n### O que não pode na publicidade\n\n❌ Usar a parceria para publicidade pessoal de candidatos ou dirigentes\n❌ Associar o nome de agentes políticos às ações da parceria\n❌ Usar imagens de autoridades políticas no material da parceria\n\n> **Fundamento legal:** Art. 11, Lei 13.019/2014` },
+          { id: 'a4-6', titulo: 'Publicidade e Transparência', duracao: '15:00', tipo: 'texto', conteudo: `## Publicidade e Transparência na Parceria\n\n### Obrigações de publicidade (Art. 10 e 11)\n\n**Para toda parceria, sem limite de valor:**\n- A administração deve manter no sítio oficial a relação das parcerias celebradas e seus planos de trabalho (Art. 10)\n- A OSC deve divulgar as informações básicas da parceria: identificação do instrumento, objeto, valores, situação da prestação de contas (Art. 11, parágrafo único)\n- Identificação visual nas ações (banners, publicações, redes sociais)\n\n> **Atenção:** não existe hoje um limite de valor (como R$ 600 mil) que condicione essa obrigação — ela vale pra toda parceria igualmente. O valor de R$ 600 mil que costuma aparecer em material antigo é de um assunto diferente: o limite de isenção de contrapartida do Decreto 8.726/2016 (hoje já superado — o Decreto 11.948/2024 elevou pra R$ 1 milhão).\n\n### Identificação das ações da parceria\n\nA OSC deve identificar visualmente que as ações são realizadas com recursos públicos:\n- "Realizado com recursos do [Nome do Órgão] — [Nome do Programa]"\n- Logotipo do órgão concedente nas publicações\n- Referência ao instrumento nos documentos da parceria\n\n### O que não pode na publicidade\n\n❌ Usar a parceria para publicidade pessoal de candidatos ou dirigentes\n❌ Associar o nome de agentes políticos às ações da parceria\n❌ Usar imagens de autoridades políticas no material da parceria\n\n> **Fundamento legal:** Art. 10 e 11, Lei 13.019/2014` },
           { id: 'a4-7', titulo: 'Encerramento da Conta Bancária', duracao: '10:00', tipo: 'texto', conteudo: `## Encerramento da Conta Bancária da Parceria\n\nApós o término da vigência e a devolução do saldo, a conta bancária específica deve ser encerrada.\n\n### Procedimento de encerramento\n\n1. Verificar se há saldo — se houver, devolver antes de encerrar\n2. Solicitar extrato final completo (será documento da prestação de contas)\n3. Encerrar a conta no banco\n4. Guardar o comprovante de encerramento\n\n### Por que manter conta aberta é um problema\n\nManter a conta ativa após o encerramento da parceria pode:\n- Gerar tarifas bancárias sem fonte de pagamento\n- Complicar a conciliação do extrato final\n- Gerar questionamentos na prestação de contas sobre movimentações pós-término\n\n### Documentos bancários a guardar\n\n- Extrato completo de toda a vigência\n- Comprovantes de aplicação financeira\n- Comprovante de devolução do saldo (GRU)\n- Comprovante de encerramento da conta\n\n> **Fundamento legal:** Art. 51, Lei 13.019/2014` },
-          { id: 'a4-8', titulo: 'Simulado Final: Prestação de Contas', duracao: '25:00', tipo: 'quiz', conteudo: `## Simulado Final: Prestação de Contas\n\nTestando os conhecimentos do módulo completo de prestação de contas.\n\n---\n\n**Questão 1**\nUma parceria tem vigência de 18 meses. Quantas prestações de contas a OSC deve entregar?\n\n✓ **Duas.** Uma prestação de contas anual (30 dias após completar 12 meses de execução) e uma prestação de contas final (90 dias após o término da vigência).\n\n---\n\n**Questão 2**\nA parceria terminou em 30 de junho. Quando é o prazo máximo para devolver o saldo remanescente?\n\n✓ **30 de julho** (30 dias após o término). O prazo para a prestação de contas final é **28 de setembro** (90 dias após o término).\n\n---\n\n**Questão 3**\nOs rendimentos da aplicação financeira vinculada à conta da parceria pertencem a quem?\n\n✓ **À parceria.** Os rendimentos devem ser utilizados no objeto da parceria. Se não utilizados, são devolvidos junto com o saldo remanescente.\n\n---\n\n**Questão 4**\nUma despesa de R$ 4.500 em material esportivo foi realizada em uma parceria que tem como objeto a capacitação profissional de jovens. Há nexo causal?\n\n✗ **Provavelmente não.** Material esportivo em uma parceria de capacitação profissional não tem relação direta evidente. A OSC precisaria justificar detalhadamente a vinculação à meta de capacitação para que a despesa seja aceita.\n\n---\n\n**Questão 5**\nO órgão concedente reprovará a prestação de contas sem antes notificar a OSC?\n\n✗ **Não.** Antes de emitir parecer desfavorável, o órgão deve notificar a OSC e conceder prazo mínimo de 30 dias para manifestação e apresentação de defesa (princípio do contraditório e ampla defesa, Art. 5º, LV, CF/88).` },
+          { id: 'a4-8', titulo: 'Simulado Final: Prestação de Contas', duracao: '25:00', tipo: 'quiz', conteudo: `## Simulado Final: Prestação de Contas\n\nTestando os conhecimentos do módulo completo de prestação de contas.\n\n---\n\n**Questão 1**\nUma parceria tem vigência de 18 meses. Quantas prestações de contas a OSC deve entregar?\n\n✓ **Duas.** Uma prestação de contas anual (ao fim do primeiro exercício de execução) e uma prestação de contas final (até 90 dias após o término da vigência, prazo geral da lei — no âmbito federal pode ser reduzido pelo Decreto 8.726/2016).\n\n---\n\n**Questão 2**\nA parceria terminou em 30 de junho. Quando é o prazo máximo para devolver o saldo remanescente?\n\n✓ **30 de julho** (30 dias após o término). O prazo para a prestação de contas final é **28 de setembro** (90 dias após o término).\n\n---\n\n**Questão 3**\nOs rendimentos da aplicação financeira vinculada à conta da parceria pertencem a quem?\n\n✓ **À parceria.** Os rendimentos devem ser utilizados no objeto da parceria. Se não utilizados, são devolvidos junto com o saldo remanescente.\n\n---\n\n**Questão 4**\nUma despesa de R$ 4.500 em material esportivo foi realizada em uma parceria que tem como objeto a capacitação profissional de jovens. Há nexo causal?\n\n✗ **Provavelmente não.** Material esportivo em uma parceria de capacitação profissional não tem relação direta evidente. A OSC precisaria justificar detalhadamente a vinculação à meta de capacitação para que a despesa seja aceita.\n\n---\n\n**Questão 5**\nO órgão concedente reprovará a prestação de contas sem antes notificar a OSC?\n\n✗ **Não.** Antes de emitir parecer desfavorável, o órgão deve notificar a OSC e conceder prazo mínimo de 30 dias para manifestação e apresentação de defesa (princípio do contraditório e ampla defesa, Art. 5º, LV, CF/88).` },
           { id: 'a4-9', titulo: 'Revisão Final e Próximos Passos', duracao: '15:00', tipo: 'texto', conteudo: `## Revisão Final e Próximos Passos\n\nParabéns por concluir o módulo de Prestação de Contas!\n\n### O que você aprendeu\n\n✓ Diferença entre prestação de contas anual e final\n✓ Prazos obrigatórios e suas consequências\n✓ Procedimento de devolução do saldo remanescente\n✓ Como o órgão analisa a prestação de contas\n✓ O que é a Tomada de Contas Especial e como evitá-la\n✓ Boas práticas de documentação durante a execução\n✓ Obrigações de publicidade e transparência\n\n### Ferramentas do sistema para usar agora\n\n- **Calendário de Prazos** — calcule automaticamente todas as datas da sua parceria\n- **Checklist de Documentos** — selecione "Prestação de Contas" para ver todos os documentos necessários\n- **Nexo Causal** — verifique se suas despesas têm vinculação com as metas antes de fechar a prestação de contas\n- **Assistente SIACT** — tire dúvidas específicas sobre sua situação\n\n### Próximos módulos recomendados\n\nSe você é **OSC**, volte para o módulo **Plano de Trabalho** para aprofundar o tema de metas e orçamento.\n\nSe você é **Gestor Público**, use o módulo de **Fase de Seleção e Edital** para entender como estruturar chamamentos conformes.\n\n> **Lembre-se:** A melhor prestação de contas começa no primeiro dia de execução. Documente tudo.` },
-          { id: 'a4-10', titulo: 'Recursos Adicionais e Legislação', duracao: '10:00', tipo: 'visual', conteudo: `## Recursos Adicionais e Legislação de Referência\n\n### Base Legal Completa\n\n| Norma | Ementa |\n|-------|--------|\n| Lei 13.019/2014 | Marco Regulatório das OSCs |\n| Lei 13.204/2015 | Alterações ao MROSC |\n| Decreto 11.948/2024 | Regulamentação federal modernizada |\n| IN TCU 71/2012 | Tomada de Contas Especial |\n| IN TCU 98/2024 | Atualização das normas de TCE |\n| Lei 9.784/1999 | Processo administrativo federal |\n\n### Portais e sistemas úteis\n\n- **transferegov.gov.br** — Sistema federal de transferências\n- **plataformaosc.org.br** — Plataforma de editais e oportunidades\n- **mapaosc.ipea.gov.br** — Mapa das Organizações da Sociedade Civil\n- **tst.jus.br** — Emissão gratuita da CNDT\n- **receita.fazenda.gov.br** — Consulta CNPJ e certidões federais\n\n### Funcionalidades do SIACT-MROSC\n\n| Módulo | Finalidade |\n|--------|------------|\n| Simulador de Elegibilidade | Verificar requisitos do Art. 33 |\n| Checklist de Documentos | Documentos por fase da parceria |\n| Calendário de Prazos | Calcular datas obrigatórias |\n| Radar Normativo | Analisar conformidade de editais |\n| Nexo Causal | Cruzar despesas com metas |\n| Assistente SIACT | Dúvidas em linguagem simples ou técnica |\n| FAQ | Perguntas frequentes por fase |` },
+          { id: 'a4-10', titulo: 'Recursos Adicionais e Legislação', duracao: '10:00', tipo: 'visual', conteudo: `## Recursos Adicionais e Legislação de Referência\n\n### Base Legal Completa\n\n| Norma | Ementa |\n|-------|--------|\n| Lei 13.019/2014 | Marco Regulatório das OSCs |\n| Lei 13.204/2015 | Alterações ao MROSC |\n| Decreto 11.948/2024 | Regulamentação federal modernizada |\n| IN TCU 98/2024 | Tomada de Contas Especial — substituiu a IN TCU 71/2012 |\n| Lei 9.784/1999 | Processo administrativo federal |\n\n### Portais e sistemas úteis\n\n- **transferegov.gov.br** — Sistema federal de transferências\n- **plataformaosc.org.br** — Plataforma de editais e oportunidades\n- **mapaosc.ipea.gov.br** — Mapa das Organizações da Sociedade Civil\n- **tst.jus.br** — Emissão gratuita da CNDT\n- **receita.fazenda.gov.br** — Consulta CNPJ e certidões federais\n\n### Funcionalidades do SIACT-MROSC\n\n| Módulo | Finalidade |\n|--------|------------|\n| Simulador de Elegibilidade | Verificar requisitos do Art. 33 |\n| Checklist de Documentos | Documentos por fase da parceria |\n| Calendário de Prazos | Calcular datas obrigatórias |\n| Radar Normativo | Analisar conformidade de editais |\n| Nexo Causal | Cruzar despesas com metas |\n| Assistente SIACT | Dúvidas em linguagem simples ou técnica |\n| FAQ | Perguntas frequentes por fase |` },
         ],
       },
     ],

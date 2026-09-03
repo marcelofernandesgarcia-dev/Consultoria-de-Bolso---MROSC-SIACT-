@@ -93,7 +93,7 @@ const FAQ_DATA: Record<Fase, { titulo: string; cor: string; itens: Item[] }> = {
       },
       {
         pergunta: 'A OSC precisa publicar a prestação de contas em algum sítio eletrônico?',
-        resposta: 'Toda parceria, independentemente do valor, precisa ter sua relação divulgada no sítio oficial da administração pública. Para parcerias com valor acumulado acima de R$ 600.000,00, essa divulgação na internet passa a ser obrigatória (não facultativa) — mas o que é publicado são as informações básicas da parceria (identificação, objeto, valores, situação das contas), não um "relatório técnico" ou parecer de prestação de contas.',
+        resposta: 'Sim, toda parceria — sem limite de valor. A administração mantém no site a relação das parcerias e planos de trabalho (Art. 10), e a OSC divulga as informações básicas: identificação, objeto, valores, situação das contas (Art. 11). Não existe hoje um limite de R$ 600 mil que condicione essa obrigação — esse valor é de um assunto diferente (limite de isenção de contrapartida, já superado pelo Decreto 11.948/2024, que elevou pra R$ 1 milhão). E o que é publicado são informações básicas, não um "relatório técnico" ou parecer de prestação de contas.',
         fundamento: 'Art. 10 e 11, Lei 13.019/2014',
       },
       {

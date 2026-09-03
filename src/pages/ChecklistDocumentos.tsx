@@ -47,7 +47,7 @@ const CHECKLISTS: Record<string, ItemChecklist[]> = {
     { id: 'pc3', descricao: 'Extrato bancário completo do período da parceria', fundamento: 'Art. 64, Lei 13.019/2014', obrigatorio: true },
     { id: 'pc4', descricao: 'Notas fiscais e recibos de todas as despesas', fundamento: 'Art. 64, Lei 13.019/2014', obrigatorio: true },
     { id: 'pc5', descricao: 'Comprovante de devolução do saldo remanescente (se houver)', fundamento: 'Art. 52, Lei 13.019/2014', obrigatorio: true, dica: 'Saldo não utilizado deve ser devolvido em até 30 dias após o término, sob pena de instauração de TCE.' },
-    { id: 'pc6', descricao: 'Divulgação das informações básicas da parceria no sítio oficial', fundamento: 'Art. 10 e 11, Lei 13.019/2014', obrigatorio: true, dica: 'Acima de R$ 600 mil, a divulgação na internet passa a ser obrigatória (não facultativa).' },
+    { id: 'pc6', descricao: 'Divulgação das informações básicas da parceria no sítio oficial', fundamento: 'Art. 10 e 11, Lei 13.019/2014', obrigatorio: true, dica: 'Obrigatória pra toda parceria, sem limite de valor — não existe hoje um limiar de R$ 600 mil pra essa exigência.' },
     { id: 'pc7', descricao: 'Declaração de que não houve desvio de finalidade', fundamento: 'Art. 64, Lei 13.019/2014', obrigatorio: true },
     { id: 'pc8', descricao: 'Certidões negativas atualizadas', fundamento: 'Art. 34, II, Lei 13.019/2014', obrigatorio: true },
   ],
