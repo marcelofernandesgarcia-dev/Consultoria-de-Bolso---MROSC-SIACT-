@@ -12,6 +12,7 @@ import * as cheerio from "cheerio";
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import multer from "multer";
 import { createRequire } from "module";
+import { fileURLToPath } from "url";
 import path from "path";
 import { syncMapaOsc, syncSoAreas } from "./src/lib/ipea.js";
 
@@ -115,8 +116,26 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
-  // Security headers
-  app.use(helmet({ contentSecurityPolicy: false }));
+  // Security headers — CSP só em produção: em dev o cliente do Vite (HMR) precisa de
+  // liberdade que uma CSP estrita quebraria (WebSocket em porta variável, module scripts
+  // injetados). O app não carrega nenhum script/estilo/fonte externa nem usa <img> (todos
+  // os ícones são SVG via lucide-react), então a política pode ficar restrita a 'self'.
+  app.use(helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // estilos inline (style={{...}}) usados em várias telas
+        imgSrc: ["'self'", "data:"],
+        fontSrc: ["'self'"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+      },
+    } : false,
+  }));
 
   // CORS — permite apenas origens conhecidas
   app.use(cors({
@@ -1185,7 +1204,7 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
 
   if (process.env.NODE_ENV === "production") {
     // Serve static build output
-    const distPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), "dist");
+    const distPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "dist");
     app.use(express.static(distPath));
     // SPA fallback — tudo que não for /api/* retorna o index.html
     app.get(/^(?!\/api).*/, (_req, res) => {
