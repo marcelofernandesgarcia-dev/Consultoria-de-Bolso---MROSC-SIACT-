@@ -9,18 +9,23 @@ interface Pergunta {
   fundamento: string;
 }
 
+type Esfera = 'municipio' | 'estado' | 'uniao';
+
+const ANOS_MINIMOS: Record<Esfera, number> = { municipio: 1, estado: 2, uniao: 3 };
+const ESFERA_LABEL: Record<Esfera, string> = { municipio: 'Municipal', estado: 'Estadual/Distrital', uniao: 'Federal' };
+
 const PERGUNTAS: Pergunta[] = [
   {
     id: 'p1',
-    texto: 'A OSC existe há pelo menos 3 anos (data de abertura no CNPJ)?',
-    dica: 'Verifique a data de abertura no cartão CNPJ ou consulte a aba "Integração (Mapa OSC)".',
-    fundamento: 'Art. 33, V, §1º, Lei 13.019/2014',
+    texto: 'A OSC existe há o tempo mínimo exigido para essa esfera (data de abertura no CNPJ)?',
+    dica: 'O tempo mínimo varia por esfera — veja o seletor acima. Verifique a data de abertura no cartão CNPJ ou consulte a aba "Integração (Mapa OSC)".',
+    fundamento: 'Art. 33, V, "a", Lei 13.019/2014',
   },
   {
     id: 'p2',
     texto: 'O CNPJ está ativo e em situação regular na Receita Federal?',
     dica: 'Status deve ser "Ativo" na consulta CNPJ. CNPJs suspensos, inaptos ou baixados são inelegíveis.',
-    fundamento: 'Art. 33, III, Lei 13.019/2014',
+    fundamento: 'Consulta à Receita Federal',
   },
   {
     id: 'p3',
@@ -32,31 +37,31 @@ const PERGUNTAS: Pergunta[] = [
     id: 'p4',
     texto: 'A OSC possui certidão negativa de débitos trabalhistas (CNDT) válida?',
     dica: 'Emita gratuitamente em tst.jus.br. Validade de 180 dias.',
-    fundamento: 'Art. 33, VII, Lei 13.019/2014',
+    fundamento: 'Art. 34, II, Lei 13.019/2014',
   },
   {
     id: 'p5',
     texto: 'A OSC está em dia com as certidões fiscais federais (Receita Federal/PGFN)?',
     dica: 'Certidão Conjunta de Débitos relativos a Tributos Federais e à Dívida Ativa da União. Emitida em receita.fazenda.gov.br.',
-    fundamento: 'Art. 33, V, Lei 13.019/2014',
+    fundamento: 'Art. 34, II, Lei 13.019/2014',
   },
   {
     id: 'p6',
     texto: 'Nenhum dirigente da OSC é cônjuge, companheiro ou parente até o 2º grau de autoridade pública do órgão concedente?',
     dica: 'Inclui cônjuge, filhos, irmãos e pais dos dirigentes da OSC comparados com servidores do órgão que assinarão a parceria.',
-    fundamento: 'Art. 39, I, Lei 13.019/2014',
+    fundamento: 'Art. 39, III, Lei 13.019/2014',
   },
   {
     id: 'p7',
     texto: 'A OSC não possui dirigente que seja agente público com poder de supervisão, fiscalização ou aprovação das parcerias?',
     dica: 'Ministros, secretários, presidentes de autarquias e seus subordinados não podem ser dirigentes da OSC parceira.',
-    fundamento: 'Art. 39, II, Lei 13.019/2014',
+    fundamento: 'Art. 39, III, Lei 13.019/2014',
   },
   {
     id: 'p8',
     texto: 'A OSC tem capacidade técnica e operacional para executar o objeto do chamamento?',
     dica: 'Avalie: equipe disponível, experiência em projetos similares, infraestrutura mínima necessária.',
-    fundamento: 'Art. 24, §1º, Lei 13.019/2014',
+    fundamento: 'Art. 33, V, "c", Lei 13.019/2014',
   },
 ];
 
@@ -70,7 +75,7 @@ interface Resultado {
 }
 
 function calcularResultado(respostas: Record<string, Resposta>): Resultado {
-  const bloqueantes = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
+  const bloqueantes = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
   const naoRespondidas = PERGUNTAS.filter(p => !respostas[p.id]);
   if (naoRespondidas.length > 0) return null as any;
 
@@ -237,17 +242,30 @@ function CnpjPanel({ onLoad }: { onLoad: (data: OscData) => void }) {
 export function SimuladorElegibilidade() {
   const [respostas, setRespostas] = useState<Record<string, Resposta>>({});
   const [mostrarResultado, setMostrarResultado] = useState(false);
+  const [esfera, setEsfera] = useState<Esfera>('uniao');
+  const [oscCarregada, setOscCarregada] = useState<OscData | null>(null);
+
+  const aplicarP1 = (data: OscData, esferaAtual: Esfera) => {
+    if (!data.osc.data_abertura) return;
+    const anos = (Date.now() - new Date(data.osc.data_abertura).getTime()) / (1000 * 60 * 60 * 24 * 365);
+    setRespostas(prev => ({ ...prev, p1: anos >= ANOS_MINIMOS[esferaAtual] ? 'sim' : 'nao' }));
+  };
 
   const handleOscLoad = (data: OscData) => {
+    setOscCarregada(data);
     const pre: Record<string, Resposta> = {};
     // p2: CNPJ ativo
     pre['p2'] = data.osc.situacao === 'ATIVA' ? 'sim' : 'nao';
-    // p1: existe há 3+ anos
-    if (data.osc.data_abertura) {
-      const anos = (Date.now() - new Date(data.osc.data_abertura).getTime()) / (1000 * 60 * 60 * 24 * 365);
-      pre['p1'] = anos >= 3 ? 'sim' : 'nao';
-    }
     setRespostas(prev => ({ ...pre, ...prev }));
+    // p1: existe há o tempo mínimo exigido pela esfera selecionada (varia: 1/2/3 anos)
+    aplicarP1(data, esfera);
+  };
+
+  const trocarEsfera = (nova: Esfera) => {
+    setEsfera(nova);
+    // Se já há OSC carregada, recalcula p1 pro novo tempo mínimo — sem isso, trocar de
+    // esfera depois de consultar o CNPJ deixaria p1 desatualizado.
+    if (oscCarregada) aplicarP1(oscCarregada, nova);
   };
 
   const responder = (id: string, valor: Resposta) => {
@@ -275,6 +293,27 @@ export function SimuladorElegibilidade() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Esfera da parceria — o tempo mínimo de existência varia por esfera (Art. 33, V, "a") */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+        <p className="text-sm font-medium text-slate-700 mb-2.5">Em que esfera é a parceria?</p>
+        <div className="flex gap-2">
+          {(['municipio', 'estado', 'uniao'] as const).map(e => (
+            <button
+              key={e}
+              onClick={() => trocarEsfera(e)}
+              className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium border-2 transition-all ${
+                esfera === e ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'
+              }`}
+            >
+              {ESFERA_LABEL[e]}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-slate-500 mt-2.5">
+          Tempo mínimo de existência exigido nesta esfera: <strong className="text-indigo-600">{ANOS_MINIMOS[esfera]} {ANOS_MINIMOS[esfera] === 1 ? 'ano' : 'anos'}</strong> (Art. 33, V, "a", Lei 13.019/2014 — admitida redução por ato do ente se nenhuma OSC da região atingir o prazo).
+        </p>
       </div>
 
       {/* Painel IPEA */}
