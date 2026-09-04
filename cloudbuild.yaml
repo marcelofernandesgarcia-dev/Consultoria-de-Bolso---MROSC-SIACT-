@@ -1,11 +1,16 @@
 steps:
-  # Build da imagem Docker
+  # Build da imagem Docker (variáveis VITE_* precisam existir em build-time)
   - name: "gcr.io/cloud-builders/docker"
     args:
       - build
       - -t
       - "$_IMAGE"
+      - --build-arg
+      - VITE_SUPABASE_URL=https://clsuturkoripoingjqpw.supabase.co
+      - --build-arg
+      - VITE_SUPABASE_ANON_KEY=$$VITE_SUPABASE_ANON_KEY
       - .
+    secretEnv: ['VITE_SUPABASE_ANON_KEY']
 
   # Push para o Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
@@ -35,6 +40,11 @@ steps:
 substitutions:
   _REGION: southamerica-east1
   _IMAGE: southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$SHORT_SHA
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/gen-lang-client-0565048097/secrets/VITE_SUPABASE_ANON_KEY/versions/latest
+      env: 'VITE_SUPABASE_ANON_KEY'
 
 options:
   logging: CLOUD_LOGGING_ONLY
