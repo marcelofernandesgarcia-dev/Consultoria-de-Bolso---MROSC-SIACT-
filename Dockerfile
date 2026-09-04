@@ -17,6 +17,7 @@ RUN npm ci
 # Copia artefatos do build e o servidor TS
 COPY --from=builder /app/dist ./dist
 COPY server.ts tsconfig.json ./
+COPY src/lib ./src/lib
 
 # Cloud Run injeta PORT=8080; o servidor lê process.env.PORT
 EXPOSE 8080
