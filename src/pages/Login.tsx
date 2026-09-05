@@ -21,7 +21,20 @@ export function Login() {
   const [error, setError] = useState('');
   const [magicSent, setMagicSent] = useState(false);
   const [mode, setMode] = useState<'password' | 'magic'>('magic');
+  const [demoLoading, setDemoLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleDemoLogin = async () => {
+    setDemoLoading(true);
+    setError('');
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setError('Não foi possível entrar no modo demonstração. Tente novamente em instantes.');
+      setDemoLoading(false);
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -348,6 +361,36 @@ export function Login() {
                       }
                     </button>
                   </form>
+                )}
+
+                {/* Acesso de demonstração (sessão anônima, sem cadastro) */}
+                {!magicSent && (
+                  <div className="mt-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px" style={{ background: 'rgba(99,102,241,0.15)' }} />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(148,163,184,0.4)' }}>ou</span>
+                      <div className="flex-1 h-px" style={{ background: 'rgba(99,102,241,0.15)' }} />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleDemoLogin}
+                      disabled={demoLoading}
+                      style={{
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(99,102,241,0.25)',
+                        color: 'rgba(226,232,240,0.9)',
+                      }}
+                      className="w-full py-3 mt-4 text-sm font-semibold rounded-xl transition-all hover:bg-white/[0.07] flex items-center justify-center gap-2"
+                    >
+                      {demoLoading
+                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Entrando...</>
+                        : <><Zap className="w-4 h-4" style={{ color: '#a5b4fc' }} /> Entrar como visitante (demonstração)</>
+                      }
+                    </button>
+                    <p className="mt-2 text-[10px] text-center leading-relaxed" style={{ color: 'rgba(148,163,184,0.45)' }}>
+                      Acesso de demonstração — protótipo em construção e aprovação, sem necessidade de cadastro
+                    </p>
+                  </div>
                 )}
 
                 {/* Rodapé do card */}

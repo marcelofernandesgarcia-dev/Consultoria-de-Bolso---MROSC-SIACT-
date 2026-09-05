@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, FlaskConical } from 'lucide-react';
 import { Sidebar, SIDEBAR_W_EXPANDED, SIDEBAR_W_COLLAPSED } from './Sidebar';
 import { AssistenteFlutuante } from '../AssistenteFlutuante';
 import { BotaoInicio } from '../BotaoInicio';
@@ -12,7 +12,8 @@ const SIDEBAR_PIN_KEY = 'siact_sidebar_pinned';
 /* ─── Layout ──────────────────────────────────────────────────── */
 export function Layout() {
   const { pathname } = useLocation();
-  const { perfilVisivel } = useAuth();
+  const { perfilVisivel, user } = useAuth();
+  const isDemo = Boolean(user?.is_anonymous);
 
   // Bloqueia acesso direto (por URL) a rotas fora do perfil visível no momento.
   // Para admin sem preview ativo, perfilVisivel é null e nada é bloqueado (vê tudo).
@@ -67,6 +68,16 @@ export function Layout() {
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        {isDemo && (
+          <div
+            className="flex items-center justify-center gap-2 py-1.5 px-4 text-[11px] font-semibold text-center print:hidden"
+            style={{ background: '#F59E0B', color: '#451A03' }}
+          >
+            <FlaskConical className="w-3.5 h-3.5 shrink-0" />
+            AMBIENTE DE DEMONSTRAÇÃO — protótipo em construção e aprovação, dados não são definitivos
+          </div>
+        )}
 
         <main className="flex-1 p-4 pb-24 md:p-7">
           <Outlet />
