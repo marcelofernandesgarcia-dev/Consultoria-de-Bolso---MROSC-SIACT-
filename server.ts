@@ -121,6 +121,9 @@ async function startServer() {
   // liberdade que uma CSP estrita quebraria (WebSocket em porta variável, module scripts
   // injetados). O app não usa <img> (todos os ícones são SVG via lucide-react) e só carrega
   // recurso externo do Google Fonts (fonte Public Sans) — daí as duas exceções abaixo.
+  // connectSrc precisa liberar o Supabase: o cliente supabase-js chama a API dele
+  // (auth, REST) direto do navegador, sem passar pelo backend Express.
+  const supabaseUrl = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
   app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
       directives: {
@@ -129,7 +132,7 @@ async function startServer() {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // estilos inline (style={{...}}) + folha de estilo do Google Fonts
         imgSrc: ["'self'", "data:"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'"],
+        connectSrc: supabaseUrl ? ["'self'", supabaseUrl] : ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         formAction: ["'self'"],
