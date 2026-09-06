@@ -63,3 +63,10 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-03-006](2026-09-03-006-sidebar-2-icones-identidade-setorial.md) | 2026-09-03 | Sidebar mostra só 2 ícones por padrão e oculta identidade antes do login Setorial | codificação |
 | [2026-09-03-007](2026-09-03-007-efeito-neon-barra-progresso.md) | 2026-09-03 | Efeito neon sutil nos traços da barra de progresso | codificação |
 | [2026-09-03-008](2026-09-03-008-cria-diario-de-bordo.md) | 2026-09-03 | Cria Diário de Bordo do projeto e registra auditoria dos 5 pilares | documentação |
+| [2026-09-06-001](2026-09-06-001-fix-dockerfile-src-lib.md) | 2026-09-06 | Corrige Dockerfile — imagem de produção não incluía src/lib | codificação |
+| [2026-09-06-002](2026-09-06-002-fix-vite-build-args.md) | 2026-09-06 | Corrige variáveis VITE_* ausentes em build-time (Dockerfile + cloudbuild.yaml) | codificação |
+| [2026-09-06-003](2026-09-06-003-acesso-demonstracao-login-anonimo.md) | 2026-09-06 | Acesso de demonstração via login anônimo do Supabase | codificação |
+| [2026-09-06-004](2026-09-06-004-fix-csp-connect-src-supabase.md) | 2026-09-06 | Corrige CSP em produção — connect-src bloqueava chamadas ao Supabase | codificação |
+| [2026-09-06-005](2026-09-06-005-fix-cloudbuild-bash-entrypoint.md) | 2026-09-06 | Corrige cloudbuild.yaml — entrypoint bash necessário para expandir secretEnv | codificação |
+| [2026-09-06-006](2026-09-06-006-chave-anthropic-revogada.md) | 2026-09-06 | Renova secret ANTHROPIC_API_KEY — chave revogada bloqueava toda análise de IA | testes |
+| [2026-09-06-007](2026-09-06-007-marco-validacao-e2e-demonstracao.md) | 2026-09-06 | Marco — validação de ponta a ponta do ambiente de demonstração em produção | marco |
