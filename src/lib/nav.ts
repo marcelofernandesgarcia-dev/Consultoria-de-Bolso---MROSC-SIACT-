@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, LayoutTemplate, Route,
   FileCheck, CalendarDays, Sparkles, BookOpen, Scale, Radar,
-  Users, Building2,
+  Users, Building2, Compass,
 } from 'lucide-react';
 
 export type Perfil = 'osc' | 'setorial';
@@ -49,6 +49,7 @@ export const NAVIGATION: NavGroup[] = [
       { id: 'planejamento',  label: 'Cotação Prévia',             icon: ClipboardList,   path: '/planejamento' },
       { id: 'monitoramento', label: 'Nexo Causal',                icon: Activity,        path: '/monitoramento' },
       { id: 'faq',           label: 'Perguntas Frequentes',       icon: BookOpen,        path: '/faq' },
+      { id: 'manual',        label: 'Manual de Uso',              icon: Compass,         path: '/manual' },
       { id: 'capacitacao',   label: 'Capacitação',                icon: GraduationCap,   path: '/capacitacao' },
       { id: 'arquitetura',   label: 'Arquitetura',                icon: LayoutTemplate,  path: '/arquitetura' },
       { id: 'roadmap',       label: 'Roadmap',                    icon: Route,           path: '/roadmap' },
@@ -70,6 +71,7 @@ export const NAVIGATION: NavGroup[] = [
       { id: 'monitoramento', label: 'Nexo Causal',                icon: Activity,        path: '/monitoramento' },
       { id: 'parecer',       label: 'Parecer Técnico',            icon: Scale,           path: '/parecer' },
       { id: 'faq',           label: 'Perguntas Frequentes',       icon: BookOpen,        path: '/faq' },
+      { id: 'manual',        label: 'Manual de Uso',              icon: Compass,         path: '/manual' },
       { id: 'capacitacao',   label: 'Capacitação',                icon: GraduationCap,   path: '/capacitacao' },
       { id: 'arquitetura',   label: 'Arquitetura',                icon: LayoutTemplate,  path: '/arquitetura' },
       { id: 'roadmap',       label: 'Roadmap',                    icon: Route,           path: '/roadmap' },
@@ -79,7 +81,7 @@ export const NAVIGATION: NavGroup[] = [
 
 /** Itens que são navegação/meta (não "ferramentas" propriamente ditas) — usados para
  *  excluir da lista de checklist mostrada nos cards de "Por onde começar". */
-export const NAV_META_IDS = ['dashboard', 'inicio', 'faq', 'capacitacao', 'arquitetura', 'roadmap'];
+export const NAV_META_IDS = ['dashboard', 'inicio', 'faq', 'manual', 'capacitacao', 'arquitetura', 'roadmap'];
 
 /** Perfil efetivo do item — o dele próprio, ou o do grupo se não houver exceção. */
 export function itemPerfil(group: NavGroup, item: NavItem): GrupoPerfil {

@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Bot, X, Send, Loader2, User, Paperclip, BookOpen, Scale, Sparkles } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { type Modo, SISTEMA_PROMPT } from '../lib/assistentePrompts';
+import { getManualContextForPath } from '../data/manual';
 import { apiFetch } from '../lib/apiFetch';
 
 interface ChatMessage {
@@ -18,6 +20,7 @@ const SUGESTOES = [
 const MAX_PDF_SIZE = 10 * 1024 * 1024;
 
 export function AssistenteFlutuante() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [modo, setModo] = useState<Modo>('simples');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -74,10 +77,19 @@ export function AssistenteFlutuante() {
     setLoading(true);
 
     try {
+      // Sem isso, o assistente não tem nenhuma noção da interface do app — só do direito —
+      // e responde "não tenho essa informação" quando perguntado sobre a própria tela
+      // (ex: "como uso a aba de governança?"). O contexto da tela atual, quando existe uma
+      // entrada correspondente no manual, é anexado ao prompt de cada pergunta.
+      const contextoTela = getManualContextForPath(location.pathname);
+      const systemPrompt = contextoTela
+        ? `${SISTEMA_PROMPT[modo]}\n\n${contextoTela}`
+        : SISTEMA_PROMPT[modo];
+
       const response = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, systemPrompt: SISTEMA_PROMPT[modo] }),
+        body: JSON.stringify({ message: text, systemPrompt }),
       });
 
       if (!response.ok) throw new Error('Falha na comunicação');
