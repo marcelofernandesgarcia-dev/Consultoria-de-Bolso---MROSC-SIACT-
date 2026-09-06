@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ChevronRight, RotateCcw, Search, Building2, ShieldCheck, FileText } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, XCircle, ChevronRight, RotateCcw, Search, Building2, ShieldCheck, FileText, Clock, Hourglass } from 'lucide-react';
 import { apiFetch } from '../lib/apiFetch';
 
 interface Pergunta {
@@ -7,6 +7,9 @@ interface Pergunta {
   texto: string;
   dica: string;
   fundamento: string;
+  /** Só nas perguntas ainda manuais (não vêm da busca de CNPJ) — comunica o
+   * roadmap real de automação sem prometer prazo que não temos como cumprir. */
+  statusFutura?: { texto: string; tipo: 'em_breve' | 'sem_prazo' };
 }
 
 type Esfera = 'municipio' | 'estado' | 'uniao';
@@ -32,36 +35,42 @@ const PERGUNTAS: Pergunta[] = [
     texto: 'O estatuto social contém finalidade compatível com o objeto do chamamento?',
     dica: 'Compare o objeto social do estatuto com a finalidade descrita no edital. Deve haver compatibilidade expressa.',
     fundamento: 'Art. 33, I, Lei 13.019/2014',
+    statusFutura: { texto: 'Em breve: comparação assistida por IA', tipo: 'em_breve' },
   },
   {
     id: 'p4',
     texto: 'A OSC possui certidão negativa de débitos trabalhistas (CNDT) válida?',
     dica: 'Emita gratuitamente em tst.jus.br. Validade de 180 dias.',
     fundamento: 'Art. 34, II, Lei 13.019/2014',
+    statusFutura: { texto: 'Em breve: verificação automática (TST)', tipo: 'em_breve' },
   },
   {
     id: 'p5',
     texto: 'A OSC está em dia com as certidões fiscais federais (Receita Federal/PGFN)?',
     dica: 'Certidão Conjunta de Débitos relativos a Tributos Federais e à Dívida Ativa da União. Emitida em receita.fazenda.gov.br.',
     fundamento: 'Art. 34, II, Lei 13.019/2014',
+    statusFutura: { texto: 'Em breve: verificação automática (Receita/PGFN)', tipo: 'em_breve' },
   },
   {
     id: 'p6',
     texto: 'Nenhum dirigente da OSC é cônjuge, companheiro ou parente até o 2º grau de autoridade pública do órgão concedente?',
     dica: 'Inclui cônjuge, filhos, irmãos e pais dos dirigentes da OSC comparados com servidores do órgão que assinarão a parceria.',
     fundamento: 'Art. 39, III, Lei 13.019/2014',
+    statusFutura: { texto: 'Depende de integração institucional futura (Conecta.gov.br) — sem prazo definido', tipo: 'sem_prazo' },
   },
   {
     id: 'p7',
     texto: 'A OSC não possui dirigente que seja agente público com poder de supervisão, fiscalização ou aprovação das parcerias?',
     dica: 'Ministros, secretários, presidentes de autarquias e seus subordinados não podem ser dirigentes da OSC parceira.',
     fundamento: 'Art. 39, III, Lei 13.019/2014',
+    statusFutura: { texto: 'Depende de integração institucional futura (Conecta.gov.br) — sem prazo definido', tipo: 'sem_prazo' },
   },
   {
     id: 'p8',
     texto: 'A OSC tem capacidade técnica e operacional para executar o objeto do chamamento?',
     dica: 'Avalie: equipe disponível, experiência em projetos similares, infraestrutura mínima necessária.',
     fundamento: 'Art. 33, V, "c", Lei 13.019/2014',
+    statusFutura: { texto: 'Em breve: avaliação assistida por IA', tipo: 'em_breve' },
   },
 ];
 
@@ -337,13 +346,36 @@ export function SimuladorElegibilidade() {
       {/* Perguntas */}
       <div className="space-y-4">
         {PERGUNTAS.map((p, i) => (
-          <div key={p.id} className={`bg-white rounded-2xl border-2 shadow-sm p-5 transition-all ${respostas[p.id] ? 'border-slate-200' : 'border-indigo-100'}`}>
+          <React.Fragment key={p.id}>
+            {i === 2 && (
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <Hourglass className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <span className="font-semibold">Sistema em evolução:</span> as perguntas 1 e 2 já são
+                  respondidas automaticamente a partir da base do IPEA. As perguntas abaixo ainda exigem
+                  verificação manual — veja o plano de automação de cada uma no selo ao lado do fundamento legal.
+                </p>
+              </div>
+            )}
+          <div className={`bg-white rounded-2xl border-2 shadow-sm p-5 transition-all ${respostas[p.id] ? 'border-slate-200' : 'border-indigo-100'}`}>
             <div className="flex items-start gap-3 mb-3">
               <span className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
               <div className="flex-1">
                 <p className="font-medium text-slate-900 text-sm leading-relaxed">{p.texto}</p>
                 <p className="text-xs text-slate-500 mt-1">{p.dica}</p>
-                <p className="text-xs text-indigo-600 font-medium mt-1">{p.fundamento}</p>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+                  <p className="text-xs text-indigo-600 font-medium">{p.fundamento}</p>
+                  {p.statusFutura && (
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      p.statusFutura.tipo === 'em_breve'
+                        ? 'bg-violet-50 text-violet-700 border border-violet-200'
+                        : 'bg-slate-100 text-slate-500 border border-slate-200'
+                    }`}>
+                      <Clock className="w-2.5 h-2.5" />
+                      {p.statusFutura.texto}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex gap-2 ml-10">
@@ -362,6 +394,7 @@ export function SimuladorElegibilidade() {
               ))}
             </div>
           </div>
+          </React.Fragment>
         ))}
       </div>
 
