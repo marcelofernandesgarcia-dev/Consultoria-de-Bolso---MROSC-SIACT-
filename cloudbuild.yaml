@@ -1,15 +1,17 @@
 steps:
-  # Build da imagem Docker (variáveis VITE_* precisam existir em build-time)
+  # Build da imagem Docker (variáveis VITE_* precisam existir em build-time).
+  # entrypoint bash é obrigatório aqui: "docker build" direto (sem shell) não expande
+  # $$VITE_SUPABASE_ANON_KEY — o valor literal "$VITE_SUPABASE_ANON_KEY" acabava indo
+  # pro --build-arg em vez do secret de verdade.
   - name: "gcr.io/cloud-builders/docker"
+    entrypoint: bash
     args:
-      - build
-      - -t
-      - "$_IMAGE"
-      - --build-arg
-      - VITE_SUPABASE_URL=https://clsuturkoripoingjqpw.supabase.co
-      - --build-arg
-      - VITE_SUPABASE_ANON_KEY=$$VITE_SUPABASE_ANON_KEY
-      - .
+      - -c
+      - |
+        docker build -t "$_IMAGE" \
+          --build-arg VITE_SUPABASE_URL=https://clsuturkoripoingjqpw.supabase.co \
+          --build-arg VITE_SUPABASE_ANON_KEY="$$VITE_SUPABASE_ANON_KEY" \
+          .
     secretEnv: ['VITE_SUPABASE_ANON_KEY']
 
   # Push para o Artifact Registry
