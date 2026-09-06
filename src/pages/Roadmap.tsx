@@ -40,6 +40,7 @@ const PHASES = [
       { text: 'Solicitar chaves de acesso ao Conecta.gov.br', done: false },
       { text: 'Integrar API REST do Transferegov (Habilitação e CNDs)', done: false },
       { text: 'Integrar API do SIAFI (Execução Financeira)', done: false },
+      { text: 'Sugerir valor de referência na Cotação Prévia via API de Pesquisa de Preços do Compras.gov.br (dadosabertos.compras.gov.br/modulo-pesquisa-preco) — reduz dependência de o usuário já saber pesquisar preços por conta própria', done: false },
       { text: 'Homologar endpoints no ambiente de teste do Serpro', done: false },
     ],
   },

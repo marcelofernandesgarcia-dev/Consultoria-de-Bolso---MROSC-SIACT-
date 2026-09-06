@@ -72,3 +72,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-06-007](2026-09-06-007-marco-validacao-e2e-demonstracao.md) | 2026-09-06 | Marco — validação de ponta a ponta do ambiente de demonstração em produção | marco |
 | [2026-09-06-008](2026-09-06-008-usabilidade-assistente-flutuante.md) | 2026-09-06 | Amplia painel do Assistente flutuante — legibilidade e acessibilidade | codificação |
 | [2026-09-06-009](2026-09-06-009-fix-cotacao-previa-totais-prematuros.md) | 2026-09-06 | Corrige cartões de totais da Cotação Prévia aparecendo antes do valor cotado | codificação |
+| [2026-09-06-010](2026-09-06-010-planejamento-preco-referencia-comprasgov.md) | 2026-09-06 | Registra no Roadmap — sugestão automática de preço de referência via Compras.gov.br | planejamento |
