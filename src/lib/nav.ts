@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, LayoutTemplate, Route,
   FileCheck, CalendarDays, Sparkles, BookOpen, Scale, Radar,
-  Users, Building2, Compass, ShieldAlert,
+  Users, Building2, Compass, ShieldAlert, Lock,
 } from 'lucide-react';
 
 export type Perfil = 'osc' | 'setorial';
@@ -53,6 +53,7 @@ export const NAVIGATION: NavGroup[] = [
       { id: 'monitoramento', label: 'Nexo Causal',                icon: Activity,        path: '/monitoramento' },
       { id: 'faq',           label: 'Perguntas Frequentes',       icon: BookOpen,        path: '/faq' },
       { id: 'manual',        label: 'Manual de Uso',              icon: Compass,         path: '/manual' },
+      { id: 'privacidade',   label: 'Privacidade e Dados',        icon: Lock,            path: '/privacidade' },
       { id: 'capacitacao',   label: 'Capacitação',                icon: GraduationCap,   path: '/capacitacao' },
     ],
   },
@@ -73,6 +74,7 @@ export const NAVIGATION: NavGroup[] = [
       { id: 'parecer',       label: 'Parecer Técnico',            icon: Scale,           path: '/parecer' },
       { id: 'faq',           label: 'Perguntas Frequentes',       icon: BookOpen,        path: '/faq' },
       { id: 'manual',        label: 'Manual de Uso',              icon: Compass,         path: '/manual' },
+      { id: 'privacidade',   label: 'Privacidade e Dados',        icon: Lock,            path: '/privacidade' },
       { id: 'capacitacao',   label: 'Capacitação',                icon: GraduationCap,   path: '/capacitacao' },
     ],
   },
@@ -93,7 +95,7 @@ export const NAVIGATION: NavGroup[] = [
 
 /** Itens que são navegação/meta (não "ferramentas" propriamente ditas) — usados para
  *  excluir da lista de checklist mostrada nos cards de "Por onde começar". */
-export const NAV_META_IDS = ['dashboard', 'inicio', 'faq', 'manual', 'capacitacao', 'arquitetura', 'roadmap'];
+export const NAV_META_IDS = ['dashboard', 'inicio', 'faq', 'manual', 'privacidade', 'capacitacao', 'arquitetura', 'roadmap'];
 
 /** Perfil efetivo do item — o dele próprio, ou o do grupo se não houver exceção. */
 export function itemPerfil(group: NavGroup, item: NavItem): GrupoPerfil {

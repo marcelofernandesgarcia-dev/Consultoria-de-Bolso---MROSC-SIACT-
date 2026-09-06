@@ -43,6 +43,7 @@ const PHASES = [
       { text: 'Geração de Hash de segurança para cada Parecer emitido', done: false, dificuldade: 'baixa' as Dificuldade },
       { text: 'Fluxo de aprovação humana obrigatória (Human-in-the-loop)', done: false, dificuldade: 'media' as Dificuldade },
       { text: 'Simulador de Elegibilidade — apoio de IA nas perguntas 3 (compatibilidade do estatuto com o edital) e 8 (capacidade técnica/operacional), reaproveitando o motor já usado em "Pré-Análise da Proposta"', done: false, dificuldade: 'media' as Dificuldade },
+      { text: 'Executar o Framework de Autoavaliação de Impacto Ético em IA (AIE) do Núcleo de IA/SGD — questionário oficial, sem mudança de código, conta para a meta 6.10 do PBIA', done: false, dificuldade: 'baixa' as Dificuldade },
     ],
   },
   {
@@ -64,9 +65,11 @@ const PHASES = [
       { text: 'Integrar API do SIAFI (Execução Financeira)', done: false, dificuldade: 'alta' as Dificuldade },
       { text: 'Sugerir valor de referência na Cotação Prévia via API de Pesquisa de Preços do Compras.gov.br (dadosabertos.compras.gov.br/modulo-pesquisa-preco) — reduz dependência de o usuário já saber pesquisar preços por conta própria', done: false, dificuldade: 'baixa' as Dificuldade },
       { text: 'Simulador de Elegibilidade — automatizar pergunta 4 (CNDT) via consulta pública ao TST (tst.jus.br)', done: false, dificuldade: 'media' as Dificuldade },
-      { text: 'Simulador de Elegibilidade — automatizar pergunta 5 (certidões fiscais Receita/PGFN) via consulta pública, sujeito a limitação de captcha', done: false, dificuldade: 'alta' as Dificuldade },
+      { text: 'Simulador de Elegibilidade — automatizar pergunta 5 (certidões fiscais Receita/PGFN) via API oficial de CND do Conecta.gov.br — não depende mais de scraping com captcha', done: false, dificuldade: 'media' as Dificuldade },
       { text: 'Simulador de Elegibilidade — avaliar viabilidade das perguntas 6 e 7 (parentesco/poder de supervisão de dirigentes) após acesso ao Conecta.gov.br — sem prazo definido, depende de integração institucional ainda não iniciada', done: false, dificuldade: 'alta' as Dificuldade },
       { text: 'Homologar endpoints no ambiente de teste do Serpro', done: false, dificuldade: 'media' as Dificuldade },
+      { text: 'Substituir a consulta de CNPJ no Mapa OSC (hoje via BrasilAPI, terceiro) pela API oficial "CNPJ — Consulta de Empresas" do catálogo Conecta.gov.br', done: false, dificuldade: 'baixa' as Dificuldade },
+      { text: 'Reforçar o módulo Governança/Impedimentos com verificação oficial via CADIN e Portal da Transparência (CEIS/CNEP), além da análise de IA sobre texto informado', done: false, dificuldade: 'media' as Dificuldade },
     ],
   },
   {

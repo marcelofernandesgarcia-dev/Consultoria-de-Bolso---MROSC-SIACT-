@@ -21,6 +21,7 @@ import { CalendarioObrigacoes } from './pages/CalendarioObrigacoes';
 import { SimuladorElegibilidade } from './pages/SimuladorElegibilidade';
 import { FAQ } from './pages/FAQ';
 import { Manual } from './pages/Manual';
+import { Privacidade } from './pages/Privacidade';
 import { LessonViewer } from './pages/LessonViewer';
 import { GeradorParecer } from './pages/GeradorParecer';
 import { Landing } from './pages/Landing';
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="simulador" element={<SimuladorElegibilidade />} />
             <Route path="faq" element={<FAQ />} />
             <Route path="manual" element={<Manual />} />
+            <Route path="privacidade" element={<Privacidade />} />
             <Route path="arquitetura" element={<Arquitetura />} />
             <Route path="roadmap" element={<Roadmap />} />
             <Route path="conta" element={<Conta />} />

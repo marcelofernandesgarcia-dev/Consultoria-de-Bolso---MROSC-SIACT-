@@ -208,6 +208,14 @@ Modo "Prestação de Contas Final (Anexo VII)" — preencha os dados de identifi
         comoUsar: `Só leitura — role a página pra ver as fases.`,
       },
       {
+        id: 'privacidade',
+        path: '/privacidade',
+        titulo: 'Privacidade e Dados',
+        perfil: 'ambos',
+        paraQueServe: 'Explica quais dados o sistema coleta, com que base legal (LGPD), e como pedir acesso, correção ou exclusão dos seus dados, ou contestar uma análise de IA.',
+        comoUsar: `Só leitura — a página traz um canal de contato (e-mail) tanto para pedidos de direitos LGPD quanto para reportar erro numa análise de IA.`,
+      },
+      {
         id: 'inicio',
         path: '/inicio',
         titulo: 'Tela inicial "Por onde começar"',
