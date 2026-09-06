@@ -97,18 +97,24 @@ export async function syncBasePrincipal(
 
   const str = (v: any): string | null => { const s = String(v ?? '').trim(); return s || null; };
 
+  // Nomes de coluna verificados contra o cabeçalho real do CSV oficial do IPEA
+  // (20260310_MOSC_baseresumida.csv) — o formato mudou em algum momento e o
+  // mapeamento antigo (comentado como fallback) ficou desatualizado, fazendo
+  // situacao/municipio/uf/cnae/natureza_juridica sempre virem vazios ou errados.
   const mapRow = (r: Record<string, any>) => ({
-    cnpj:              normalizeCnpj(r['cd_identificador_osc'] ?? r['cnpj'] ?? r['CNPJ'] ?? ''),
+    cnpj:              normalizeCnpj(r['cnpj'] ?? r['cd_identificador_osc'] ?? r['CNPJ'] ?? ''),
     razao_social:      str(r['tx_razao_social_osc']    ?? r['razao_social']),
     nome_fantasia:     str(r['tx_nome_fantasia_osc']   ?? r['nome_fantasia']),
-    natureza_juridica: str(r['cd_natureza_juridica_osc']),
-    cnae_principal:    str(r['cd_classe_ativ_economica_osc']),
-    municipio:         str(r['tx_municipio'] ?? r['municipio']),
-    uf:                str(r['sg_uf']        ?? r['uf']),
-    situacao:          r['bo_osc_ativa'] === '1' || r['bo_osc_ativa'] === 'true' ? 'ATIVA' : 'INATIVA',
+    natureza_juridica: str(r['natureza_juridica']       ?? r['cd_natureza_juridica_osc']),
+    cnae_principal:    str(r['cnae']                    ?? r['cd_classe_ativ_economica_osc']),
+    municipio:         str(r['municipio_nome']          ?? r['tx_municipio'] ?? r['municipio']),
+    // Coluna uf é character(2) no banco — algumas linhas do CSV trazem lixo/mais
+    // de 2 caracteres, então trunca defensivamente em vez de deixar o upsert falhar.
+    uf:                str(r['UF_Sigla']                ?? r['sg_uf'] ?? r['uf'])?.trim().slice(0, 2).toUpperCase() || null,
+    situacao:          (str(r['situacao_cadastral']) ?? 'INATIVA').toUpperCase(),
     data_abertura:     toDate(r['dt_fundacao_osc']),
-    data_encerramento: toDate(r['dt_encerramento_osc']),
-    matriz_filial:     str(r['bo_matriz']),
+    data_encerramento: toDate(r['data_fechamento']      ?? r['dt_encerramento_osc']),
+    matriz_filial:     str(r['matriz_filial']           ?? r['bo_matriz']),
     updated_at:        new Date().toISOString(),
   });
 
