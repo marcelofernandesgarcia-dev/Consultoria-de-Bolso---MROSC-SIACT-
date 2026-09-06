@@ -75,3 +75,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-06-010](2026-09-06-010-planejamento-preco-referencia-comprasgov.md) | 2026-09-06 | Registra no Roadmap — sugestão automática de preço de referência via Compras.gov.br | planejamento |
 | [2026-09-06-011](2026-09-06-011-fix-mapeamento-ipea-situacao-sempre-inativa.md) | 2026-09-06 | Corrige mapeamento IPEA — situação de OSC sempre "INATIVA", município/UF sempre vazios | codificação |
 | [2026-09-06-012](2026-09-06-012-planejamento-automacao-simulador-elegibilidade.md) | 2026-09-06 | Registra no Roadmap — plano de automação das 6 perguntas manuais do Simulador | planejamento |
+| [2026-09-06-013](2026-09-06-013-alerta-selos-roadmap-simulador.md) | 2026-09-06 | Adiciona alerta e selos de roadmap nas perguntas manuais do Simulador | codificação |
