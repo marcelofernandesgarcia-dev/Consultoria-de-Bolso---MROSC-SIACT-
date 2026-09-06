@@ -48,7 +48,9 @@ const C: Record<SectionColor, {
 /* ─── Componente ──────────────────────────────────────────────── */
 export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const { user, isAdmin, isDemo, perfilVisivel, previewPerfil, setPreviewPerfil, signOut } = useAuth();
-  const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel));
+  // Grupo "Administrador" (Arquitetura, Roadmap) nunca aparece pra perfil OSC/Setorial real —
+  // só pra quem tem conta admin ou está em sessão de demonstração.
+  const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel) && (!g.adminOnly || isAdmin || isDemo));
   const isMobile = useIsMobile();
   const location = useLocation();
   // No mobile o drawer é sempre "expandido" (mostra labels) — só a visibilidade (translate) muda.

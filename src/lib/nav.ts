@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Search, ShieldCheck, Gavel, ClipboardList,
   Activity, GraduationCap, LayoutTemplate, Route,
   FileCheck, CalendarDays, Sparkles, BookOpen, Scale, Radar,
-  Users, Building2, Compass,
+  Users, Building2, Compass, ShieldAlert,
 } from 'lucide-react';
 
 export type Perfil = 'osc' | 'setorial';
@@ -21,6 +21,9 @@ export interface NavGroup {
   color: SectionColor;
   groupIcon: React.ElementType;
   perfil: GrupoPerfil;
+  /** Grupo visível só para admin (conta real) ou visitante de demonstração — nunca aparece
+   *  pra um perfil OSC/Setorial real em produção. Usado pro grupo "Administrador". */
+  adminOnly?: boolean;
   items: NavItem[];
 }
 
@@ -51,8 +54,6 @@ export const NAVIGATION: NavGroup[] = [
       { id: 'faq',           label: 'Perguntas Frequentes',       icon: BookOpen,        path: '/faq' },
       { id: 'manual',        label: 'Manual de Uso',              icon: Compass,         path: '/manual' },
       { id: 'capacitacao',   label: 'Capacitação',                icon: GraduationCap,   path: '/capacitacao' },
-      { id: 'arquitetura',   label: 'Arquitetura',                icon: LayoutTemplate,  path: '/arquitetura' },
-      { id: 'roadmap',       label: 'Roadmap',                    icon: Route,           path: '/roadmap' },
     ],
   },
   {
@@ -73,8 +74,19 @@ export const NAVIGATION: NavGroup[] = [
       { id: 'faq',           label: 'Perguntas Frequentes',       icon: BookOpen,        path: '/faq' },
       { id: 'manual',        label: 'Manual de Uso',              icon: Compass,         path: '/manual' },
       { id: 'capacitacao',   label: 'Capacitação',                icon: GraduationCap,   path: '/capacitacao' },
-      { id: 'arquitetura',   label: 'Arquitetura',                icon: LayoutTemplate,  path: '/arquitetura' },
-      { id: 'roadmap',       label: 'Roadmap',                    icon: Route,           path: '/roadmap' },
+    ],
+  },
+  {
+    id: 'administrador',
+    group: 'Administrador',
+    fullLabel: 'Administrador',
+    color: 'slate',
+    groupIcon: ShieldAlert,
+    perfil: 'ambos',
+    adminOnly: true,
+    items: [
+      { id: 'arquitetura', label: 'Arquitetura', icon: LayoutTemplate, path: '/arquitetura' },
+      { id: 'roadmap',     label: 'Roadmap',      icon: Route,         path: '/roadmap' },
     ],
   },
 ];
