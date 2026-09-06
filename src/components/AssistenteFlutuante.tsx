@@ -95,7 +95,7 @@ export function AssistenteFlutuante() {
       {/* ── Painel do chat ── */}
       {open && (
         <div
-          className="fixed inset-0 sm:static sm:inset-auto sm:mb-3 w-full sm:w-[360px] max-w-full sm:max-w-[calc(100vw-2.5rem)] h-full sm:h-[520px] max-h-full sm:max-h-[calc(100vh-7rem)] bg-white rounded-none sm:rounded-2xl shadow-2xl border-0 sm:border sm:border-slate-200 flex flex-col overflow-hidden"
+          className="fixed inset-0 sm:static sm:inset-auto sm:mb-3 w-full sm:w-[600px] max-w-full sm:max-w-[calc(100vw-2.5rem)] h-full sm:h-[720px] max-h-full sm:max-h-[calc(100vh-7rem)] bg-white rounded-none sm:rounded-2xl shadow-2xl border-0 sm:border sm:border-slate-200 flex flex-col overflow-hidden"
           style={{ animation: 'assistente-in 180ms ease-out' }}
         >
           {/* Header */}
@@ -105,7 +105,7 @@ export function AssistenteFlutuante() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white leading-none">Assistente SIACT</p>
-              <p className="text-[10px] text-indigo-100 mt-0.5">Especialista em MROSC · Lei 13.019/14</p>
+              <p className="text-xs text-indigo-100 mt-0.5">Especialista em MROSC · Lei 13.019/14</p>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Fechar assistente" className="text-white/70 hover:text-white transition-colors shrink-0">
               <X className="w-4 h-4" />
@@ -116,19 +116,19 @@ export function AssistenteFlutuante() {
           <div className="px-3 py-2 border-b border-slate-100 flex gap-1.5 shrink-0">
             <button
               onClick={() => setModo('simples')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold border transition-all ${
                 modo === 'simples' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'
               }`}
             >
-              <BookOpen className="w-3 h-3" /> Simples
+              <BookOpen className="w-3.5 h-3.5" /> Simples
             </button>
             <button
               onClick={() => setModo('tecnica')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold border transition-all ${
                 modo === 'tecnica' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'
               }`}
             >
-              <Scale className="w-3 h-3" /> Técnica
+              <Scale className="w-3.5 h-3.5" /> Técnica
             </button>
           </div>
 
@@ -140,7 +140,7 @@ export function AssistenteFlutuante() {
                   <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
                     <Bot className="w-3.5 h-3.5 text-indigo-600" />
                   </div>
-                  <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl rounded-tl-sm p-3 leading-relaxed">
+                  <p className="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl rounded-tl-sm p-3 leading-relaxed">
                     Olá! Sou o Assistente SIACT. Escolha uma pergunta rápida ou digite a sua dúvida sobre o MROSC.
                   </p>
                 </div>
@@ -149,7 +149,7 @@ export function AssistenteFlutuante() {
                     <button
                       key={s}
                       onClick={() => handleSend(s)}
-                      className="w-full text-left text-[11px] text-slate-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 hover:border-indigo-200 rounded-lg px-2.5 py-2 transition-colors flex items-start gap-1.5"
+                      className="w-full text-left text-xs text-slate-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 hover:border-indigo-200 rounded-lg px-2.5 py-2.5 transition-colors flex items-start gap-1.5"
                     >
                       <Sparkles className="w-3 h-3 text-indigo-400 shrink-0 mt-0.5" />
                       {s}
@@ -164,13 +164,13 @@ export function AssistenteFlutuante() {
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-slate-200' : 'bg-indigo-100'}`}>
                   {msg.role === 'user' ? <User className="w-3 h-3 text-slate-600" /> : <Bot className="w-3 h-3 text-indigo-600" />}
                 </div>
-                <div className={`px-3 py-2 rounded-xl text-xs leading-relaxed ${
+                <div className={`px-3.5 py-2.5 rounded-xl text-sm leading-relaxed ${
                   msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-sm' : 'bg-slate-50 border border-slate-200 text-slate-700 rounded-tl-sm'
                 }`}>
                   {msg.role === 'user' ? (
                     <div className="whitespace-pre-wrap">{msg.content}</div>
                   ) : (
-                    <div className="prose prose-xs max-w-none prose-indigo [&_h1]:text-[13px] [&_h2]:text-[13px] [&_h3]:text-xs [&_h1]:mt-2 [&_h2]:mt-2 [&_h3]:mt-1.5 [&_h1]:mb-1 [&_h2]:mb-1 [&_h3]:mb-1 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5">
+                    <div className="prose prose-sm max-w-none prose-indigo [&_h1]:text-base [&_h2]:text-base [&_h3]:text-sm [&_h1]:mt-2 [&_h2]:mt-2 [&_h3]:mt-1.5 [&_h1]:mb-1 [&_h2]:mb-1 [&_h3]:mb-1 [&_p]:my-1.5 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5">
                       <Markdown>{msg.content}</Markdown>
                     </div>
                   )}
@@ -185,7 +185,7 @@ export function AssistenteFlutuante() {
                 </div>
                 <div className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 rounded-tl-sm flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
-                  <span className="text-[11px] text-slate-500">Consultando legislação...</span>
+                  <span className="text-xs text-slate-500">Consultando legislação...</span>
                 </div>
               </div>
             )}
@@ -202,10 +202,10 @@ export function AssistenteFlutuante() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={loading}
-              className="px-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg transition-colors flex items-center justify-center shrink-0"
+              className="w-10 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg transition-colors flex items-center justify-center shrink-0"
               title="Anexar PDF"
             >
-              <Paperclip className="w-3.5 h-3.5" />
+              <Paperclip className="w-4 h-4" />
             </button>
             <textarea
               value={input}
@@ -214,14 +214,14 @@ export function AssistenteFlutuante() {
               placeholder="Digite sua dúvida..."
               rows={1}
               disabled={loading}
-              className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 outline-none resize-none max-h-20"
+              className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 outline-none resize-none max-h-20"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-lg transition-colors flex items-center justify-center shrink-0"
+              className="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-lg transition-colors flex items-center justify-center shrink-0"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-4 h-4" />
             </button>
           </form>
         </div>
