@@ -207,8 +207,9 @@ export function CotacaoPrevia() {
         </div>
       </div>
 
-      {/* ── Cards de totais ─────────────────────────────────── */}
-      {(totalRef > 0 || totalCotado > 0) && (
+      {/* ── Cards de totais — só depois de haver valor cotado real, senão mostra
+          -100% "dentro da faixa aceitável" antes do usuário preencher nada ── */}
+      {totalCotado > 0 && (
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-5 py-4">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Referência</p>
