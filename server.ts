@@ -122,7 +122,10 @@ async function startServer() {
   // injetados). O app não usa <img> (todos os ícones são SVG via lucide-react) e só carrega
   // recurso externo do Google Fonts (fonte Public Sans) — daí as duas exceções abaixo.
   // connectSrc precisa liberar o Supabase: o cliente supabase-js chama a API dele
-  // (auth, REST) direto do navegador, sem passar pelo backend Express.
+  // (auth, REST) direto do navegador, sem passar pelo backend Express. BrasilAPI
+  // também é chamada direto do navegador em MapaOSCHub.tsx (consulta CNPJ na
+  // Receita Federal) — sem isso aqui, a chamada é bloqueada em silêncio pelo CSP
+  // e o app mostra "CNPJ não encontrado", mascarando o bloqueio de rede real.
   const supabaseUrl = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
   app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
@@ -132,7 +135,7 @@ async function startServer() {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // estilos inline (style={{...}}) + folha de estilo do Google Fonts
         imgSrc: ["'self'", "data:"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        connectSrc: supabaseUrl ? ["'self'", supabaseUrl] : ["'self'"],
+        connectSrc: supabaseUrl ? ["'self'", supabaseUrl, "https://brasilapi.com.br"] : ["'self'", "https://brasilapi.com.br"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         formAction: ["'self'"],
