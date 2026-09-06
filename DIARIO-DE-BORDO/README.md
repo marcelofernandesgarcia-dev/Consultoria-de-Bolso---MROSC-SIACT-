@@ -70,3 +70,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-06-005](2026-09-06-005-fix-cloudbuild-bash-entrypoint.md) | 2026-09-06 | Corrige cloudbuild.yaml — entrypoint bash necessário para expandir secretEnv | codificação |
 | [2026-09-06-006](2026-09-06-006-chave-anthropic-revogada.md) | 2026-09-06 | Renova secret ANTHROPIC_API_KEY — chave revogada bloqueava toda análise de IA | testes |
 | [2026-09-06-007](2026-09-06-007-marco-validacao-e2e-demonstracao.md) | 2026-09-06 | Marco — validação de ponta a ponta do ambiente de demonstração em produção | marco |
+| [2026-09-06-008](2026-09-06-008-usabilidade-assistente-flutuante.md) | 2026-09-06 | Amplia painel do Assistente flutuante — legibilidade e acessibilidade | codificação |
