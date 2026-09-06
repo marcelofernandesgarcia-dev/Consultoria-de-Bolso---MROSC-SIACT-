@@ -21,6 +21,7 @@ const PHASES = [
       { text: 'Criar banco de dados vetorial com jurisprudência (TCU/CGU)', done: false },
       { text: 'Geração de Hash de segurança para cada Parecer emitido', done: false },
       { text: 'Fluxo de aprovação humana obrigatória (Human-in-the-loop)', done: false },
+      { text: 'Simulador de Elegibilidade — apoio de IA nas perguntas 3 (compatibilidade do estatuto com o edital) e 8 (capacidade técnica/operacional), reaproveitando o motor já usado em "Pré-Análise da Proposta"', done: false },
     ],
   },
   {
@@ -41,6 +42,9 @@ const PHASES = [
       { text: 'Integrar API REST do Transferegov (Habilitação e CNDs)', done: false },
       { text: 'Integrar API do SIAFI (Execução Financeira)', done: false },
       { text: 'Sugerir valor de referência na Cotação Prévia via API de Pesquisa de Preços do Compras.gov.br (dadosabertos.compras.gov.br/modulo-pesquisa-preco) — reduz dependência de o usuário já saber pesquisar preços por conta própria', done: false },
+      { text: 'Simulador de Elegibilidade — automatizar pergunta 4 (CNDT) via consulta pública ao TST (tst.jus.br)', done: false },
+      { text: 'Simulador de Elegibilidade — automatizar pergunta 5 (certidões fiscais Receita/PGFN) via consulta pública, sujeito a limitação de captcha', done: false },
+      { text: 'Simulador de Elegibilidade — avaliar viabilidade das perguntas 6 e 7 (parentesco/poder de supervisão de dirigentes) após acesso ao Conecta.gov.br — sem prazo definido, depende de integração institucional ainda não iniciada', done: false },
       { text: 'Homologar endpoints no ambiente de teste do Serpro', done: false },
     ],
   },
