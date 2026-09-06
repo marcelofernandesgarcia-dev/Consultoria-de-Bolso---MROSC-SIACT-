@@ -11,11 +11,18 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  /** Login anônimo de demonstração (botão "Entrar como visitante"). */
+  isDemo: boolean;
   /** Perfil real, salvo no cadastro do usuário. */
   perfil: Perfil | null;
-  /** Perfil a usar para filtrar menu/rotas: para admin, é o preview escolhido (ou null = vê tudo); para os demais, é o perfil real. */
+  /** Perfil a usar para filtrar menu/rotas: para admin OU visitante de demonstração, é o
+   *  preview escolhido (ou null = vê tudo — as duas gavetas, sem bloqueio de rota); para os
+   *  demais, é o perfil real, permanente. Visitantes de demonstração precisam ver tudo por
+   *  padrão porque quem decide sobre colocar o sistema em produção (ex: alta cúpula do MGI)
+   *  usa esse login e precisa acessar todas as funcionalidades e perfis, não só um. */
   perfilVisivel: Perfil | null;
-  /** Só tem efeito para admins — permite pré-visualizar o app como cada perfil sem trocar o cadastro. */
+  /** Tem efeito para admins e para visitantes de demonstração — permite pré-visualizar o app
+   *  como cada perfil (ou "tudo") sem depender de um cadastro permanente. */
   previewPerfil: Perfil | null;
   setPreviewPerfil: (perfil: Perfil | null) => void;
   definirPerfil: (perfil: Perfil) => Promise<void>;
@@ -55,8 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isAdmin = isAdminEmail(user?.email);
+  const isDemo = Boolean(user?.is_anonymous);
   const perfil: Perfil | null = (user?.user_metadata?.perfil as Perfil | undefined) ?? null;
-  const perfilVisivel: Perfil | null = isAdmin ? previewPerfil : perfil;
+  const perfilVisivel: Perfil | null = (isAdmin || isDemo) ? previewPerfil : perfil;
 
   const setPreviewPerfil = (novoPerfil: Perfil | null) => {
     setPreviewPerfilState(novoPerfil);
@@ -77,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, perfil, perfilVisivel, previewPerfil, setPreviewPerfil, definirPerfil, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, isDemo, perfil, perfilVisivel, previewPerfil, setPreviewPerfil, definirPerfil, signOut }}>
       {children}
     </AuthContext.Provider>
   );

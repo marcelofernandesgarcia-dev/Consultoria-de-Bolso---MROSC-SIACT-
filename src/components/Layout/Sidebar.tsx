@@ -47,7 +47,7 @@ const C: Record<SectionColor, {
 
 /* ─── Componente ──────────────────────────────────────────────── */
 export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
-  const { user, isAdmin, perfilVisivel, previewPerfil, setPreviewPerfil, signOut } = useAuth();
+  const { user, isAdmin, isDemo, perfilVisivel, previewPerfil, setPreviewPerfil, signOut } = useAuth();
   const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel));
   const isMobile = useIsMobile();
   const location = useLocation();
@@ -156,13 +156,14 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
           </NavLink>
         )}
 
-        {/* ── SELETOR DE VISUALIZAÇÃO (só admin) — para apresentar a viabilidade sob as duas óticas ── */}
-        {expanded && isAdmin && (
+        {/* ── SELETOR DE VISUALIZAÇÃO (admin ou visitante de demonstração) — permite ver tudo
+             por padrão e, se quiser, simular a visão restrita de um perfil específico ── */}
+        {expanded && (isAdmin || isDemo) && (
           <div className="px-3 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Visualizar como</p>
             <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
               {([
-                { key: null, label: 'Admin (tudo)' },
+                { key: null, label: 'Tudo' },
                 { key: 'osc' as Perfil, label: 'OSC' },
                 { key: 'setorial' as Perfil, label: 'Setorial' },
               ]).map(opt => {

@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { PerfilChooser } from './PerfilChooser';
 
 export function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, perfil, isAdmin } = useAuth();
+  const { user, loading, perfil, isAdmin, isDemo } = useAuth();
 
   if (loading) {
     return (
@@ -28,9 +28,12 @@ export function PrivateRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/landing" replace />;
   }
 
-  // Usuário autenticado sem perfil definido ainda: precisa se identificar antes de ver o app
-  // Admins pulam essa escolha — usam o seletor "Visualizar como" na sidebar em vez disso.
-  if (user && !perfil && !isAdmin) {
+  // Usuário autenticado sem perfil definido ainda: precisa se identificar antes de ver o app.
+  // Admins e visitantes de demonstração pulam essa escolha — usam o seletor "Visualizar como"
+  // na sidebar em vez disso. Pra visitante de demonstração isso também evita uma trava
+  // permanente: a opção Setorial do PerfilChooser exige login gov.br (indisponível pra
+  // anônimos), então sem essa exceção o visitante nunca conseguiria ver o lado Setorial.
+  if (user && !perfil && !isAdmin && !isDemo) {
     return <PerfilChooser />;
   }
 
