@@ -1,6 +1,16 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ShieldCheck, Bot, Database, Route, LayoutTemplate, Sparkles } from 'lucide-react';
+import { ShieldCheck, Bot, Database, Route, LayoutTemplate, Sparkles, CheckCircle2, Clock } from 'lucide-react';
+
+function StatusLabel({ tipo }: { tipo: 'implementado' | 'planejado' }) {
+  const implementado = tipo === 'implementado';
+  const Icon = implementado ? CheckCircle2 : Clock;
+  return (
+    <p className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-2.5 ${implementado ? 'text-emerald-600' : 'text-amber-600'}`}>
+      <Icon className="w-3 h-3" /> {implementado ? 'Já implementado' : 'Planejado'}
+    </p>
+  );
+}
 
 export function Arquitetura() {
   return (
@@ -67,28 +77,46 @@ export function Arquitetura() {
               <h2 className="text-xl font-bold text-slate-900">Assistente IA (O Cérebro)</h2>
             </div>
           </div>
-          <ul className="space-y-4">
+          <StatusLabel tipo="implementado" />
+          <ul className="space-y-3 mb-5">
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Motor:</strong> LLM generativo — evolução planejada para infraestrutura soberana SERPRO (ConversAÍ Studio / SerproLLM)</p>
+              <p className="text-slate-700"><strong>Motor:</strong> Anthropic Claude (claude-sonnet-5), com prompts especializados por tipo de análise</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Leitura de Documentos:</strong> OCR e parsing de .pdf, .txt, .csv, .json</p>
+              <p className="text-slate-700"><strong>Leitura de Documentos:</strong> extração de texto de PDF (upload direto, até 10MB)</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Motor de Proporcionalidade:</strong> Aplicação automática de ritos simplificados (Dec. 11.948/2024)</p>
+              <p className="text-slate-700"><strong>Geração:</strong> Parecer Técnico (modo geral e modo Anexo VII) e Semáforo de Riscos</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Geração:</strong> Pareceres Técnicos Automatizados e Semáforo de Riscos</p>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Governança:</strong> Sob o Framework de Autoavaliação de Impacto Ético em IA (AIE/NIA), conforme Portarias SGD/MGI nº 6.618/2024 e nº 473/2026</p>
+              <p className="text-slate-700"><strong>Assistente contextual:</strong> reconhece a tela em que o usuário está, com base no Manual de Uso</p>
             </li>
           </ul>
+          <div className="pt-4 border-t border-slate-100">
+            <StatusLabel tipo="planejado" />
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500"><strong>Motor de Proporcionalidade automático</strong> — hoje a seleção de porte (Dec. 11.948/2024) é manual, no Checklist de Documentos</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Leitura de outros formatos (.txt/.csv/.json) e OCR de documentos escaneados</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Avaliação de migração para infraestrutura soberana SERPRO (ConversAÍ Studio / SerproLLM)</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Execução formal da Autoavaliação de Impacto Ético em IA (AIE/NIA), conforme Portarias SGD/MGI nº 6.618/2024 e nº 473/2026</p>
+              </li>
+            </ul>
+          </div>
         </motion.div>
 
         {/* Pilar 3 */}
@@ -107,24 +135,34 @@ export function Arquitetura() {
               <h2 className="text-xl font-bold text-slate-900">Integrações (Data-Driven)</h2>
             </div>
           </div>
-          <ul className="space-y-4">
+          <StatusLabel tipo="implementado" />
+          <ul className="space-y-3 mb-5">
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Brasil API:</strong> Busca em tempo real de CNPJ e CNAE</p>
+              <p className="text-slate-700"><strong>Receita Federal (BrasilAPI):</strong> busca de CNPJ em tempo real</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Mapa das OSCs (IPEA):</strong> Histórico e Certificações</p>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Transferegov:</strong> Consumo direto de APIs REST governamentais</p>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Automação:</strong> Validação automática de CNDs e Impedimentos</p>
+              <p className="text-slate-700"><strong>Mapa das OSCs (IPEA):</strong> base de 330 mil+ organizações, com certificações CEBAS quando existentes</p>
             </li>
           </ul>
+          <div className="pt-4 border-t border-slate-100">
+            <StatusLabel tipo="planejado" />
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500"><strong>Transferegov:</strong> consumo direto de APIs REST governamentais</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Validação automática de CNDs e impedimentos contra cadastros oficiais — hoje é manual ou assistida por IA sobre texto informado pelo usuário</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Sugestão automática de preço de referência via Compras.gov.br</p>
+              </li>
+            </ul>
+          </div>
         </motion.div>
 
         {/* Pilar 4 */}
@@ -146,21 +184,26 @@ export function Arquitetura() {
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Fase 1:</strong> Diagnóstico e Prontidão Institucional</p>
+              <p className="text-slate-700"><strong>Fase 1:</strong> Chamamento Público</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Fase 2:</strong> Elaboração de Planos de Trabalho</p>
+              <p className="text-slate-700"><strong>Fase 2:</strong> Plano de Trabalho</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Fase 3:</strong> Execução e Monitoramento Financeiro</p>
+              <p className="text-slate-700"><strong>Fase 3:</strong> Execução da Parceria</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Fase 4:</strong> Prestação de Contas (Impacto Social)</p>
+              <p className="text-slate-700"><strong>Fase 4:</strong> Prestação de Contas</p>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
+              <p className="text-slate-700"><strong>Fase 5:</strong> Tomada de Contas Especial</p>
             </li>
           </ul>
+          <p className="text-xs text-slate-400 mt-4 pt-4 border-t border-slate-100">As mesmas 5 fases guiam a tela "Por onde começar", o Calendário de Prazos e as Perguntas Frequentes — uma única taxonomia usada em todo o sistema.</p>
         </motion.div>
 
         {/* Pilar 5 */}
@@ -179,24 +222,38 @@ export function Arquitetura() {
               <h2 className="text-xl font-bold text-slate-900">Interface e Usabilidade</h2>
             </div>
           </div>
-          <ul className="space-y-4">
+          <StatusLabel tipo="implementado" />
+          <ul className="space-y-3 mb-5">
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Dashboard:</strong> Interativo com Alertas</p>
+              <p className="text-slate-700"><strong>Dashboard:</strong> histórico real de análises, por status</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Score:</strong> Confiabilidade e Maturidade da OSC</p>
+              <p className="text-slate-700"><strong>Elegibilidade:</strong> selo por tempo de existência (Municipal/Estadual/Federal)</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Histórico:</strong> Consultas e Memória Local</p>
+              <p className="text-slate-700"><strong>Controle de acesso:</strong> perfis OSC, Setorial e Administrador, com o mesmo motor de IA reaproveitado nos dois primeiros</p>
             </li>
             <li className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 shrink-0" />
-              <p className="text-slate-700"><strong>Design:</strong> Moderno, Responsivo e Focado na UX</p>
+              <p className="text-slate-700"><strong>Design:</strong> responsivo, com ajustes de acessibilidade (eMAG/WCAG) no Assistente</p>
             </li>
           </ul>
+          <div className="pt-4 border-t border-slate-100">
+            <StatusLabel tipo="planejado" />
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Score numérico de confiabilidade e maturidade da OSC</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0" />
+                <p className="text-slate-500">Alertas proativos no Dashboard (hoje é consulta sob demanda)</p>
+              </li>
+            </ul>
+          </div>
         </motion.div>
 
         {/* Sinergia Perfeita */}
@@ -215,15 +272,19 @@ export function Arquitetura() {
               <h2 className="text-2xl font-bold text-white">A Sinergia Perfeita</h2>
             </div>
             <p className="text-slate-300 leading-relaxed mb-6">
-              O SIACT transforma a burocracia das transferências voluntárias em um processo ágil, transparente e 100% rastreável.
+              O SIACT reúne conhecimento do MROSC e apoio de IA num único lugar, reduzindo a dependência de conhecimento individual e o tempo gasto em tarefas repetitivas — a palavra final sobre qualquer parecer, análise ou decisão continua sendo sempre do gestor público responsável.
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 font-medium text-sm border border-emerald-500/30">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 font-medium text-sm border border-indigo-500/30">
               <ShieldCheck className="w-4 h-4" />
-              SEGURANÇA JURÍDICA GARANTIDA
+              COPILOTO TÉCNICO — DECISÃO SEMPRE HUMANA
             </div>
           </div>
         </motion.div>
       </div>
+
+      <p className="text-center text-xs text-slate-400 pt-2">
+        Última revisão de conteúdo: 06/09/2026 — revisado a cada marco registrado no Diário de Bordo do projeto.
+      </p>
     </div>
   );
 }
