@@ -3,12 +3,18 @@ steps:
   # entrypoint bash é obrigatório aqui: "docker build" direto (sem shell) não expande
   # $$VITE_SUPABASE_ANON_KEY — o valor literal "$VITE_SUPABASE_ANON_KEY" acabava indo
   # pro --build-arg em vez do secret de verdade.
+  #
+  # A tag da imagem é composta direto como southamerica-east1-docker.pkg.dev/.../
+  # siact-mrosc:$_TAG em cada step (não via uma substituição intermediária tipo
+  # $_IMAGE) — o Cloud Build não valida corretamente uma substituição usada só
+  # dentro do valor padrão de outra substituição ("key not matched in the
+  # template"), então cada step referencia $_TAG diretamente.
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: bash
     args:
       - -c
       - |
-        docker build -t "$_IMAGE" \
+        docker build -t "southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$_TAG" \
           --build-arg VITE_SUPABASE_URL=https://clsuturkoripoingjqpw.supabase.co \
           --build-arg VITE_SUPABASE_ANON_KEY="$$VITE_SUPABASE_ANON_KEY" \
           .
@@ -18,7 +24,7 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args:
       - push
-      - "$_IMAGE"
+      - "southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$_TAG"
 
   # Deploy no Cloud Run com secrets
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -27,7 +33,7 @@ steps:
       - run
       - deploy
       - siact-mrosc
-      - --image=$_IMAGE
+      - --image=southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$_TAG
       - --region=$_REGION
       - --platform=managed
       - --allow-unauthenticated
@@ -47,7 +53,6 @@ substitutions:
   # _TAG é uma variável própria, com valor padrão, e pode ser sobrescrita se quiser:
   # gcloud builds submit --config cloudbuild.yaml --substitutions=_TAG=$(git rev-parse --short HEAD)
   _TAG: latest
-  _IMAGE: southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$_TAG
 
 availableSecrets:
   secretManager:
