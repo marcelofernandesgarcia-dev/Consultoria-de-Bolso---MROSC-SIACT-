@@ -88,3 +88,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-07-022](2026-09-07-022-fix-broken-access-control-api-dashboard.md) | 2026-09-07 | Corrige broken access control em /api/dashboard — vazava dado entre usuários | codificação |
 | [2026-09-07-023](2026-09-07-023-deploy-fix-api-dashboard-confirmado-producao.md) | 2026-09-07 | Deploy da correção de /api/dashboard confirmado em produção | testes |
 | [2026-09-07-024](2026-09-07-024-catalogo-precos-cotacao-previa.md) | 2026-09-07 | Autocomplete de catálogo e sugestão de valor de referência na Cotação Prévia | codificação |
+| [2026-09-07-025](2026-09-07-025-fix-codigo-catalogo-nao-visivel.md) | 2026-09-07 | Corrige código do catálogo escondido no autocomplete da Cotação Prévia | codificação |

@@ -424,7 +424,12 @@ export function CotacaoPrevia() {
                           <span className={`shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${s.tipo === 'material' ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700'}`}>
                             {s.tipo === 'material' ? 'Mat.' : 'Serv.'}
                           </span>
-                          <span className="text-slate-700 leading-snug">{s.nome}</span>
+                          <span className="flex-1 min-w-0">
+                            <span className="text-slate-700 leading-snug block">{s.nome}</span>
+                            <span className="text-slate-400 text-[10px]">
+                              {s.tipo === 'material' ? `PDM ${s.codigo}` : `Código ${s.codigo}`}
+                            </span>
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -489,6 +494,12 @@ export function CotacaoPrevia() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
+              {item.codigoCatalogo && (
+                <p className="pl-1 -mt-1 text-[10px] text-slate-400">
+                  Catálogo Compras.gov.br — {item.tipoCatalogo === 'servico' ? 'código' : 'PDM'} {item.codigoCatalogo}
+                  {item.tipoCatalogo !== 'servico' && ' (categoria genérica — cobre várias especificações técnicas)'}
+                </p>
+              )}
               {item.refAmostras !== undefined && (
                 <p className="pl-1 -mt-1 text-[10.5px] text-emerald-600 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 shrink-0" />
