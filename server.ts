@@ -102,6 +102,36 @@ function parseAiJson<T = any>(raw: string, fallback: T): T {
   }
 }
 
+// Trunca uma string de auditoria — mantém o log útil sem deixar a tabela crescer sem controle.
+function truncateForAudit(text: string | undefined | null, max = 4000): string | null {
+  if (!text) return null;
+  return text.length > max ? `${text.slice(0, max)}… [truncado, ${text.length} caracteres no original]` : text;
+}
+
+// Log de auditoria de IA — grava toda chamada real à IA num único lugar canônico
+// (tabela `ai_audit_log`, independente de `analysis_history`, que alimenta o
+// Dashboard/Admin e não deve ser poluída por interações sem veredito de 3 vias).
+// Não-bloqueante: uma falha aqui nunca derruba a resposta já concluída ao usuário,
+// só fica visível no log do servidor — mesmo padrão já usado pra analysis_history.
+async function logAiInteraction(entry: {
+  endpoint: string;
+  analysisType: string;
+  userId: string | null;
+  input: string;
+  output: string;
+}): Promise<void> {
+  const { error } = await supabase.from('ai_audit_log').insert({
+    endpoint: entry.endpoint,
+    analysis_type: entry.analysisType,
+    user_id: entry.userId,
+    input_excerpt: truncateForAudit(entry.input),
+    output_excerpt: truncateForAudit(entry.output),
+  });
+  if (error) {
+    console.error(`Falha ao salvar log de auditoria de IA (ai_audit_log, ${entry.endpoint}):`, error.message);
+  }
+}
+
 // Configure multer for memory storage — limite de 10MB (mesmo teto já anunciado no frontend)
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -768,6 +798,14 @@ async function startServer() {
         console.error("Falha ao salvar histórico da análise (analysis_history):", historyError.message);
       }
 
+      await logAiInteraction({
+        endpoint: "/api/analyze-mrosc",
+        analysisType: type,
+        userId,
+        input: textContent,
+        output: JSON.stringify(parsedData),
+      });
+
       res.json(parsedData);
 
     } catch (error: any) {
@@ -875,6 +913,15 @@ async function startServer() {
       });
 
       const parsedData = parseAiJson(claudeText(response), { summary: "Não foi possível analisar este edital." });
+
+      await logAiInteraction({
+        endpoint: "/api/mrosc/edital-explicar",
+        analysisType: "osc_edital_explicar",
+        userId,
+        input: `Título: ${title ?? ""}\nURL: ${link}`,
+        output: JSON.stringify(parsedData),
+      });
+
       res.json(parsedData);
     } catch (error: any) {
       console.error("Edital explicar error:", error);
@@ -1001,6 +1048,14 @@ ESTRUTURA JSON ESPERADA:
         }
       }
 
+      await logAiInteraction({
+        endpoint: "/api/analyze",
+        analysisType: "processo_admissibilidade_tce",
+        userId,
+        input: textContent ?? (images?.length ? `[${images.length} imagem(ns) enviada(s), conteúdo binário não registrado no log]` : ""),
+        output: JSON.stringify(parsedData),
+      });
+
       res.json(parsedData);
 
     } catch (error: any) {
@@ -1121,7 +1176,17 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
         messages: [{ role: "user", content: message }],
       });
 
-      res.json({ reply: claudeText(response) });
+      const reply = claudeText(response);
+
+      await logAiInteraction({
+        endpoint: "/api/chat",
+        analysisType: "chat_assistente",
+        userId,
+        input: message,
+        output: reply,
+      });
+
+      res.json({ reply });
     } catch (error: any) {
       console.error("Chat error:", error);
       res.status(500).json({ error: error.message });

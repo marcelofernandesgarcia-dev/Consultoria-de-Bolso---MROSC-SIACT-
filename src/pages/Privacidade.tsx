@@ -81,6 +81,9 @@ export function Privacidade() {
           <p className="text-sm text-slate-600 leading-relaxed">
             Os dados ficam armazenados no banco de dados do sistema (Supabase), com acesso restrito por perfil e autenticação obrigatória. Textos enviados às ferramentas de IA são compartilhados com a Anthropic (provedora do modelo Claude) para gerar a análise solicitada.
           </p>
+          <p className="text-sm text-slate-600 leading-relaxed mt-3">
+            Toda chamada à IA (análises, Assistente flutuante, explicação de edital) fica registrada num <strong>log de auditoria</strong> — usuário, data/hora e um trecho do que foi enviado e respondido — visível apenas ao responsável técnico do sistema. Ele existe para apurar uma contestação (ver abaixo) com base no que realmente aconteceu, não em memória.
+          </p>
           <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3">
             <strong>Item ainda pendente de confirmação:</strong> o prazo exato de retenção desses dados pela Anthropic ainda não foi formalmente confirmado com o fornecedor. Essa confirmação está registrada como pendência no plano de conformidade do sistema.
           </p>
@@ -136,7 +139,7 @@ export function Privacidade() {
           <a href={`mailto:${CONTATO_EMAIL}?subject=${encodeURIComponent('SIACT-MROSC — Contestação de análise de IA')}`} className="inline-flex items-center gap-2 mt-3 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-xl transition-colors">
             <Mail className="w-4 h-4" /> {CONTATO_EMAIL}
           </a>
-          <p className="text-xs text-slate-400 mt-3">Descreva a tela usada, o que foi digitado e qual resultado você considera incorreto — isso ajuda a revisar o caso e melhorar o sistema.</p>
+          <p className="text-xs text-slate-400 mt-3">Descreva a tela usada, o que foi digitado e qual resultado você considera incorreto — o log de auditoria (ver seção "Retenção e compartilhamento") permite cruzar isso com o que a IA realmente recebeu e respondeu.</p>
         </div>
       </div>
     </div>

@@ -78,3 +78,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-06-013](2026-09-06-013-alerta-selos-roadmap-simulador.md) | 2026-09-06 | Adiciona alerta e selos de roadmap nas perguntas manuais do Simulador | codificação |
 | [2026-09-06-014](2026-09-06-014-fix-csp-brasilapi.md) | 2026-09-06 | Corrige CSP — brasilapi.com.br bloqueado, quebrava busca de CNPJ no Mapa OSC | codificação |
 | [2026-09-07-015](2026-09-07-015-marco-conformidade-aie-plano-ajustes.md) | 2026-09-07 | Marco — autoavaliação AIE oficial (34,6% → 46,9%) e plano de ajustes de conformidade | marco |
+| [2026-09-07-016](2026-09-07-016-log-auditoria-ia.md) | 2026-09-07 | Log de auditoria de IA — grupo "ajustável agora" do plano de ajustes de conformidade | codificação |
