@@ -43,7 +43,7 @@ const PHASES = [
       { text: 'Geração de Hash de segurança para cada Parecer emitido', done: false, dificuldade: 'baixa' as Dificuldade },
       { text: 'Fluxo de aprovação humana obrigatória (Human-in-the-loop)', done: false, dificuldade: 'media' as Dificuldade },
       { text: 'Simulador de Elegibilidade — apoio de IA nas perguntas 3 (compatibilidade do estatuto com o edital) e 8 (capacidade técnica/operacional), reaproveitando o motor já usado em "Pré-Análise da Proposta"', done: false, dificuldade: 'media' as Dificuldade },
-      { text: 'Executar o Framework de Autoavaliação de Impacto Ético em IA (AIE) do Núcleo de IA/SGD — questionário oficial, sem mudança de código, conta para a meta 6.10 do PBIA', done: false, dificuldade: 'baixa' as Dificuldade },
+      { text: 'Executar o Framework de Autoavaliação de Impacto Ético em IA (AIE) do Núcleo de IA/SGD — questionário oficial, sem mudança de código, conta para a meta 6.10 do PBIA', done: true, dificuldade: 'baixa' as Dificuldade },
     ],
   },
   {
