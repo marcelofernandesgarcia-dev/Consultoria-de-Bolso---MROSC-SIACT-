@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ClipboardList, Loader2, Plus, Trash2, TrendingUp,
-  RefreshCw, AlertCircle, CheckCircle2, AlertTriangle, XCircle,
+  RefreshCw, AlertCircle, CheckCircle2, AlertTriangle, XCircle, Search,
 } from 'lucide-react';
 import type { CotacaoPreviaResult, ItemCotacaoAnalise } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
 import { analyzeMROSC } from '../services/api';
+import { apiFetch } from '../lib/apiFetch';
 import { useAuth } from '../contexts/AuthContext';
 
 const RASCUNHO_KEY = 'siact_cotacao_rascunho';
@@ -18,6 +19,19 @@ interface ItemCotacao {
   quantidade: string;
   valorReferencia: string;
   valorCotado: string;
+  /** Preenchidos quando o item foi selecionado a partir do catálogo oficial
+   *  Compras.gov.br (CATMAT/CATSER) — usados pra buscar o preço de referência. */
+  codigoCatalogo?: number;
+  tipoCatalogo?: 'material' | 'servico';
+  /** Nº de compras públicas usadas pra sugerir o valor de referência — só
+   *  presente quando a sugestão de preço foi aplicada com sucesso. */
+  refAmostras?: number;
+}
+
+interface SugestaoCatalogo {
+  codigo: number;
+  nome: string;
+  tipo: 'material' | 'servico';
 }
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -81,6 +95,12 @@ export function CotacaoPrevia() {
   const [result, setResult]   = useState<CotacaoPreviaResult | null>(null);
   const [erro, setErro]       = useState('');
 
+  /* Busca no catálogo oficial Compras.gov.br (CATMAT/CATSER) por item */
+  const [sugestoes, setSugestoes] = useState<Record<string, SugestaoCatalogo[]>>({});
+  const [buscandoCatalogo, setBuscandoCatalogo] = useState<string | null>(null);
+  const [dropdownAberto, setDropdownAberto] = useState<string | null>(null);
+  const debounceRefs = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
   /* Auto-save rascunho */
   useEffect(() => {
     try { localStorage.setItem(RASCUNHO_KEY, JSON.stringify(items)); } catch {}
@@ -96,6 +116,79 @@ export function CotacaoPrevia() {
 
   const updateItem = (id: string, field: keyof ItemCotacao, value: string) =>
     setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+
+  /* ── Busca no catálogo oficial (Compras.gov.br) ──
+     A API pública não aceita texto livre — a busca roda contra a cópia local
+     sincronizada (/api/catalogo/buscar), que cobre PDMs de material e itens
+     de serviço. Falha aqui nunca bloqueia o preenchimento manual do item. */
+  async function buscarCatalogo(termo: string): Promise<SugestaoCatalogo[]> {
+    const [matRes, servRes] = await Promise.all([
+      apiFetch(`/api/catalogo/buscar?termo=${encodeURIComponent(termo)}&tipo=material`)
+        .then(r => r.ok ? r.json() : { resultados: [] }).catch(() => ({ resultados: [] })),
+      apiFetch(`/api/catalogo/buscar?termo=${encodeURIComponent(termo)}&tipo=servico`)
+        .then(r => r.ok ? r.json() : { resultados: [] }).catch(() => ({ resultados: [] })),
+    ]);
+    const materiais: SugestaoCatalogo[] = (matRes.resultados ?? []).map((r: any) => ({
+      codigo: r.codigo_pdm, nome: r.nome_pdm, tipo: 'material' as const,
+    }));
+    const servicos: SugestaoCatalogo[] = (servRes.resultados ?? []).map((r: any) => ({
+      codigo: r.codigo_servico, nome: r.nome_servico, tipo: 'servico' as const,
+    }));
+    return [...materiais, ...servicos].slice(0, 10);
+  }
+
+  const onDescricaoChange = (id: string, value: string) => {
+    // Editar o texto manualmente desvincula o item do catálogo (evita mandar
+    // um código de catálogo que não corresponde mais à descrição digitada).
+    setItems(prev => prev.map(i => i.id === id
+      ? { ...i, descricao: value, codigoCatalogo: undefined, tipoCatalogo: undefined, refAmostras: undefined }
+      : i));
+
+    clearTimeout(debounceRefs.current[id]);
+    if (value.trim().length < 3) {
+      setSugestoes(prev => ({ ...prev, [id]: [] }));
+      setDropdownAberto(null);
+      return;
+    }
+    debounceRefs.current[id] = setTimeout(async () => {
+      setBuscandoCatalogo(id);
+      try {
+        const resultados = await buscarCatalogo(value.trim());
+        setSugestoes(prev => ({ ...prev, [id]: resultados }));
+        setDropdownAberto(id);
+      } catch {
+        // busca no catálogo é auxiliar — nunca trava o preenchimento manual
+      } finally {
+        setBuscandoCatalogo(null);
+      }
+    }, 400);
+  };
+
+  const selecionarSugestao = async (id: string, sugestao: SugestaoCatalogo) => {
+    const itemAtual = items.find(i => i.id === id);
+    setItems(prev => prev.map(i => i.id === id
+      ? { ...i, descricao: sugestao.nome, codigoCatalogo: sugestao.codigo, tipoCatalogo: sugestao.tipo }
+      : i));
+    setDropdownAberto(null);
+    setSugestoes(prev => ({ ...prev, [id]: [] }));
+
+    // Só sugere valor de referência se o campo ainda estiver vazio — nunca
+    // sobrescreve um valor que o usuário já digitou.
+    if (itemAtual && isNumPositivo(itemAtual.valorReferencia)) return;
+
+    try {
+      const resp = await apiFetch(`/api/catalogo/preco?tipo=${sugestao.tipo}&codigo=${sugestao.codigo}`);
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data.encontrado) {
+        setItems(prev => prev.map(i => i.id === id
+          ? { ...i, valorReferencia: String(data.mediana), refAmostras: data.amostras }
+          : i));
+      }
+    } catch {
+      // sugestão de preço é auxiliar — falha não impede preenchimento manual
+    }
+  };
 
   const limparRascunho = () => {
     setItems([novoItem()]);
@@ -284,8 +377,8 @@ export function CotacaoPrevia() {
             const badge = st ? BADGE[st] : null;
 
             return (
+              <React.Fragment key={item.id}>
               <div
-                key={item.id}
                 className="flex flex-wrap sm:grid gap-2 sm:gap-3 items-center p-3 bg-slate-50 rounded-xl border border-slate-100"
                 style={{ gridTemplateColumns: '28px 1fr 72px 80px 112px 112px 84px 40px' }}
               >
@@ -293,13 +386,50 @@ export function CotacaoPrevia() {
                   {idx + 1}
                 </span>
 
-                <input
-                  type="text"
-                  value={item.descricao}
-                  onChange={e => updateItem(item.id, 'descricao', e.target.value)}
-                  placeholder="Ex: Notebook Core i5 8GB SSD 256GB"
-                  className="w-full sm:w-auto px-2.5 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400 outline-none transition-all"
-                />
+                <div className="relative w-full sm:w-auto">
+                  {!item.codigoCatalogo && (
+                    <Search className="print:hidden absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
+                  )}
+                  <input
+                    type="text"
+                    value={item.descricao}
+                    onChange={e => onDescricaoChange(item.id, e.target.value)}
+                    onFocus={() => { if (sugestoes[item.id]?.length) setDropdownAberto(item.id); }}
+                    onBlur={() => setTimeout(() => setDropdownAberto(prev => prev === item.id ? null : prev), 150)}
+                    placeholder="Ex: Notebook, Cadeira de escritório..."
+                    className={`w-full py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400 outline-none transition-all ${item.codigoCatalogo ? 'px-2.5' : 'pl-7 pr-2.5'}`}
+                  />
+                  {item.codigoCatalogo && (
+                    <span
+                      title={`Vinculado ao catálogo oficial Compras.gov.br (código ${item.codigoCatalogo})`}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[9px] font-bold ${item.tipoCatalogo === 'servico' ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'}`}
+                    >
+                      {item.tipoCatalogo === 'servico' ? 'Serviço' : 'Material'}
+                    </span>
+                  )}
+                  {dropdownAberto === item.id && (buscandoCatalogo === item.id || (sugestoes[item.id]?.length ?? 0) > 0) && (
+                    <div className="absolute z-20 top-full left-0 mt-1 w-full sm:w-80 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg print:hidden">
+                      {buscandoCatalogo === item.id && (
+                        <div className="px-3 py-2 text-xs text-slate-400 flex items-center gap-2">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Buscando no catálogo oficial...
+                        </div>
+                      )}
+                      {buscandoCatalogo !== item.id && sugestoes[item.id]?.map(s => (
+                        <button
+                          key={`${s.tipo}-${s.codigo}`}
+                          type="button"
+                          onMouseDown={() => selecionarSugestao(item.id, s)}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 border-b border-slate-50 last:border-0 flex items-start gap-2"
+                        >
+                          <span className={`shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${s.tipo === 'material' ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700'}`}>
+                            {s.tipo === 'material' ? 'Mat.' : 'Serv.'}
+                          </span>
+                          <span className="text-slate-700 leading-snug">{s.nome}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 <select
                   value={item.unidade}
@@ -325,7 +455,8 @@ export function CotacaoPrevia() {
                   value={item.valorReferencia}
                   onChange={e => updateItem(item.id, 'valorReferencia', e.target.value)}
                   placeholder="0,00"
-                  className="px-2.5 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-400/30 outline-none"
+                  title={item.refAmostras !== undefined ? 'Valor sugerido — pode ajustar livremente' : undefined}
+                  className={`px-2.5 py-2 bg-white border rounded-lg text-sm focus:ring-2 focus:ring-emerald-400/30 outline-none ${item.refAmostras !== undefined ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200'}`}
                 />
 
                 <input
@@ -358,6 +489,13 @@ export function CotacaoPrevia() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
+              {item.refAmostras !== undefined && (
+                <p className="pl-1 -mt-1 text-[10.5px] text-emerald-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 shrink-0" />
+                  Valor de referência sugerido com base em {item.refAmostras} compra{item.refAmostras === 1 ? '' : 's'} pública{item.refAmostras === 1 ? '' : 's'} real{item.refAmostras === 1 ? '' : 'is'} dos últimos 12 meses (Pesquisa de Preços, Compras.gov.br) — ajuste se souber de um valor mais adequado.
+                </p>
+              )}
+              </React.Fragment>
             );
           })}
         </div>

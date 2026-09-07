@@ -15,6 +15,7 @@ import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import path from "path";
 import { syncMapaOsc, syncSoAreas } from "./src/lib/ipea.js";
+import { syncCatalogoCompras, consultarPrecoPdmMaterial, consultarPrecoItemServico } from "./src/lib/catalogoCompras.js";
 import { BASE_NORMATIVA_MROSC, TCU_NORMATIVOS_RESUMO } from "./src/lib/normativos.js";
 
 const _require = createRequire(import.meta.url);
@@ -1303,6 +1304,89 @@ Sua resposta deve SEMPRE seguir a estrutura de Parecer Técnico abaixo quando an
       console.log(`[IPEA areas] Concluído: ${total} registros`);
     } catch (err: any) {
       console.error('[IPEA areas] Erro:', err.message);
+    }
+  });
+
+  // ── Sync do catálogo de preços (PDMs de material + itens de serviço) ────────
+  app.post('/api/sync/catalogo-compras', async (req, res) => {
+    const auth = req.headers.authorization ?? '';
+    const secret = process.env.SYNC_SECRET;
+    if (!secret || auth !== `Bearer ${secret}`) {
+      return res.status(401).json({ error: 'Não autorizado' });
+    }
+    const msgs: string[] = [];
+    const log = (msg: string) => { msgs.push(msg); console.log(`[Catálogo Compras sync] ${msg}`); };
+    res.json({ ok: true, message: 'Sync do catálogo de preços iniciado em background' });
+    try {
+      const totais = await syncCatalogoCompras(log);
+      console.log('[Catálogo Compras sync] Concluído:', totais);
+    } catch (err: any) {
+      console.error('[Catálogo Compras sync] Erro:', err.message);
+    }
+  });
+
+  // ── Busca no catálogo de preços (PDM de material ou item de serviço) ───────
+  // Busca local (não a API pública, que não aceita texto livre) — depende do
+  // sync acima já ter rodado ao menos uma vez.
+  app.get('/api/catalogo/buscar', async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
+
+    const termo = String(req.query.termo ?? '').trim();
+    const tipo = req.query.tipo === 'servico' ? 'servico' : 'material';
+    if (termo.length < 3) {
+      return res.status(400).json({ error: 'Informe ao menos 3 caracteres para buscar.' });
+    }
+
+    try {
+      if (tipo === 'servico') {
+        const { data, error } = await supabase
+          .from('catalogo_item_servico')
+          .select('codigo_servico, nome_servico, nome_classe, nome_grupo')
+          .eq('status_servico', true)
+          .textSearch('nome_servico', termo, { type: 'websearch', config: 'portuguese' })
+          .limit(15);
+        if (error) throw error;
+        res.json({ tipo, resultados: data ?? [] });
+      } else {
+        const { data, error } = await supabase
+          .from('catalogo_pdm_material')
+          .select('codigo_pdm, nome_pdm, nome_classe, nome_grupo')
+          .eq('status_pdm', true)
+          .textSearch('nome_pdm', termo, { type: 'websearch', config: 'portuguese' })
+          .limit(15);
+        if (error) throw error;
+        res.json({ tipo, resultados: data ?? [] });
+      }
+    } catch (error: any) {
+      console.error('Erro em /api/catalogo/buscar:', error.message);
+      res.status(500).json({ error: error.message || 'Erro ao buscar no catálogo.' });
+    }
+  });
+
+  // ── Preço de referência (consulta ao vivo na API de Pesquisa de Preços) ────
+  app.get('/api/catalogo/preco', async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
+
+    const tipo = req.query.tipo === 'servico' ? 'servico' : 'material';
+    const codigo = Number(req.query.codigo);
+    if (!Number.isFinite(codigo) || codigo <= 0) {
+      return res.status(400).json({ error: 'Código do item de catálogo inválido.' });
+    }
+
+    try {
+      const estatistica = tipo === 'servico'
+        ? await consultarPrecoItemServico(codigo)
+        : await consultarPrecoPdmMaterial(codigo);
+
+      if (!estatistica) {
+        return res.json({ encontrado: false, mensagem: 'Nenhuma compra pública encontrada para este item nos últimos 12 meses.' });
+      }
+      res.json({ encontrado: true, ...estatistica });
+    } catch (error: any) {
+      console.error('Erro em /api/catalogo/preco:', error.message);
+      res.status(500).json({ error: error.message || 'Erro ao consultar preço de referência.' });
     }
   });
 
