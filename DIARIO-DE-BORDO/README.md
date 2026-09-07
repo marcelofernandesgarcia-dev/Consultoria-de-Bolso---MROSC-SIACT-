@@ -81,3 +81,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-07-016](2026-09-07-016-log-auditoria-ia.md) | 2026-09-07 | Log de auditoria de IA — grupo "ajustável agora" do plano de ajustes de conformidade | codificação |
 | [2026-09-07-017](2026-09-07-017-fix-cloudbuild-short-sha.md) | 2026-09-07 | Corrige cloudbuild.yaml — $SHORT_SHA vazio quebrava todo deploy manual | codificação |
 | [2026-09-07-018](2026-09-07-018-fix-cloudbuild-substituicao-aninhada.md) | 2026-09-07 | Corrige cloudbuild.yaml — substituição aninhada ($_TAG dentro de $_IMAGE) não era validada | codificação |
+| [2026-09-07-019](2026-09-07-019-teste-e2e-log-auditoria-ia.md) | 2026-09-07 | Teste E2E — log de auditoria de IA gravando em produção | testes |
