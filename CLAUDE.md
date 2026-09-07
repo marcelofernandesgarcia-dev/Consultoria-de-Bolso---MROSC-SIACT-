@@ -46,10 +46,18 @@ quebrado.
 
 Peça validação explícita do usuário antes de, mesmo que pareça óbvio:
 
-- Rodar `gcloud builds submit` — e, ao pedir, **sempre lembrar o usuário
-  de fazer `git pull` primeiro no Cloud Shell** (o clone lá não atualiza
-  sozinho; execução acontece pelo usuário, via Cloud Shell, nunca por
-  `gcloud` local).
+- Rodar `gcloud builds submit` (deploy pra produção) — sempre pedir
+  confirmação explícita antes de rodar, é produção real de verdade.
+  **Desde 07/09/2026, o padrão passou a ser eu mesmo rodar via `gcloud`
+  local** — existe uma instalação local autenticada com o projeto certo,
+  fora do PATH padrão: chamar pelo caminho completo,
+  `%LOCALAPPDATA%\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd`, via
+  PowerShell (nunca `2>&1` nesse binário — PowerShell 5.1 embrulha stderr
+  de sucesso como erro falso). Como builda direto do diretório local
+  (não de um clone separado), não existe mais o risco de "clone
+  desatualizado" que existia no Cloud Shell — não precisa lembrar de
+  `git pull` antes. Cloud Shell continua disponível como alternativa se o
+  usuário preferir rodar ele mesmo.
 - Alterar política de RLS (Row Level Security) do Supabase ou qualquer
   regra de `adminOnly`.
 - Tratar `adminOnly` em `nav.ts` como se fosse falha de segurança —
