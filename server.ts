@@ -243,10 +243,11 @@ async function startServer() {
 
   // --- DASHBOARD API ---
   app.get("/api/dashboard", async (req, res) => {
+    const userId = await getAuthUser(req);
+    if (!userId) return res.status(401).json({ error: 'Não autenticado' });
     try {
-      const userId = await getAuthUser(req);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const base = (q: any) => userId ? q.eq('user_id', userId) : q;
+      const base = (q: any) => q.eq('user_id', userId);
 
       const [totalRes, approvedRes, warningRes, rejectedRes, recentRes] = await Promise.all([
         base(supabase.from('analysis_history').select('*', { count: 'exact', head: true })),

@@ -84,3 +84,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-07-019](2026-09-07-019-teste-e2e-log-auditoria-ia.md) | 2026-09-07 | Teste E2E — log de auditoria de IA gravando em produção | testes |
 | [2026-09-07-020](2026-09-07-020-conclusao-grupo2-plano-ajustes.md) | 2026-09-07 | Conclusão do Grupo 2 do plano de ajustes — postura de segurança e riscos documentadas | documentação |
 | [2026-09-07-021](2026-09-07-021-claude-md-e-skills-governanca.md) | 2026-09-07 | CLAUDE.md e Skills de governança (diário de bordo + verificação pré-commit) | documentação |
+| [2026-09-07-022](2026-09-07-022-fix-broken-access-control-api-dashboard.md) | 2026-09-07 | Corrige broken access control em /api/dashboard — vazava dado entre usuários | codificação |
