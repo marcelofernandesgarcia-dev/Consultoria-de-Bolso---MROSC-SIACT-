@@ -5,7 +5,7 @@ titulo: "CLAUDE.md e Skills de governança (diário de bordo + verificação pr�
 tipo: documentacao
 autor: Marcelo Fernandes Garcia
 vinculo: Servidor público — DTPAR/MGI
-commits: []
+commits: ["1c73feb"]
 ---
 
 ## Contexto
