@@ -5,7 +5,7 @@ titulo: "Corrige broken access control em /api/dashboard — vazava dado entre u
 tipo: codificacao
 autor: Marcelo Fernandes Garcia
 vinculo: Servidor público — DTPAR/MGI
-commits: []
+commits: ["cf928ef"]
 ---
 
 ## Contexto
