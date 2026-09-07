@@ -41,7 +41,13 @@ steps:
 
 substitutions:
   _REGION: southamerica-east1
-  _IMAGE: southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$SHORT_SHA
+  # $SHORT_SHA (variável embutida do Cloud Build) só é preenchida em builds disparados por
+  # gatilho conectado ao repositório — como o deploy aqui é sempre manual (gcloud builds
+  # submit, sem CI/CD), ela ficava vazia e a tag da imagem virava inválida ("...mrosc:").
+  # _TAG é uma variável própria, com valor padrão, e pode ser sobrescrita se quiser:
+  # gcloud builds submit --config cloudbuild.yaml --substitutions=_TAG=$(git rev-parse --short HEAD)
+  _TAG: latest
+  _IMAGE: southamerica-east1-docker.pkg.dev/gen-lang-client-0565048097/siact/siact-mrosc:$_TAG
 
 availableSecrets:
   secretManager:
