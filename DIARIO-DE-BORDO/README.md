@@ -95,3 +95,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-08-004](2026-09-08-004-fix-redirect-landing-em-vez-de-login.md) | 2026-09-08 | Corrige redirecionamento sem sessão — ia para landing de marketing em vez do login | codificação |
 | [2026-09-08-005](2026-09-08-005-neon-botao-visitante-login.md) | 2026-09-08 | Efeito neon no botão "Entrar como visitante" da tela de login | codificação |
 | [2026-09-08-006](2026-09-08-006-fix-visitante-jornada-e-menu-vinculado.md) | 2026-09-08 | Corrige tela errada pro visitante e menu desvinculado da tela atual | codificação |
+| [2026-09-08-007](2026-09-08-007-deploy-e-verificacao-producao-fix-visitante-menu.md) | 2026-09-08 | Deploy em produção e verificação (desktop + mobile) do fix visitante/menu | testes |
