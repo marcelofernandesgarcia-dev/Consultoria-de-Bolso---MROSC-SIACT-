@@ -13,6 +13,12 @@ commitada — sem depender de julgamento caso a caso sobre o que checar.
 
 ## 2. ENTRADAS OBRIGATÓRIAS (INPUTS)
 - A mudança é visual/de UI? sim/não (define se a Fase 3 é obrigatória).
+  **Viés positivo obrigatório**: qualquer mudança em componente `.tsx`
+  que renderiza algo (mesmo mudança de lógica/estado por trás, tipo um
+  `useEffect` que altera o que aparece na tela) conta como "sim" — nunca
+  decidir "é só lógica, não precisa checar mobile" por conta própria
+  (instrução explícita do usuário, 08/09/2026, depois de um caso em que
+  isso não foi verificado de saída).
 - A mudança envolve edital, prazo, valor de repasse ou qualquer dado
   vindo do Supabase/Mapa OSC exibido na tela? sim/não (define se a Fase 4
   é obrigatória).
@@ -36,10 +42,18 @@ commitada — sem depender de julgamento caso a caso sobre o que checar.
 - `read_console_messages` (`onlyErrors: true`) — deve voltar vazio.
 - `get_page_text`/`read_page` para confirmar o conteúdo renderizado.
 
-### Fase 3: Checagem mobile (só se INPUT "mudança visual" = sim)
+### Fase 3: Checagem mobile (obrigatória — ver viés positivo acima)
 - `resize_window` preset `mobile`, recarregar.
 - Confirmar que `document.body.scrollWidth` não excede a largura do
   viewport (sem rolagem horizontal).
+- Se a mudança tem comportamento específico do mobile (ex.: drawer do
+  menu, hambúrguer), testar a interação de verdade, não só olhar o
+  layout estático.
+- **Achado operacional**: depois de muito tempo de servidor de dev
+  rodando, `computer{action:"left_click"}` pode travar (timeout) — sintoma
+  observado: acúmulo de tentativas de reconexão WebSocket do HMR do Vite
+  no console. Não indica bug no app. Contorno: disparar o clique via
+  `javascript_tool` (`document.querySelector(seletor)?.click()`).
 
 ### Fase 4: Conferência de dado real (só se INPUT "envolve dado
 Supabase/Mapa OSC" = sim)

@@ -40,7 +40,12 @@ conteúdo) commitar.
 
 Rodar a Skill `verificacao-pre-commit` (type-check + checagem visual em
 aba nova do navegador). Nunca commitar com `npm run lint` (`tsc --noEmit`)
-quebrado.
+quebrado. **A Fase 3 (mobile) da skill é sempre obrigatória pra qualquer
+mudança de UI** — não só quando parecer necessário caso a caso (instrução
+explícita do usuário, 08/09/2026: quem avalia o sistema pode abrir em
+celular). Verificar layout (sem overflow horizontal) e comportamento
+funcional específico do mobile (ex.: drawer do menu), não só redimensionar
+e olhar.
 
 ## Ações que exigem confirmação explícita separada
 
