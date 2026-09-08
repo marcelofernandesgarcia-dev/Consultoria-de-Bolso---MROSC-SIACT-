@@ -377,8 +377,9 @@ export function Login() {
                       disabled={demoLoading}
                       style={{
                         background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(99,102,241,0.25)',
+                        border: '1px solid rgba(129,140,248,0.45)',
                         color: 'rgba(226,232,240,0.9)',
+                        animation: demoLoading ? undefined : 'demo-neon-glow 2.2s ease-in-out infinite',
                       }}
                       className="w-full py-3 mt-4 text-sm font-semibold rounded-xl transition-all hover:bg-white/[0.07] flex items-center justify-center gap-2"
                     >
@@ -452,6 +453,15 @@ export function Login() {
           Lei 13.019/2014 · Decreto 11.948/2024 · Portaria Interministerial 197/2025 · LGPD
         </p>
       </div>
+
+      {/* Mesmo efeito neon já usado no Assistente flutuante — chama atenção pro
+          acesso de demonstração sem exigir cadastro. */}
+      <style>{`
+        @keyframes demo-neon-glow {
+          0%, 100% { box-shadow: 0 0 6px 1px rgba(129,140,248,0.55), 0 0 14px 3px rgba(168,85,247,0.35); }
+          50%      { box-shadow: 0 0 12px 3px rgba(129,140,248,0.85), 0 0 24px 6px rgba(168,85,247,0.55), 0 0 36px 10px rgba(34,211,238,0.3); }
+        }
+      `}</style>
 
     </div>
   );
