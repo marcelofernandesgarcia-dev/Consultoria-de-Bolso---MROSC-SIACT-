@@ -90,3 +90,5 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-07-024](2026-09-07-024-catalogo-precos-cotacao-previa.md) | 2026-09-07 | Autocomplete de catálogo e sugestão de valor de referência na Cotação Prévia | codificação |
 | [2026-09-07-025](2026-09-07-025-fix-codigo-catalogo-nao-visivel.md) | 2026-09-07 | Corrige código do catálogo escondido no autocomplete da Cotação Prévia | codificação |
 | [2026-09-08-001](2026-09-08-001-salvar-cotacoes-previa.md) | 2026-09-08 | Salvar/abrir/excluir cotações prévias — tela sempre pronta pra nova consulta | codificação |
+| [2026-09-08-002](2026-09-08-002-nota-informativa-gabinete-dtpar.md) | 2026-09-08 | Minuta de Nota Informativa ao Gabinete DTPAR apresentando o aplicativo | documentação |
+| [2026-09-08-003](2026-09-08-003-nota-informativa-v2-tom-direto.md) | 2026-09-08 | Nota Informativa (v2) — remoção do aparato formal, tom direto e persuasivo | documentação |
