@@ -92,3 +92,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-08-001](2026-09-08-001-salvar-cotacoes-previa.md) | 2026-09-08 | Salvar/abrir/excluir cotações prévias — tela sempre pronta pra nova consulta | codificação |
 | [2026-09-08-002](2026-09-08-002-nota-informativa-gabinete-dtpar.md) | 2026-09-08 | Minuta de Nota Informativa ao Gabinete DTPAR apresentando o aplicativo | documentação |
 | [2026-09-08-003](2026-09-08-003-nota-informativa-v2-tom-direto.md) | 2026-09-08 | Nota Informativa (v2) — remoção do aparato formal, tom direto e persuasivo | documentação |
+| [2026-09-08-004](2026-09-08-004-fix-redirect-landing-em-vez-de-login.md) | 2026-09-08 | Corrige redirecionamento sem sessão — ia para landing de marketing em vez do login | codificação |

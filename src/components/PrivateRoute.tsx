@@ -23,9 +23,12 @@ export function PrivateRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Em desenvolvimento, libera acesso sem autenticação
+  // Em desenvolvimento, libera acesso sem autenticação.
+  // Em produção, quem clica num link direto pro app (ex: /inicio) sem sessão
+  // vai pra tela de acesso (/login) — não pra landing de marketing — pra
+  // chegar o mais perto possível do sistema de verdade em um só passo.
   if (!user && import.meta.env.PROD) {
-    return <Navigate to="/landing" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Usuário autenticado sem perfil definido ainda: precisa se identificar antes de ver o app.
