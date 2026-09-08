@@ -27,6 +27,19 @@ genérico/pausado de nome parecido) ou de exportação real do Mapa OSC/IPEA
 implementar algo, diga isso explicitamente — nunca invente um valor
 plausível.
 
+## Antes de investigar um relato de bug/ajuste
+
+Rodar a Skill `registro-de-solicitacoes` (transversal, em
+`~/.claude/skills/`) **antes** de começar a investigar qualquer relato de
+"não ficou como pedi", print de erro, ou pedido de ajuste em algo que já
+foi mexido antes — busca em
+[`DIARIO-DE-BORDO/REGISTRO-DE-SOLICITACOES.md`](DIARIO-DE-BORDO/REGISTRO-DE-SOLICITACOES.md)
+se algo parecido já foi relatado e resolvido, evitando reinvestigar do
+zero. Criada em 08/09/2026 depois de três correções distintas na mesma
+área ("o que a pessoa vê ao abrir o link") em 1h22min — ver
+`Notas/Contrato de Comportamento — Entrada no App.md` no cofre Obsidian
+pros 4 mecanismos que controlam essa área especificamente.
+
 ## Diário de bordo é obrigatório
 
 Todo marco (análise de necessidade, design, codificação, teste,
