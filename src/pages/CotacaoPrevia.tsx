@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   ClipboardList, Loader2, Plus, Trash2, TrendingUp,
   RefreshCw, AlertCircle, CheckCircle2, AlertTriangle, XCircle, Search,
+  Save, FolderOpen, ChevronDown,
 } from 'lucide-react';
 import type { CotacaoPreviaResult, ItemCotacaoAnalise } from '../types';
 import { SemaforoRisco } from '../components/SemaforoRisco';
@@ -9,7 +10,11 @@ import { analyzeMROSC } from '../services/api';
 import { apiFetch } from '../lib/apiFetch';
 import { useAuth } from '../contexts/AuthContext';
 
-const RASCUNHO_KEY = 'siact_cotacao_rascunho';
+// A tela sempre abre em branco (nenhum autocarregamento de rascunho) — só o
+// que o usuário salvar explicitamente sobrevive entre visitas. Decisão
+// explícita: antes havia um único rascunho que recarregava sozinho e nunca
+// deixava a tela "pronta pra uma nova consulta".
+const COTACOES_SALVAS_KEY = 'siact_cotacoes_salvas';
 
 /* ─── Tipos locais ────────────────────────────────────────────── */
 interface ItemCotacao {
@@ -32,6 +37,14 @@ interface SugestaoCatalogo {
   codigo: number;
   nome: string;
   tipo: 'material' | 'servico';
+}
+
+interface CotacaoSalva {
+  id: string;
+  titulo: string;
+  criadoEm: string;
+  atualizadoEm: string;
+  itens: ItemCotacao[];
 }
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -82,14 +95,11 @@ const UNIDADES = ['Un.', 'Mês', 'Trimestre', 'Semestre', 'Anual', 'Serviço', '
 export function CotacaoPrevia() {
   const { user } = useAuth();
 
-  /* Carrega rascunho do localStorage na montagem */
-  const [items, setItems] = useState<ItemCotacao[]>(() => {
-    try {
-      const raw = localStorage.getItem(RASCUNHO_KEY);
-      const parsed = raw ? JSON.parse(raw) : null;
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : [novoItem()];
-    } catch { return [novoItem()]; }
-  });
+  /* A tela sempre começa em branco — ver nota em COTACOES_SALVAS_KEY acima. */
+  const [items, setItems] = useState<ItemCotacao[]>(() => [novoItem()]);
+  /* Se os itens atuais correspondem a uma cotação já salva, "Salvar" atualiza
+   * essa entrada em vez de criar uma nova. */
+  const [cotacaoAtualId, setCotacaoAtualId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [result, setResult]   = useState<CotacaoPreviaResult | null>(null);
@@ -101,10 +111,50 @@ export function CotacaoPrevia() {
   const [dropdownAberto, setDropdownAberto] = useState<string | null>(null);
   const debounceRefs = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  /* Auto-save rascunho */
-  useEffect(() => {
-    try { localStorage.setItem(RASCUNHO_KEY, JSON.stringify(items)); } catch {}
-  }, [items]);
+  /* Cotações salvas explicitamente pelo usuário (localStorage) */
+  const [cotacoesSalvas, setCotacoesSalvas] = useState<CotacaoSalva[]>(() => {
+    try {
+      const raw = localStorage.getItem(COTACOES_SALVAS_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  });
+  const [listaSalvasAberta, setListaSalvasAberta] = useState(false);
+
+  const persistirCotacoesSalvas = (lista: CotacaoSalva[]) => {
+    setCotacoesSalvas(lista);
+    try { localStorage.setItem(COTACOES_SALVAS_KEY, JSON.stringify(lista)); } catch {}
+  };
+
+  const salvarCotacao = () => {
+    const agora = new Date().toISOString();
+    if (cotacaoAtualId) {
+      persistirCotacoesSalvas(
+        cotacoesSalvas.map(c => c.id === cotacaoAtualId ? { ...c, itens: items, atualizadoEm: agora } : c)
+      );
+      return;
+    }
+    const titulo = `Cotação de ${new Date().toLocaleDateString('pt-BR')}, ${items.length} ${items.length === 1 ? 'item' : 'itens'}`;
+    const nova: CotacaoSalva = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2),
+      titulo, criadoEm: agora, atualizadoEm: agora, itens: items,
+    };
+    persistirCotacoesSalvas([nova, ...cotacoesSalvas]);
+    setCotacaoAtualId(nova.id);
+  };
+
+  const abrirCotacaoSalva = (cotacao: CotacaoSalva) => {
+    setItems(cotacao.itens);
+    setCotacaoAtualId(cotacao.id);
+    setResult(null);
+    setErro('');
+    setListaSalvasAberta(false);
+  };
+
+  const excluirCotacaoSalva = (id: string) => {
+    persistirCotacoesSalvas(cotacoesSalvas.filter(c => c.id !== id));
+    if (cotacaoAtualId === id) setCotacaoAtualId(null);
+  };
 
   /* ── Mutações ── */
   const addItem = () => setItems(prev => [...prev, novoItem()]);
@@ -190,11 +240,11 @@ export function CotacaoPrevia() {
     }
   };
 
-  const limparRascunho = () => {
+  const novaCotacao = () => {
     setItems([novoItem()]);
+    setCotacaoAtualId(null);
     setResult(null);
     setErro('');
-    try { localStorage.removeItem(RASCUNHO_KEY); } catch {}
   };
 
   /* ── Totais calculados ── */
@@ -274,6 +324,7 @@ export function CotacaoPrevia() {
     result?.status === 'REJEITADO' ? 'REJEITADO' : 'ATENCAO';
 
   const corVar = variacaoGlobal > 25 ? '#DC2626' : variacaoGlobal > 10 ? '#D97706' : '#059669';
+  const cotacaoAtual = cotacaoAtualId ? cotacoesSalvas.find(c => c.id === cotacaoAtualId) : undefined;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -291,8 +342,8 @@ export function CotacaoPrevia() {
             </p>
           </div>
           <button
-            onClick={limparRascunho}
-            title="Iniciar nova cotação (limpa rascunho)"
+            onClick={novaCotacao}
+            title="Começar uma nova cotação em branco"
             className="print:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/10 transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" /> Nova cotação
@@ -342,21 +393,64 @@ export function CotacaoPrevia() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Cabeçalho */}
         <div
-          className="px-6 py-4 border-b border-slate-100 flex items-center justify-between"
+          className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3"
           style={{ background: 'linear-gradient(to right, #F0FDF4, #F0FDFA)' }}
         >
           <div>
             <h2 className="text-sm font-bold text-slate-800">Itens Orçamentários</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              {items.length} item{items.length > 1 ? 's' : ''} · rascunho salvo automaticamente
+              {items.length} item{items.length > 1 ? 's' : ''}
+              {cotacaoAtual ? <> · vinculada a "{cotacaoAtual.titulo}"</> : <> · ainda não salva</>}
             </p>
           </div>
-          <button
-            onClick={addItem}
-            className="print:hidden px-3 py-2 bg-white border border-emerald-200 text-emerald-700 font-semibold rounded-lg text-xs flex items-center gap-1.5 hover:bg-emerald-50 transition-colors shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5" /> Adicionar Item
-          </button>
+          <div className="print:hidden flex items-center gap-2 flex-wrap">
+            <div className="relative">
+              <button
+                onClick={() => setListaSalvasAberta(v => !v)}
+                className="px-3 py-2 bg-white border border-slate-200 text-slate-600 font-semibold rounded-lg text-xs flex items-center gap-1.5 hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                <FolderOpen className="w-3.5 h-3.5" /> Cotações Salvas ({cotacoesSalvas.length}) <ChevronDown className="w-3 h-3" />
+              </button>
+              {listaSalvasAberta && (
+                <div className="absolute z-20 top-full right-0 mt-1 w-80 max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+                  {cotacoesSalvas.length === 0 ? (
+                    <p className="px-3 py-3 text-xs text-slate-400">Nenhuma cotação salva ainda.</p>
+                  ) : (
+                    cotacoesSalvas.map(c => (
+                      <div key={c.id} className="flex items-center gap-2 px-3 py-2 border-b border-slate-50 last:border-0 hover:bg-emerald-50">
+                        <button type="button" onClick={() => abrirCotacaoSalva(c)} className="flex-1 min-w-0 text-left">
+                          <span className="block text-xs font-semibold text-slate-700 truncate">{c.titulo}</span>
+                          <span className="block text-[10px] text-slate-400">
+                            Atualizada em {new Date(c.atualizadoEm).toLocaleDateString('pt-BR')} · {c.itens.length} item{c.itens.length > 1 ? 's' : ''}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => excluirCotacaoSalva(c.id)}
+                          title="Excluir cotação salva"
+                          className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={salvarCotacao}
+              className="px-3 py-2 bg-emerald-600 text-white font-semibold rounded-lg text-xs flex items-center gap-1.5 hover:bg-emerald-500 transition-colors shadow-sm"
+            >
+              <Save className="w-3.5 h-3.5" /> Salvar Cotação
+            </button>
+            <button
+              onClick={addItem}
+              className="px-3 py-2 bg-white border border-emerald-200 text-emerald-700 font-semibold rounded-lg text-xs flex items-center gap-1.5 hover:bg-emerald-50 transition-colors shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" /> Adicionar Item
+            </button>
+          </div>
         </div>
 
         {/* Cabeçalho das colunas */}
