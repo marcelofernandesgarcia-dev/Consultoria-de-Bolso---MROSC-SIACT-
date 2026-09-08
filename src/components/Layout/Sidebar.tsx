@@ -4,7 +4,9 @@ import {
   ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X, ChevronDown, Compass, RotateCcw,
 } from 'lucide-react';
 import { NAVIGATION, grupoVisivel, itensVisiveis, type SectionColor, type Perfil } from '../../lib/nav';
-import { loadJornada, saveJornada, PERFIL_LABEL, FASE_LABEL, type Jornada } from '../../lib/jornada';
+import {
+  loadJornada, saveJornada, jornadaAtivaNestaAba, PERFIL_LABEL, FASE_LABEL, type Jornada,
+} from '../../lib/jornada';
 import { useAuth } from '../../contexts/AuthContext';
 import { useIsMobile } from '../../lib/useIsMobile';
 
@@ -63,6 +65,12 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [capacPct, setCapacPct] = useState(loadCapacitacaoPct);
   const [jornada, setJornada] = useState<Jornada | null>(loadJornada);
+  // Em sessão de demonstração, só considera a jornada "válida" pra exibir/
+  // priorizar se a escolha foi feita NESTA aba — uma jornada salva de dias
+  // atrás não deve pintar o menu nem aparecer no indicador antes da pessoa
+  // escolher de novo (mesmo motivo do Inicio.tsx: previsibilidade pra
+  // apresentação à alta gestão do MGI).
+  const jornadaAtiva = jornada && (!isDemo || jornadaAtivaNestaAba()) ? jornada : null;
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'GP';
@@ -92,11 +100,11 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
       )
     );
     if (gruposDaRota.length === 0) return;
-    const grupoPreferidoId = jornada?.perfil === 'gestor' ? 'setorial' : jornada?.perfil === 'osc' ? 'osc' : null;
+    const grupoPreferidoId = jornadaAtiva?.perfil === 'gestor' ? 'setorial' : jornadaAtiva?.perfil === 'osc' ? 'osc' : null;
     const grupoPreferido = grupoPreferidoId ? gruposDaRota.find(g => g.id === grupoPreferidoId) : null;
     setPinnedGroup((grupoPreferido ?? gruposDaRota[0]).id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname, perfilVisivel, jornada?.perfil]);
+  }, [location.pathname, perfilVisivel, jornadaAtiva?.perfil]);
 
   /* Hover com debounce para evitar flickering ao mover entre ícone e items */
   const onEnter = (group: string) => {
@@ -165,7 +173,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
         {/* ── SUA JORNADA — posição salva do wizard "Por onde começar" (perfil + fase) ──
              Reset sempre visível ao lado (não só dentro do Passo 3 em /inicio) — sem
              isso, "recomeçar" exigia voltar pra /inicio e rolar até o botão lá embaixo. */}
-        {expanded && jornada && location.pathname !== '/inicio' && (
+        {expanded && jornadaAtiva && location.pathname !== '/inicio' && (
           <div className="flex items-center gap-1.5 mx-3 mt-2.5 shrink-0">
             <NavLink
               to="/inicio"
@@ -178,7 +186,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
               <span className="min-w-0 flex-1">
                 <p className="text-[9px] font-bold text-indigo-300/80 uppercase tracking-wider leading-none">Sua jornada</p>
                 <p className="text-[11px] font-semibold text-slate-200 truncate mt-0.5">
-                  {PERFIL_LABEL[jornada.perfil]} · {FASE_LABEL[jornada.fase]}
+                  {PERFIL_LABEL[jornadaAtiva.perfil]} · {FASE_LABEL[jornadaAtiva.fase]}
                 </p>
               </span>
             </NavLink>

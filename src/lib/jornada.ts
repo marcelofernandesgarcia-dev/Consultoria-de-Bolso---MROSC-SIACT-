@@ -53,3 +53,32 @@ export function saveJornada(perfil: PerfilJornada | null, fase: FaseJornada | nu
     // localStorage indisponível (modo privado, quota) — a jornada simplesmente não persiste.
   }
 }
+
+/**
+ * Controle por ABA (sessionStorage, não localStorage) de "a jornada foi
+ * escolhida agora, nesta visita" — usado só pra sessões de demonstração,
+ * pra distinguir "acabei de escolher, estou navegando de volta pelo
+ * atalho da sidebar" de "esta aba nunca escolheu nada, só herdou uma
+ * jornada salva de dias atrás". Sem isso, um visitante de demonstração
+ * reabrindo o link (ou a aba) pulava direto pro Passo 3 mesmo sem ter
+ * feito nenhuma escolha nesta visita — quebra a previsibilidade exigida
+ * pra apresentação à alta gestão do MGI (2º clique = escolha de perfil,
+ * sempre).
+ */
+const JORNADA_ATIVA_ABA_KEY = 'siact_jornada_ativa_nesta_aba';
+
+export function jornadaAtivaNestaAba(): boolean {
+  try {
+    return sessionStorage.getItem(JORNADA_ATIVA_ABA_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function marcarJornadaAtivaNestaAba(): void {
+  try {
+    sessionStorage.setItem(JORNADA_ATIVA_ABA_KEY, '1');
+  } catch {
+    // sessionStorage indisponível — sem controle por aba, mas não quebra o fluxo.
+  }
+}

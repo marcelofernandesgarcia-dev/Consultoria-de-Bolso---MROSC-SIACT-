@@ -5,7 +5,11 @@ import {
   FileCheck, AlertTriangle, ChevronRight, ArrowLeft, Sparkles, Radar, Check
 } from 'lucide-react';
 import { NAVIGATION, itensVisiveis, NAV_META_IDS } from '../lib/nav';
-import { loadJornada, saveJornada, type PerfilJornada, type FaseJornada } from '../lib/jornada';
+import {
+  loadJornada, saveJornada, jornadaAtivaNestaAba, marcarJornadaAtivaNestaAba,
+  type PerfilJornada, type FaseJornada,
+} from '../lib/jornada';
+import { useAuth } from '../contexts/AuthContext';
 
 // Mesma fonte que a sidebar usa (gavetas "osc"/"setorial") — cada card filtra pelo seu perfil,
 // excluindo itens de navegação/meta (Dashboard, Por onde começar, FAQ, Capacitação, Sistema).
@@ -97,12 +101,19 @@ const FASES = [
 
 export function Inicio() {
   const navigate = useNavigate();
+  const { isDemo } = useAuth();
   // Retomar de onde o usuário parou — sem isso, todo retorno à /inicio (botão flutuante,
   // sidebar, F5) resetava o wizard pro passo 1 mesmo com uma escolha já feita.
+  // Em sessão de demonstração, só retoma se a escolha foi feita NESTA aba
+  // (sessionStorage) — senão, uma jornada salva de dias atrás (ou de outra
+  // pessoa no mesmo dispositivo) fazia o 2º clique pular a tela de escolha
+  // de perfil, quebrando a previsibilidade exigida pra apresentação à alta
+  // gestão do MGI (ver Diário de Bordo, "entrada previsível pra demonstração").
   const jornadaSalva = loadJornada();
-  const [step, setStep] = useState<1 | 2 | 3>(jornadaSalva ? 3 : 1);
-  const [perfil, setPerfil] = useState<Perfil>(jornadaSalva?.perfil ?? null);
-  const [fase, setFase] = useState<Fase>(jornadaSalva?.fase ?? null);
+  const podeResumir = Boolean(jornadaSalva) && (!isDemo || jornadaAtivaNestaAba());
+  const [step, setStep] = useState<1 | 2 | 3>(podeResumir ? 3 : 1);
+  const [perfil, setPerfil] = useState<Perfil>(podeResumir ? jornadaSalva!.perfil : null);
+  const [fase, setFase] = useState<Fase>(podeResumir ? jornadaSalva!.fase : null);
 
   useEffect(() => { saveJornada(perfil, fase); }, [perfil, fase]);
 
@@ -244,7 +255,7 @@ export function Inicio() {
             {FASES.map(f => (
               <button
                 key={f.id}
-                onClick={() => { setFase(f.id as Fase); setStep(3); }}
+                onClick={() => { setFase(f.id as Fase); setStep(3); marcarJornadaAtivaNestaAba(); }}
                 className="w-full flex items-center justify-between p-4 bg-white border-2 border-slate-200 hover:border-indigo-400 rounded-xl text-left transition-all group"
               >
                 <div>

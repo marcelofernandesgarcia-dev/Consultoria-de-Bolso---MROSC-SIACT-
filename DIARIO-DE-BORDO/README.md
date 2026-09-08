@@ -98,3 +98,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-08-007](2026-09-08-007-deploy-e-verificacao-producao-fix-visitante-menu.md) | 2026-09-08 | Deploy em produção e verificação (desktop + mobile) do fix visitante/menu | testes |
 | [2026-09-08-008](2026-09-08-008-fix-alinhamento-jornada-reset-visivel.md) | 2026-09-08 | Alinha menu ao perfil da Jornada em rotas compartilhadas + reset sempre visível | codificação |
 | [2026-09-08-009](2026-09-08-009-deploy-e-verificacao-alinhamento-jornada.md) | 2026-09-08 | Deploy e verificação (desktop + mobile) do alinhamento menu/Jornada | testes |
+| [2026-09-08-010](2026-09-08-010-entrada-previsivel-sessao-demonstracao.md) | 2026-09-08 | Entrada previsível pra sessão de demonstração — 2º clique sempre escolhe perfil | codificação |

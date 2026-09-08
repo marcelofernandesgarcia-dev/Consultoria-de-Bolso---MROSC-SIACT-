@@ -71,6 +71,9 @@
 - **Status**: Resolvido (o alinhamento). A persistência "Sua Jornada" em
   si **não é bug** — é comportamento intencional, documentado no
   Contrato de Comportamento — Entrada no App (cofre Obsidian).
+  **Atualização no mesmo dia**: o usuário pediu pra reanalisar essa
+  mesma persistência sob a ótica de UX pra apresentação à alta gestão —
+  ver entrada abaixo, "Entrada previsível pra sessão de demonstração".
 - **Como diferenciar de relatos parecidos no futuro**: antes de investigar
   qualquer novo "não abriu na tela inicial", checar primeiro: (1) foi um
   clique NOVO em "Entrar como visitante"? Se sim e ainda cai errado, é
@@ -80,3 +83,40 @@
 - **Palavras-chave**: sua jornada, ferramentas recomendadas, passo 3,
   tela inicial, menu não alinhado, menu errado, perfil errado no menu,
   rota compartilhada.
+
+## 2026-09-08 — Entrada previsível pra sessão de demonstração (2º clique = escolha de perfil, sempre)
+
+- **Sintoma relatado**: não foi um bug reportado — o usuário pediu um
+  mapeamento completo do fluxo de entrada e, ao analisar as condições,
+  registrou que o protótipo existe pra apresentação à alta gestão do
+  MGI e precisa de um caminho **fácil e coerente**: no 2º clique
+  ("Entrar como visitante" → escolher OSC/Setorial), a pessoa deve
+  sempre estar na tela de escolha — não só na primeira vez que alguém
+  usa aquele navegador.
+- **Causa raiz**: a entrada anterior deste registro já tinha concluído
+  que "Sua Jornada" pulando pro Passo 3 **não é bug**, é intencional —
+  o que é verdade pro comportamento em si, mas insuficiente pro
+  contexto de uma sessão de demonstração/avaliação: `Inicio.tsx` não
+  diferenciava "esta aba já escolheu antes, nesta mesma visita" de
+  "este navegador tem uma jornada salva de qualquer momento no
+  passado" — pra sessão demo, as duas situações resumiam pro Passo 3
+  igual, quebrando a previsibilidade pedida.
+- **Correção**: novo controle por aba (`sessionStorage`, não
+  `localStorage`) em `src/lib/jornada.ts`
+  (`jornadaAtivaNestaAba`/`marcarJornadaAtivaNestaAba`) — sessão de
+  demonstração (`isDemo`) só retoma o Passo 3 se a escolha foi feita
+  NESTA aba; sessão nova (aba nova, link reaberto) sempre mostra o
+  Passo 1, mesmo com jornada antiga no `localStorage`. Usuário real
+  (não demo) mantém o comportamento original (lembra entre visitas).
+  Mesmo controle aplicado ao indicador "Sua Jornada" e à priorização do
+  menu na sidebar, pra não mostrar/priorizar por um perfil "esquecido".
+  Ver Diário de Bordo (entrada do commit correspondente).
+- **Status**: Resolvido.
+- **Como diferenciar de relatos parecidos no futuro**: se uma sessão
+  demo, numa aba/visita nova, mostrar direto o Passo 3 sem a pessoa ter
+  escolhido nada ainda nesta visita, **isso agora é regressão** desta
+  correção — antes de 08/09/2026 (tarde) isso seria "não é bug"; depois
+  desta entrada, é.
+- **Palavras-chave**: previsibilidade, apresentação alta gestão MGI, 2º
+  clique, sessão de demonstração, sessionStorage, jornada por aba,
+  passo 1 não aparece, isDemo.
