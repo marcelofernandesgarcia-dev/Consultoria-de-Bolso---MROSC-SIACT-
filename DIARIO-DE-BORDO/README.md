@@ -100,3 +100,4 @@ mesma sessão em que o Diário de Bordo foi criado.
 | [2026-09-08-009](2026-09-08-009-deploy-e-verificacao-alinhamento-jornada.md) | 2026-09-08 | Deploy e verificação (desktop + mobile) do alinhamento menu/Jornada | testes |
 | [2026-09-08-010](2026-09-08-010-entrada-previsivel-sessao-demonstracao.md) | 2026-09-08 | Entrada previsível pra sessão de demonstração — 2º clique sempre escolhe perfil | codificação |
 | [2026-09-08-011](2026-09-08-011-deploy-e-verificacao-entrada-previsivel.md) | 2026-09-08 | Deploy e verificação (desktop + mobile) da entrada previsível pra sessão de demonstração | testes |
+| [2026-09-08-012](2026-09-08-012-validacao-final-link-diretor.md) | 2026-09-08 | Validação final do link de acesso antes de reenviar ao diretor | testes |
