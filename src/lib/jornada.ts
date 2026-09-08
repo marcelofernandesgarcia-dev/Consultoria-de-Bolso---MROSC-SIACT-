@@ -13,7 +13,7 @@ export interface Jornada {
   fase: FaseJornada;
 }
 
-const JORNADA_KEY = 'siact_jornada';
+export const JORNADA_KEY = 'siact_jornada';
 
 export const PERFIL_LABEL: Record<PerfilJornada, string> = {
   osc: 'OSC',

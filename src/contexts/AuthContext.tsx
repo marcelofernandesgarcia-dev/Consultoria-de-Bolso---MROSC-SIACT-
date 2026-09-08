@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { Perfil } from '../lib/nav';
 import { isAdminEmail } from '../lib/admin';
 
-const PREVIEW_KEY = 'siact_admin_preview_perfil';
+export const PREVIEW_KEY = 'siact_admin_preview_perfil';
 
 interface AuthContextType {
   user: User | null;

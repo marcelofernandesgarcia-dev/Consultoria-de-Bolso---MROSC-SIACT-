@@ -75,6 +75,20 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
     return () => { window.removeEventListener('storage', sync); clearInterval(t); };
   }, []);
 
+  /* Vincula o menu à tela atual: ao entrar numa página por qualquer caminho
+   * (card do "Por onde começar", link direto, F5, voltar do navegador), abre
+   * sozinho o grupo dono da rota — sem isso, o accordion ficava fechado e
+   * nenhum item aparecia destacado, mesmo com a página certa já aberta. */
+  useEffect(() => {
+    const grupoDaRota = navegacaoVisivel.find(g =>
+      itensVisiveis(g, perfilVisivel).some(item =>
+        location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+      )
+    );
+    if (grupoDaRota) setPinnedGroup(grupoDaRota.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, perfilVisivel]);
+
   /* Hover com debounce para evitar flickering ao mover entre ícone e items */
   const onEnter = (group: string) => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);

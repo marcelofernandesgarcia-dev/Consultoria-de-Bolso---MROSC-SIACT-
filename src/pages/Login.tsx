@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { JORNADA_KEY } from '../lib/jornada';
+import { PREVIEW_KEY } from '../contexts/AuthContext';
 
 const FEATURES = [
   { icon: CheckCircle2, color: '#6366F1', text: 'Elegibilidade e documentação analisadas por IA' },
@@ -27,12 +29,22 @@ export function Login() {
   const handleDemoLogin = async () => {
     setDemoLoading(true);
     setError('');
+    // Cada visitante de demonstração deve começar do zero — sem isso, a
+    // jornada ("Por onde começar") e o seletor "Visualizar como" herdavam o
+    // que um visitante anterior deixou salvo no mesmo navegador (localStorage
+    // não é isolado por sessão), fazendo a demo abrir na tela/perfil errado.
+    try {
+      localStorage.removeItem(JORNADA_KEY);
+      localStorage.removeItem(PREVIEW_KEY);
+    } catch {
+      // localStorage indisponível (modo privado, quota) — segue sem limpar.
+    }
     const { error } = await supabase.auth.signInAnonymously();
     if (error) {
       setError('Não foi possível entrar no modo demonstração. Tente novamente em instantes.');
       setDemoLoading(false);
     } else {
-      navigate('/');
+      navigate('/inicio');
     }
   };
 
