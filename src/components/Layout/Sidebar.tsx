@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X, ChevronDown, Compass,
+  ShieldCheck, LogOut, ChevronsLeft, ChevronsRight, ShieldAlert, X, ChevronDown, Compass, RotateCcw,
 } from 'lucide-react';
 import { NAVIGATION, grupoVisivel, itensVisiveis, type SectionColor, type Perfil } from '../../lib/nav';
-import { loadJornada, PERFIL_LABEL, FASE_LABEL, type Jornada } from '../../lib/jornada';
+import { loadJornada, saveJornada, PERFIL_LABEL, FASE_LABEL, type Jornada } from '../../lib/jornada';
 import { useAuth } from '../../contexts/AuthContext';
 import { useIsMobile } from '../../lib/useIsMobile';
 
@@ -53,6 +53,7 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
   const navegacaoVisivel = NAVIGATION.filter(g => grupoVisivel(g, perfilVisivel) && (!g.adminOnly || isAdmin || isDemo));
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   // No mobile o drawer é sempre "expandido" (mostra labels) — só a visibilidade (translate) muda.
   const expanded = isMobile ? true : isExpanded;
 
@@ -78,16 +79,24 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
   /* Vincula o menu à tela atual: ao entrar numa página por qualquer caminho
    * (card do "Por onde começar", link direto, F5, voltar do navegador), abre
    * sozinho o grupo dono da rota — sem isso, o accordion ficava fechado e
-   * nenhum item aparecia destacado, mesmo com a página certa já aberta. */
+   * nenhum item aparecia destacado, mesmo com a página certa já aberta.
+   * Quando a rota é compartilhada entre OSC e Setorial (perfilVisivel null,
+   * "Visualizar como: Tudo") e existe uma "Sua Jornada" salva, o grupo do
+   * perfil da jornada tem prioridade sobre a ordem default (OSC primeiro) —
+   * sem isso, o menu abria "OSC" mesmo com a etiqueta "Sua Jornada" acima
+   * indicando "Gestor Público", uma inconsistência visual real. */
   useEffect(() => {
-    const grupoDaRota = navegacaoVisivel.find(g =>
+    const gruposDaRota = navegacaoVisivel.filter(g =>
       itensVisiveis(g, perfilVisivel).some(item =>
         location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
       )
     );
-    if (grupoDaRota) setPinnedGroup(grupoDaRota.id);
+    if (gruposDaRota.length === 0) return;
+    const grupoPreferidoId = jornada?.perfil === 'gestor' ? 'setorial' : jornada?.perfil === 'osc' ? 'osc' : null;
+    const grupoPreferido = grupoPreferidoId ? gruposDaRota.find(g => g.id === grupoPreferidoId) : null;
+    setPinnedGroup((grupoPreferido ?? gruposDaRota[0]).id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname, perfilVisivel]);
+  }, [location.pathname, perfilVisivel, jornada?.perfil]);
 
   /* Hover com debounce para evitar flickering ao mover entre ícone e items */
   const onEnter = (group: string) => {
@@ -153,23 +162,43 @@ export function Sidebar({ isExpanded, onToggle, mobileOpen, onMobileClose }: Sid
           )}
         </div>
 
-        {/* ── SUA JORNADA — posição salva do wizard "Por onde começar" (perfil + fase) ── */}
+        {/* ── SUA JORNADA — posição salva do wizard "Por onde começar" (perfil + fase) ──
+             Reset sempre visível ao lado (não só dentro do Passo 3 em /inicio) — sem
+             isso, "recomeçar" exigia voltar pra /inicio e rolar até o botão lá embaixo. */}
         {expanded && jornada && location.pathname !== '/inicio' && (
-          <NavLink
-            to="/inicio"
-            onClick={() => isMobile && onMobileClose()}
-            className="flex items-center gap-2 mx-3 mt-2.5 px-2.5 py-2 rounded-lg shrink-0 transition-colors hover:brightness-125"
-            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)' }}
-            title="Voltar para suas ferramentas recomendadas"
-          >
-            <Compass className="w-3.5 h-3.5 text-indigo-300 shrink-0" strokeWidth={2} />
-            <span className="min-w-0 flex-1">
-              <p className="text-[9px] font-bold text-indigo-300/80 uppercase tracking-wider leading-none">Sua jornada</p>
-              <p className="text-[11px] font-semibold text-slate-200 truncate mt-0.5">
-                {PERFIL_LABEL[jornada.perfil]} · {FASE_LABEL[jornada.fase]}
-              </p>
-            </span>
-          </NavLink>
+          <div className="flex items-center gap-1.5 mx-3 mt-2.5 shrink-0">
+            <NavLink
+              to="/inicio"
+              onClick={() => isMobile && onMobileClose()}
+              className="flex items-center gap-2 flex-1 min-w-0 px-2.5 py-2 rounded-lg transition-colors hover:brightness-125"
+              style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)' }}
+              title="Voltar para suas ferramentas recomendadas"
+            >
+              <Compass className="w-3.5 h-3.5 text-indigo-300 shrink-0" strokeWidth={2} />
+              <span className="min-w-0 flex-1">
+                <p className="text-[9px] font-bold text-indigo-300/80 uppercase tracking-wider leading-none">Sua jornada</p>
+                <p className="text-[11px] font-semibold text-slate-200 truncate mt-0.5">
+                  {PERFIL_LABEL[jornada.perfil]} · {FASE_LABEL[jornada.fase]}
+                </p>
+              </span>
+            </NavLink>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                saveJornada(null, null);
+                setJornada(null);
+                if (isMobile) onMobileClose();
+                navigate('/inicio');
+              }}
+              title="Recomeçar jornada (esquecer perfil e fase salvos)"
+              aria-label="Recomeçar jornada"
+              className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/[0.08] transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
 
         {/* ── SELETOR DE VISUALIZAÇÃO (admin ou visitante de demonstração) — permite ver tudo
